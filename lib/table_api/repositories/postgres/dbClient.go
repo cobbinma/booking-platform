@@ -4,12 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/cobbinma/booking/lib/table_api/config"
+	"github.com/cobbinma/booking/lib/table_api/models"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type DBClient interface {
 	DB() *sql.DB
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	GetTables(query string, args ...interface{}) ([]models.Table, error)
 }
 
 type dbClient struct {
@@ -45,4 +48,16 @@ func (dbc *dbClient) Close() error {
 
 func (dbc *dbClient) DB() *sql.DB {
 	return dbc.db.DB
+}
+
+func (dbc *dbClient) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return dbc.db.Exec(query, args...)
+}
+
+func (dbc *dbClient) GetTables(query string, args ...interface{}) ([]models.Table, error) {
+	var tables []models.Table
+	if err := dbc.db.Select(&tables, query, args...); err != nil {
+		return nil, err
+	}
+	return tables, nil
 }
