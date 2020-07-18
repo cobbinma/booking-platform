@@ -38,7 +38,6 @@ services:
       - DB_PASSWORD=password
       - DB_NAME=booking_db
       - DB_USER=user
-      - DB_PORT=5433
       - DB_SSLMODE=disable
     depends_on:
       - booking_db
