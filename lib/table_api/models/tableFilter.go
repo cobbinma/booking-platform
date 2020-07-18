@@ -1,9 +1,9 @@
 package models
 
 type TableFilter struct {
-	Capacity int
+	Capacity Capacity
 }
 
-func NewTableFilter(capacity int) *TableFilter {
+func NewTableFilter(capacity Capacity) *TableFilter {
 	return &TableFilter{Capacity: capacity}
 }

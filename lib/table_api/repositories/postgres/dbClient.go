@@ -55,7 +55,7 @@ func (dbc *dbClient) Exec(query string, args ...interface{}) (sql.Result, error)
 }
 
 func (dbc *dbClient) GetTables(query string, args ...interface{}) ([]models.Table, error) {
-	var tables []models.Table
+	tables := []models.Table{}
 	if err := dbc.db.Select(&tables, query, args...); err != nil {
 		return nil, err
 	}

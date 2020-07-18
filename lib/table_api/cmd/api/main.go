@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
+
 	dbClient, closeDB, err := postgres.NewDBClient()
 	if err != nil {
 		log.Fatal("could not create database client : ", err)
@@ -35,6 +37,7 @@ func main() {
 	e.GET("/healthz", h.Health)
 	e.PUT("/table", h.CreateTable)
 	e.GET("/tables", h.GetTables)
+	e.GET("/tables/capacity/:capacity", h.GetTablesWithCapacity)
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

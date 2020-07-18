@@ -32,7 +32,7 @@ func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([
 		Select("id", "name", "capacity").From("tables")
 
 	if filter != nil && filter.Capacity != 0 {
-		builder.Where(sq.LtOrEq{"capacity": filter.Capacity})
+		builder = builder.Where(sq.GtOrEq{"capacity": filter.Capacity})
 	}
 
 	sql, args, err := builder.ToSql()
