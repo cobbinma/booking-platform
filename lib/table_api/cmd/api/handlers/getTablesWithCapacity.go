@@ -30,12 +30,12 @@ func (h *Handlers) GetTablesWithCapacity(c echo.Context) error {
 }
 
 func getCapacityFromRequest(c echo.Context) (models.Capacity, error) {
-	id, err := strconv.Atoi(c.Param("capacity"))
+	amount, err := strconv.Atoi(c.Param("amount"))
 	if err != nil {
-		return 0, fmt.Errorf("%s : %w", "could not parse id", err)
+		return 0, fmt.Errorf("%s : %w", "could not parse capacity amount", err)
 	}
 
-	capacity := models.NewCapacity(id)
+	capacity := models.NewCapacity(amount)
 	err = capacity.Valid()
 	if err != nil {
 		return 0, fmt.Errorf("%s : %w", "could not validate capacity", err)

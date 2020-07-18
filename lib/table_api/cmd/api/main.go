@@ -38,7 +38,7 @@ func main() {
 	e.PUT("/table", h.CreateTable)
 	e.DELETE("/table/:id", h.DeleteTable)
 	e.GET("/tables", h.GetTables)
-	e.GET("/tables/capacity/:capacity", h.GetTablesWithCapacity)
+	e.GET("/tables/capacity/:amount", h.GetTablesWithCapacity)
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }
