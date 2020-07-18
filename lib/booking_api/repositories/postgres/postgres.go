@@ -15,7 +15,7 @@ func (p *postgres) CreateBooking(ctx context.Context, booking models.NewBooking)
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert("bookings").
 		Columns("customer_id", "table_id", "people", "date", "starts_at", "ends_at").
-		Values(booking.CustomerID, booking.TableID, booking.People, booking.Date, booking.StartsAt, booking.EndsAt).
+		Values(booking.CustomerID, booking.TableID, booking.People, booking.Date.Time(), booking.StartsAt, booking.EndsAt).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%s : %w", "could not build statement", err)

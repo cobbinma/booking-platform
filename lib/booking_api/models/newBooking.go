@@ -9,7 +9,7 @@ type NewBooking struct {
 	CustomerID CustomerID `json:"customer_id" db:"customer_id"`
 	TableID    TableID    `json:"table_id" db:"table_id"`
 	People     int        `json:"people" db:"people"`
-	Date       time.Time  `json:"date" db:"date"`
+	Date       Date       `json:"date" db:"date"`
 	StartsAt   time.Time  `json:"starts_at" db:"starts_at"`
 	EndsAt     time.Time  `json:"ends_at" db:"ends_at"`
 }
@@ -28,7 +28,7 @@ func (nb NewBooking) Valid() error {
 	}
 
 	now := time.Now()
-	if nb.Date.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)) {
+	if nb.Date.Time().Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())) {
 		return fmt.Errorf("date must not be in the past")
 	}
 
@@ -36,12 +36,12 @@ func (nb NewBooking) Valid() error {
 		return fmt.Errorf("starts at cannot be after ends at")
 	}
 
-	if nb.StartsAt.Before(time.Date(nb.Date.Year(), nb.Date.Month(), nb.Date.Day(), 0, 0, 0, 0, time.UTC)) {
+	if nb.StartsAt.Before(time.Date(nb.Date.Time().Year(), nb.Date.Time().Month(), nb.Date.Time().Day(), 0, 0, 0, -1, nb.StartsAt.Location())) {
 		return fmt.Errorf("starts at must be after date")
 	}
 
 	if nb.EndsAt.After(nb.StartsAt.Add(12*time.Hour + time.Second)) {
-		return fmt.Errorf("booking can not be longer than 12 hours")
+		return fmt.Errorf("booking can not exceed 12 hours")
 	}
 
 	return nil
