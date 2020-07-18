@@ -34,6 +34,7 @@ func main() {
 
 	e.GET("/healthz", h.Health)
 	e.PUT("/table", h.CreateTable)
+	e.GET("/tables", h.GetTables)
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

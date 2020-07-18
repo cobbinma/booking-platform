@@ -8,7 +8,7 @@ type Table struct {
 	Capacity int     `json:"capacity" db:"capacity"`
 }
 
-type TableID string
+type TableID int
 
 type NewTable struct {
 	Name     string `json:"name" db:"name"`
