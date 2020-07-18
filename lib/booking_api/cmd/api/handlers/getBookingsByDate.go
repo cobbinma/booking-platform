@@ -19,7 +19,7 @@ func (h *Handlers) GetBookingsByDate(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
 	}
 
-	bookings, err := h.repository.GetBookings(ctx, &models.BookingFilter{Date: &date})
+	bookings, err := h.repository.GetBookings(ctx, models.BookingFilterWithDate(&date))
 	if err != nil {
 		logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
 		message := "could not get tables"

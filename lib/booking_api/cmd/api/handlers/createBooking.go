@@ -31,9 +31,24 @@ func (h *Handlers) CreateBooking(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
 	}
 
+	bookings, err := h.repository.GetBookings(ctx, models.BookingFilterWithTableIDs([]models.TableID{booking.TableID}))
+	if err != nil {
+		logrus.Error(fmt.Errorf("%s : %w", "could not get bookings", err))
+		message := "could not create booking"
+		return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+	}
+
+	for i := range bookings {
+		if booking.StartsAt.Before(bookings[i].EndsAt) && bookings[i].StartsAt.Before(booking.EndsAt) {
+			message := "incorrect user request : requested booking slot is not free"
+			logrus.Info(fmt.Errorf(message))
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+		}
+	}
+
 	if err := h.repository.CreateBooking(ctx, booking); err != nil {
 		logrus.Error(fmt.Errorf("%s : %w", "could not create table", err))
-		message := "could not create table"
+		message := "could not create booking"
 		return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
 	}
 

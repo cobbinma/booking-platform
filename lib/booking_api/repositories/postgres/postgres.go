@@ -29,14 +29,25 @@ func (p *postgres) CreateBooking(ctx context.Context, booking models.NewBooking)
 	return nil
 }
 
-func (p *postgres) GetBookings(ctx context.Context, filter *models.BookingFilter) ([]models.Booking, error) {
+func (p *postgres) GetBookings(ctx context.Context, options ...func(*models.BookingFilter) *models.BookingFilter) ([]models.Booking, error) {
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "customer_id", "table_id", "people", "date", "starts_at", "ends_at").
 		From("bookings")
 
-	if filter != nil && filter.Date != nil {
-		builder = builder.Where(sq.Eq{"date": filter.Date})
+	filter := &models.BookingFilter{}
+	for _, option := range options {
+		option(filter)
 	}
+
+	where := sq.And{}
+	if filter.Date != nil {
+		where = append(where, sq.Eq{"date": filter.Date})
+	}
+	if filter.TableIDs != nil {
+		where = append(where, sq.Eq{"table_id": filter.TableIDs})
+	}
+
+	builder = builder.Where(where)
 
 	sql, args, err := builder.ToSql()
 	if err != nil {
