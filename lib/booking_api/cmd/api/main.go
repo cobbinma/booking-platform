@@ -35,6 +35,7 @@ func main() {
 	h := handlers.NewHandlers(repository)
 
 	e.GET("/healthz", h.Health)
+	e.PUT("/booking", h.CreateBooking)
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }
