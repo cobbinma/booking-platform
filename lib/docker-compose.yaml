@@ -9,7 +9,7 @@ services:
     volumes:
       - ./table_api:/go/src
     environment:
-      - DB_HOST=db
+      - DB_HOST=table_db
       - DB_PASSWORD=password
       - DB_NAME=table_db
       - DB_USER=user

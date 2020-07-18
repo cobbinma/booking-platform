@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	_, closeDB, err := postgres.NewDBClient()
+	dbClient, closeDB, err := postgres.NewDBClient()
 	if err != nil {
 		log.Fatalf("could not create database client : %v", err)
 	}
@@ -19,6 +19,11 @@ func main() {
 			log.Errorf("could not close database : %v", err)
 		}
 	}()
+
+	repository := postgres.NewPostgres(dbClient)
+	if err := repository.Migrate(); err != nil {
+		log.Fatalf("could not migrate : %v", err)
+	}
 
 	e := echo.New()
 
