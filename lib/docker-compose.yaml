@@ -23,9 +23,34 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=table_db
       - POSTGRES_USER=user
-    ports:
-      - "5432:5432"
     volumes:
       - table_data:/var/lib/postgresql/data
+  booking-api:
+    build:
+      context: ./booking_api
+      dockerfile: Dockerfile.dev
+    ports:
+      - "6969:6969"
+    volumes:
+      - ./booking_api:/go/src
+    environment:
+      - DB_HOST=booking_db
+      - DB_PASSWORD=password
+      - DB_NAME=booking_db
+      - DB_USER=user
+      - DB_PORT=5433
+      - DB_SSLMODE=disable
+    depends_on:
+      - booking_db
+  booking_db:
+    image: "postgres"
+    container_name: "booking_db"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=booking_db
+      - POSTGRES_USER=user
+    volumes:
+      - booking_data:/var/lib/postgresql/data
 volumes:
   table_data:
+  booking_data:
