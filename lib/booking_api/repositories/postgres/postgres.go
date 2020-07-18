@@ -51,6 +51,22 @@ func (p *postgres) GetBookings(ctx context.Context, filter *models.BookingFilter
 	return tables, nil
 }
 
+func (p *postgres) DeleteBookings(ctx context.Context, id []int) error {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete("bookings").
+		Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return fmt.Errorf("%s : %w", "could not build statement", err)
+	}
+
+	_, err = p.dbClient.Exec(sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s : %w", "could not execute", err)
+	}
+
+	return nil
+}
+
 func NewPostgres(client DBClient) models.Repository {
 	return &postgres{dbClient: client}
 }
