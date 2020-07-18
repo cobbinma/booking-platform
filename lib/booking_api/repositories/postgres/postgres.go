@@ -29,6 +29,28 @@ func (p *postgres) CreateBooking(ctx context.Context, booking models.NewBooking)
 	return nil
 }
 
+func (p *postgres) GetBookings(ctx context.Context, filter *models.BookingFilter) ([]models.Booking, error) {
+	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id", "customer_id", "table_id", "people", "date", "starts_at", "ends_at").
+		From("bookings")
+
+	if filter != nil && filter.Date != nil {
+		builder = builder.Where(sq.Eq{"date": filter.Date})
+	}
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not build statement", err)
+	}
+
+	tables, err := p.dbClient.GetBookings(sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not get tables from db client", err)
+	}
+
+	return tables, nil
+}
+
 func NewPostgres(client DBClient) models.Repository {
 	return &postgres{dbClient: client}
 }

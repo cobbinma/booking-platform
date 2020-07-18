@@ -36,6 +36,7 @@ func main() {
 
 	e.GET("/healthz", h.Health)
 	e.PUT("/booking", h.CreateBooking)
+	e.GET("/bookings/date/:date", h.GetBookingsByDate)
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }
