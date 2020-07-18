@@ -13,7 +13,7 @@ func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) er
 	panic("implement me")
 }
 
-func (p *postgres) GetTables(ctx context.Context, options func(options *models.GetTablesOptions) *models.GetTablesOptions) ([]models.Table, error) {
+func (p *postgres) GetTables(ctx context.Context) ([]models.Table, error) {
 	panic("implement me")
 }
 
