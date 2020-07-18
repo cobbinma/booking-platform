@@ -44,7 +44,7 @@ func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([
 		builder = builder.Where(where)
 	}
 
-	sql, args, err := builder.ToSql()
+	sql, args, err := builder.OrderBy("capacity ASC").ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not build statement", err)
 	}

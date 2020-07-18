@@ -44,3 +44,27 @@ func (t tableAPI) GetTable(ctx context.Context, id models.TableID) (*models.Tabl
 
 	return table, nil
 }
+
+func (t tableAPI) GetTablesWithCapacity(ctx context.Context, capacity int) ([]models.Table, error) {
+	resp, err := t.client.Get(fmt.Sprintf("%s/tables/capacity/%v", config.TableAPIRoot(), capacity))
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not perform get request", err)
+	}
+
+	if resp.StatusCode != http.StatusOK || resp.Body == nil {
+		message := fmt.Sprintf("incorrect response from api")
+		return nil, fmt.Errorf("%s : %v", message, resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read response body")
+	}
+
+	tables := []models.Table{}
+	if err := json.Unmarshal(body, &tables); err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not unmarshall body", err)
+	}
+
+	return tables, nil
+}

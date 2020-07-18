@@ -39,6 +39,7 @@ func main() {
 
 	e.GET("/healthz", h.Health)
 	e.PUT("/booking", h.CreateBooking)
+	e.GET("/booking", h.BookingQuery)
 	e.DELETE("/booking/:id", h.DeleteBooking)
 	e.GET("/bookings/date/:date", h.GetBookingsByDate)
 

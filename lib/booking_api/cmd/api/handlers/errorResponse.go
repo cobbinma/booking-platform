@@ -3,8 +3,9 @@ package handlers
 type errorCodes string
 
 const (
-	InvalidRequest errorCodes = "INVALID_REQUEST"
-	InternalError             = "INTERNAL_ERROR"
+	InvalidRequest   errorCodes = "INVALID_REQUEST"
+	InternalError               = "INTERNAL_ERROR"
+	NoAvailableSlots            = "NO_AVAILABLE_SLOTS"
 )
 
 type errorResponse struct {
