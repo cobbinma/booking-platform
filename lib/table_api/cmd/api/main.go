@@ -2,12 +2,24 @@ package main
 
 import (
 	"github.com/cobbinma/booking/lib/table_api/config"
+	"github.com/cobbinma/booking/lib/table_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func main() {
+	_, closeDB, err := postgres.NewDBClient()
+	if err != nil {
+		log.Fatalf("could not create database client : %v", err)
+	}
+	defer func() {
+		if err := closeDB(); err != nil {
+			log.Errorf("could not close database : %v", err)
+		}
+	}()
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())
