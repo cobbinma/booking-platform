@@ -10,6 +10,18 @@ type Table struct {
 
 type TableID int
 
+func NewTableID(id int) TableID {
+	return TableID(id)
+}
+
+func (tid TableID) Valid() error {
+	if tid < 0 {
+		return fmt.Errorf("table ID must be positive")
+	}
+
+	return nil
+}
+
 type NewTable struct {
 	Name     string `json:"name" db:"name"`
 	Capacity int    `json:"capacity" db:"capacity"`

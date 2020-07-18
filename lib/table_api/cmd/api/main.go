@@ -36,6 +36,7 @@ func main() {
 
 	e.GET("/healthz", h.Health)
 	e.PUT("/table", h.CreateTable)
+	e.DELETE("/table/:id", h.DeleteTable)
 	e.GET("/tables", h.GetTables)
 	e.GET("/tables/capacity/:capacity", h.GetTablesWithCapacity)
 
