@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/cobbinma/booking/lib/table_api/config"
 	"github.com/cobbinma/booking/lib/table_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
@@ -21,7 +22,7 @@ func main() {
 	}()
 
 	repository := postgres.NewPostgres(dbClient)
-	if err := repository.Migrate(); err != nil {
+	if err := repository.Migrate(context.Background()); err != nil {
 		log.Fatalf("could not migrate : %v", err)
 	}
 

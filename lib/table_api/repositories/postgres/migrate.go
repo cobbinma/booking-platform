@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	post "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -8,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (p *postgres) Migrate() error {
+func (p *postgres) Migrate(ctx context.Context) error {
 	driver, err := post.WithInstance(p.dbClient.DB(), &post.Config{})
 	if err != nil {
 		return fmt.Errorf("could not create database driver : %w", err)
