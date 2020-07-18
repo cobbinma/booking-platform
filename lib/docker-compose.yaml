@@ -1,0 +1,31 @@
+version: '3'
+services:
+  table-api:
+    build:
+      context: ./table_api
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8989:8989"
+    volumes:
+      - ./table_api:/go/src
+    environment:
+      - DB_HOST=db
+      - DB_PASSWORD=password
+      - DB_DBNAME=table_db
+      - DB_USER=user
+      - DB_SSLMODE=disable
+    depends_on:
+      - table_db
+  table_db:
+    image: "postgres"
+    container_name: "table_db"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=table_db
+      - POSTGRES_USER=user
+    ports:
+      - "5432:5432"
+    volumes:
+      - table_data:/var/lib/postgresql/data
+volumes:
+  table_data:
