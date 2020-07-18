@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -14,7 +15,7 @@ type NewBooking struct {
 	EndsAt     time.Time  `json:"ends_at" db:"ends_at"`
 }
 
-func (nb NewBooking) Valid() error {
+func (nb NewBooking) Valid(ctx context.Context, tc TableClient) error {
 	if err := nb.CustomerID.Valid(); err != nil {
 		return err
 	}
@@ -27,6 +28,23 @@ func (nb NewBooking) Valid() error {
 		return fmt.Errorf("must have positive people")
 	}
 
+	if err := nb.dateTimesValidator(); err != nil {
+		return err
+	}
+
+	table, err := tc.GetTable(ctx, nb.TableID)
+	if err != nil {
+		return fmt.Errorf("could not find table : %w", err)
+	}
+
+	if table.Capacity < nb.People {
+		return fmt.Errorf("requested table does not have capacity")
+	}
+
+	return nil
+}
+
+func (nb NewBooking) dateTimesValidator() error {
 	now := time.Now()
 	if nb.Date.Time().Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())) {
 		return fmt.Errorf("date must not be in the past")

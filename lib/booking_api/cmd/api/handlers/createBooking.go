@@ -25,14 +25,13 @@ func (h *Handlers) CreateBooking(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
 	}
 
-	if err := booking.Valid(); err != nil {
+	if err := booking.Valid(ctx, h.tableClient); err != nil {
 		logrus.Info(fmt.Errorf("%s : %w", "invalid request", err))
 		message := fmt.Sprintf("incorrect user request : %s", err)
 		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
 	}
 
-	err = h.repository.CreateBooking(ctx, booking)
-	if err != nil {
+	if err := h.repository.CreateBooking(ctx, booking); err != nil {
 		logrus.Error(fmt.Errorf("%s : %w", "could not create table", err))
 		message := "could not create table"
 		return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))

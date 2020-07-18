@@ -20,8 +20,8 @@ func (h *Handlers) DeleteBooking(c echo.Context) error {
 
 	err = h.repository.DeleteBookings(ctx, []int{id})
 	if err != nil {
-		logrus.Error(fmt.Errorf("%s : %w", "could not delete table", err))
-		message := "could not delete table"
+		logrus.Error(fmt.Errorf("%s : %w", "could not delete booking", err))
+		message := "could not delete booking"
 		return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
 	}
 

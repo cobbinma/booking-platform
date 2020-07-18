@@ -16,6 +16,10 @@ services:
       - DB_SSLMODE=disable
     depends_on:
       - table_db
+    networks:
+      main:
+        aliases:
+          - table-api
   table_db:
     image: "postgres"
     container_name: "table_db"
@@ -25,6 +29,10 @@ services:
       - POSTGRES_USER=user
     volumes:
       - table_data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - table_db
   booking-api:
     build:
       context: ./booking_api
@@ -39,8 +47,13 @@ services:
       - DB_NAME=booking_db
       - DB_USER=user
       - DB_SSLMODE=disable
+      - TABLE_API_ROOT=http://table-api:8989
     depends_on:
       - booking_db
+    networks:
+      main:
+        aliases:
+          - booking-api
   booking_db:
     image: "postgres"
     container_name: "booking_db"
@@ -50,6 +63,12 @@ services:
       - POSTGRES_USER=user
     volumes:
       - booking_data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - booking_db
 volumes:
   table_data:
   booking_data:
+networks:
+  main:

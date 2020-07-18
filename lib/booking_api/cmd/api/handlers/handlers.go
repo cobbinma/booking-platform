@@ -3,9 +3,10 @@ package handlers
 import "github.com/cobbinma/booking/lib/booking_api/models"
 
 type Handlers struct {
-	repository models.Repository
+	repository  models.Repository
+	tableClient models.TableClient
 }
 
-func NewHandlers(repository models.Repository) *Handlers {
-	return &Handlers{repository: repository}
+func NewHandlers(repository models.Repository, tableClient models.TableClient) *Handlers {
+	return &Handlers{repository: repository, tableClient: tableClient}
 }

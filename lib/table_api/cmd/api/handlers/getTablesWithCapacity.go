@@ -19,7 +19,7 @@ func (h *Handlers) GetTablesWithCapacity(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
 	}
 
-	tables, err := h.repository.GetTables(ctx, models.NewTableFilter(capacity))
+	tables, err := h.repository.GetTables(ctx, models.NewTableFilter(capacity, nil))
 	if err != nil {
 		logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
 		message := "could not get tables"

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -10,4 +11,13 @@ func Port() string {
 		return fmt.Sprintf(":%s", p)
 	}
 	return ":6969"
+}
+
+func TableAPIRoot() string {
+	url := os.Getenv("TABLE_API_ROOT")
+	if url == "" {
+		logrus.Fatal("Table API URL not set")
+	}
+
+	return url
 }

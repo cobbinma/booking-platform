@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cobbinma/booking/lib/booking_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/booking_api/config"
+	"github.com/cobbinma/booking/lib/booking_api/gateways/tableAPI"
 	"github.com/cobbinma/booking/lib/booking_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,11 +29,13 @@ func main() {
 		log.Fatal("could not migrate : ", err)
 	}
 
+	tableClient := tableAPI.NewTableAPI()
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())
 
-	h := handlers.NewHandlers(repository)
+	h := handlers.NewHandlers(repository, tableClient)
 
 	e.GET("/healthz", h.Health)
 	e.PUT("/booking", h.CreateBooking)
