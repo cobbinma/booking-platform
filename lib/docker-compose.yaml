@@ -16,6 +16,10 @@ services:
       - DB_SSLMODE=disable
     depends_on:
       - table_db
+    networks:
+      main:
+        aliases:
+          - table-api
   table_db:
     image: "postgres"
     container_name: "table_db"
@@ -23,9 +27,48 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=table_db
       - POSTGRES_USER=user
-    ports:
-      - "5432:5432"
     volumes:
       - table_data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - table_db
+  booking-api:
+    build:
+      context: ./booking_api
+      dockerfile: Dockerfile.dev
+    ports:
+      - "6969:6969"
+    volumes:
+      - ./booking_api:/go/src
+    environment:
+      - DB_HOST=booking_db
+      - DB_PASSWORD=password
+      - DB_NAME=booking_db
+      - DB_USER=user
+      - DB_SSLMODE=disable
+      - TABLE_API_ROOT=http://table-api:8989
+    depends_on:
+      - booking_db
+    networks:
+      main:
+        aliases:
+          - booking-api
+  booking_db:
+    image: "postgres"
+    container_name: "booking_db"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=booking_db
+      - POSTGRES_USER=user
+    volumes:
+      - booking_data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - booking_db
 volumes:
   table_data:
+  booking_data:
+networks:
+  main:

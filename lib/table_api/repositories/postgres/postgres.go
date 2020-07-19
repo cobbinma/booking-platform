@@ -31,11 +31,20 @@ func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "name", "capacity").From("tables")
 
-	if filter != nil && filter.Capacity != 0 {
-		builder = builder.Where(sq.GtOrEq{"capacity": filter.Capacity})
+	if filter != nil {
+		where := sq.And{}
+		if filter.Capacity != 0 {
+			where = append(where, sq.GtOrEq{"capacity": filter.Capacity})
+		}
+
+		if filter.IDs != nil {
+			where = append(where, sq.Eq{"id": filter.IDs})
+		}
+
+		builder = builder.Where(where)
 	}
 
-	sql, args, err := builder.ToSql()
+	sql, args, err := builder.OrderBy("capacity ASC").ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not build statement", err)
 	}
