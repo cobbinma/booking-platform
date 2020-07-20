@@ -1,4 +1,4 @@
-# Table Booking Application Monorepo
+# Table Booking Platform Monorepo
 
 ## Development Environment
 
