@@ -1,9 +1,11 @@
-import React from 'react';
+import React from "react";
+import NavBar from "./components/layout/AppBar";
 
 function App() {
   return (
     <div className="App">
-      <h1>Booking Application</h1>
+      <NavBar />
+      <h1>Hi</h1>
     </div>
   );
 }
