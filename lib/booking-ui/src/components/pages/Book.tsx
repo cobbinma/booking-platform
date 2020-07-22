@@ -3,6 +3,7 @@ import RequestSlotForm from "../RequestSlotForm";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { Step, Stepper, StepLabel, Button } from "@material-ui/core";
 import Slot from "../Slot";
+import Confirm from "../Confirm";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -72,7 +73,7 @@ const Book = () => {
           />
         );
       case 2:
-        return "Your booking is confirmed!";
+        return <Confirm bookingSlot={bookingSlot} />;
       default:
         return "Unknown step";
     }
@@ -102,8 +103,6 @@ const Book = () => {
             Confirm
           </Button>
         );
-      case 2:
-        return;
       default:
         return;
     }
@@ -146,14 +145,16 @@ const Book = () => {
         })}
       </Stepper>
       {getStepContent(activeStep)}
-      <Button
-        disabled={activeStep === 0 || activeStep === 2}
-        onClick={handleBack}
-        className={classes.button}
-      >
-        Back
-      </Button>
-      {getNextButton(activeStep)}
+      <div>
+        <Button
+          disabled={activeStep === 0 || activeStep === 2}
+          onClick={handleBack}
+          className={classes.button}
+        >
+          Back
+        </Button>
+        {getNextButton(activeStep)}
+      </div>
     </div>
   );
 };

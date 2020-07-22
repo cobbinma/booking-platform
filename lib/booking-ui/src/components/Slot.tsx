@@ -51,11 +51,33 @@ const Slot = ({
   }, [data]);
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error!</p>;
+  if (error) {
+    if (error.response?.status === 404) {
+      return (
+        <div>
+          <h3>No Table Available</h3>
+          <p>Sorry we couldn't find you a table. Click back to try again.</p>
+        </div>
+      );
+    }
+    console.log(error.response?.data);
+    return (
+      <div>
+        <h3>Oops</h3>
+        <p>Sorry a weird error has occurred. Click back to try again.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <pre>{JSON.stringify(bookingSlot, null, 2)}</pre>
+      <h3>We found a table</h3>
+      Starts at: {bookingQuery.starts_at.toUTCString()}
+      <br />
+      Duration: {bookingQuery.duration.toString()} Hours
+      <br />
+      Guests: {bookingQuery.people.toString()}
+      <br />
     </div>
   );
 };
