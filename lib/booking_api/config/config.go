@@ -21,3 +21,7 @@ func TableAPIRoot() string {
 
 	return url
 }
+
+func GetAllowOrigin() string {
+	return os.Getenv("ALLOW_ORIGIN")
+}

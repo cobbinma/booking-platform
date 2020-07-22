@@ -48,6 +48,7 @@ services:
       - DB_USER=user
       - DB_SSLMODE=disable
       - TABLE_API_ROOT=http://table-api:8989
+      - ALLOW_ORIGIN=http://localhost:3000
     depends_on:
       - booking_db
     networks:
