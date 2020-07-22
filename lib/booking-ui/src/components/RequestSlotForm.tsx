@@ -38,17 +38,21 @@ export default function RequestSlotForm({
     });
   };
   const handleDateChange = (date: Date | null) => {
-    setBookingQuery({
-      ...bookingQuery,
-      date,
-    });
+    if (date !== null) {
+      setBookingQuery({
+        ...bookingQuery,
+        date,
+      });
+    }
   };
 
   const handleStartTimeChange = (starts_at: Date | null) => {
-    setBookingQuery({
-      ...bookingQuery,
-      starts_at,
-    });
+    if (starts_at !== null) {
+      setBookingQuery({
+        ...bookingQuery,
+        starts_at,
+      });
+    }
   };
 
   const handleDurationChange = (

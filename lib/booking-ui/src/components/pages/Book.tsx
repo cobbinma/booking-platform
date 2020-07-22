@@ -26,8 +26,8 @@ function getSteps() {
 export interface BookingQuery {
   customer_id: string;
   people: number;
-  date: Date | null;
-  starts_at: Date | null;
+  date: Date;
+  starts_at: Date;
   duration: number;
 }
 
@@ -49,6 +49,7 @@ const Book = () => {
     starts_at: new Date(),
     duration: 0,
   });
+  const [bookingSlot, setBookingSlot] = React.useState<BookingSlot | null>();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set<number>());
   const steps = getSteps();
@@ -63,7 +64,13 @@ const Book = () => {
           />
         );
       case 1:
-        return <Slot bookingQuery={bookingQuery} />;
+        return (
+          <Slot
+            bookingQuery={bookingQuery}
+            bookingSlot={bookingSlot}
+            setBookingSlot={setBookingSlot}
+          />
+        );
       case 2:
         return "Your booking is confirmed!";
       default:
