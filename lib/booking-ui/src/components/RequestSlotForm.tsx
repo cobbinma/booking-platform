@@ -8,6 +8,7 @@ import {
   KeyboardTimePicker,
 } from "@material-ui/pickers";
 import { InputLabel, MenuItem, Select } from "@material-ui/core";
+import { BookingQuery } from "./pages/Book";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -21,36 +22,48 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export default function RequestSlotForm() {
+export default function RequestSlotForm({
+  bookingQuery,
+  setBookingQuery,
+}: {
+  bookingQuery: BookingQuery;
+  setBookingQuery: React.Dispatch<React.SetStateAction<BookingQuery>>;
+}) {
   const classes = useStyles();
-  const [email, setEmail] = React.useState<string>("");
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(
-    new Date()
-  );
-  const [selectedStartTime, setSelectedStartTime] = React.useState<Date | null>(
-    new Date()
-  );
-  const [durationHours, setDurationHours] = React.useState<number>(0);
-  const [people, setPeople] = React.useState<number>(0);
 
   const handleEmailChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setEmail(event.target.value as string);
+    setBookingQuery({
+      ...bookingQuery,
+      customer_id: event.target.value as string,
+    });
   };
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
+    setBookingQuery({
+      ...bookingQuery,
+      date,
+    });
   };
 
-  const handleStartTimeChange = (date: Date | null) => {
-    setSelectedStartTime(date);
+  const handleStartTimeChange = (starts_at: Date | null) => {
+    setBookingQuery({
+      ...bookingQuery,
+      starts_at,
+    });
   };
 
   const handleDurationChange = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
-    setDurationHours(event.target.value as number);
+    setBookingQuery({
+      ...bookingQuery,
+      duration: event.target.value as number,
+    });
   };
   const handlePeopleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setPeople(event.target.value as number);
+    setBookingQuery({
+      ...bookingQuery,
+      people: event.target.value as number,
+    });
   };
 
   return (
@@ -58,7 +71,7 @@ export default function RequestSlotForm() {
       <TextField
         id="email"
         label="Email"
-        value={email}
+        value={bookingQuery.customer_id}
         onChange={handleEmailChange}
       />
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -67,7 +80,7 @@ export default function RequestSlotForm() {
           id="date"
           label="Date"
           format="MM/dd/yyyy"
-          value={selectedDate}
+          value={bookingQuery.date}
           onChange={handleDateChange}
           KeyboardButtonProps={{
             "aria-label": "change date",
@@ -77,7 +90,7 @@ export default function RequestSlotForm() {
           margin="normal"
           id="starts-at"
           label="Starting Time"
-          value={selectedStartTime}
+          value={bookingQuery.starts_at}
           onChange={handleStartTimeChange}
           KeyboardButtonProps={{
             "aria-label": "change time",
@@ -88,7 +101,7 @@ export default function RequestSlotForm() {
       <Select
         labelId="duration"
         id="duration"
-        value={durationHours}
+        value={bookingQuery.duration}
         onChange={handleDurationChange}
       >
         <MenuItem value={1}>1 Hour</MenuItem>
@@ -102,7 +115,7 @@ export default function RequestSlotForm() {
       <Select
         labelId="guests"
         id="guests"
-        value={people}
+        value={bookingQuery.people}
         onChange={handlePeopleChange}
       >
         <MenuItem value={1}>1 guest</MenuItem>
