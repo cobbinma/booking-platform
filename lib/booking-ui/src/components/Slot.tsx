@@ -34,7 +34,7 @@ const Slot = ({
   );
 
   const [{ data, loading, error }] = useAxios({
-    url: "http://localhost:6969/slot",
+    url: "http://localhost:6969/venues/1/slot",
     method: "POST",
     data: {
       ...bookingQuery,

@@ -22,7 +22,12 @@ func NewTableAPI() models.TableClient {
 }
 
 func (t tableAPI) GetTable(ctx context.Context, id models.TableID) (*models.Table, error) {
-	resp, err := t.client.Get(fmt.Sprintf("%s/table/%v", config.TableAPIRoot(), id))
+	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
+	if !ok || venueID == "" {
+		return nil, fmt.Errorf("venue id was not in context")
+	}
+
+	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%s/tables/%v", config.TableAPIRoot(), venueID, id))
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not perform get request", err)
 	}
@@ -46,7 +51,12 @@ func (t tableAPI) GetTable(ctx context.Context, id models.TableID) (*models.Tabl
 }
 
 func (t tableAPI) GetTablesWithCapacity(ctx context.Context, capacity int) ([]models.Table, error) {
-	resp, err := t.client.Get(fmt.Sprintf("%s/tables/capacity/%v", config.TableAPIRoot(), capacity))
+	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
+	if !ok || venueID == "" {
+		return nil, fmt.Errorf("venue id was not in context")
+	}
+
+	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%s/tables/capacity/%v", config.TableAPIRoot(), venueID, capacity))
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not perform get request", err)
 	}

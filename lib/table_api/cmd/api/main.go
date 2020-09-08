@@ -31,15 +31,16 @@ func main() {
 	e := echo.New()
 
 	e.Use(middleware.Logger())
+	mw := handlers.VenueMiddleware
 
 	h := handlers.NewHandlers(repository)
 
 	e.GET("/healthz", h.Health)
-	e.PUT("/table", h.CreateTable)
-	e.GET("/table/:id", h.GetTable)
-	e.DELETE("/table/:id", h.DeleteTable)
-	e.GET("/tables", h.GetTables)
-	e.GET("/tables/capacity/:amount", h.GetTablesWithCapacity)
+	e.POST("/venues/:venue_id/tables", mw(h.CreateTable))
+	e.GET("/venues/:venue_id/tables/:id", mw(h.GetTable))
+	e.DELETE("/venues/:venue_id/tables/:id", mw(h.DeleteTable))
+	e.GET("/venues/:venue_id/tables", mw(h.GetTables))
+	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(h.GetTablesWithCapacity))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

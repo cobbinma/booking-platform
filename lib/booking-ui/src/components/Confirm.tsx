@@ -8,8 +8,8 @@ const Confirm = ({
   bookingSlot: BookingSlot | null | undefined;
 }) => {
   const [{ loading, error }] = useAxios({
-    url: "http://localhost:6969/booking",
-    method: "PUT",
+    url: "http://localhost:6969/venues/1/bookings",
+    method: "POST",
     data: bookingSlot,
   });
 
