@@ -45,7 +45,7 @@ func main() {
 	h := handlers.NewHandlers(repository, tableClient)
 
 	e.GET("/healthz", h.Health)
-	e.PUT("/booking", h.CreateBooking)
+	e.POST("/booking", h.CreateBooking)
 	e.POST("/slot", h.BookingQuery)
 	e.DELETE("/booking/:id", h.DeleteBooking)
 	e.GET("/bookings/date/:date", h.GetBookingsByDate)
