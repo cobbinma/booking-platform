@@ -68,8 +68,39 @@ services:
       main:
         aliases:
           - booking_db
+  venue-api:
+    build:
+      context: ./venue_api
+    ports:
+      - "9999:9999"
+    environment:
+      - DB_HOST=venue_db
+      - DB_PASSWORD=password
+      - DB_NAME=venue_db
+      - DB_USER=user
+      - DB_SSLMODE=disable
+    depends_on:
+      - venue_db
+    networks:
+      main:
+        aliases:
+          - venue-api
+  venue_db:
+    image: "postgres"
+    container_name: "venue_db"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=venue_db
+      - POSTGRES_USER=user
+    volumes:
+      - venue_data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - venue_db
 volumes:
   table_data:
   booking_data:
+  venue_data:
 networks:
   main:
