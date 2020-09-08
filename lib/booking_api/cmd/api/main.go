@@ -45,10 +45,10 @@ func main() {
 	h := handlers.NewHandlers(repository, tableClient)
 
 	e.GET("/healthz", h.Health)
-	e.POST("/bookings", h.CreateBooking)
-	e.POST("/slot", h.BookingQuery)
-	e.DELETE("/bookings/:id", h.DeleteBooking)
-	e.GET("/bookings/date/:date", h.GetBookingsByDate)
+	e.POST("/venues/:venue_id/bookings", h.CreateBooking)
+	e.POST("/venues/:venue_id/slot", h.BookingQuery)
+	e.DELETE("/venues/:venue_id/bookings/:id", h.DeleteBooking)
+	e.GET("/venues/:venue_id/bookings/date/:date", h.GetBookingsByDate)
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }
