@@ -12,9 +12,14 @@ type postgres struct {
 }
 
 func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) error {
+	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
+	if !ok || venueID == "" {
+		return fmt.Errorf("venue id was not in context")
+	}
+
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Insert("tables").Columns("name", "capacity").
-		Values(newTable.Name, newTable.Capacity).ToSql()
+		Insert("tables").Columns("venue_id", "name", "capacity").
+		Values(venueID, newTable.Name, newTable.Capacity).ToSql()
 	if err != nil {
 		return fmt.Errorf("%s : %w", "could not build statement", err)
 	}
@@ -28,11 +33,16 @@ func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) er
 }
 
 func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([]models.Table, error) {
+	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
+	if !ok || venueID == "" {
+		return nil, fmt.Errorf("venue id was not in context")
+	}
+
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "name", "capacity").From("tables")
 
+	where := sq.And{}
 	if filter != nil {
-		where := sq.And{}
 		if filter.Capacity != 0 {
 			where = append(where, sq.GtOrEq{"capacity": filter.Capacity})
 		}
@@ -40,9 +50,9 @@ func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([
 		if filter.IDs != nil {
 			where = append(where, sq.Eq{"id": filter.IDs})
 		}
-
-		builder = builder.Where(where)
 	}
+	where = append(where, sq.Eq{"venue_id": venueID})
+	builder = builder.Where(where)
 
 	sql, args, err := builder.OrderBy("capacity ASC").ToSql()
 	if err != nil {
