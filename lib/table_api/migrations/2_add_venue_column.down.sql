@@ -1,0 +1,1 @@
+ALTER TABLE tables DROP COLUMN venue_id;
