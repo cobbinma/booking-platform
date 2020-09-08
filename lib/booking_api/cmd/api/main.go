@@ -45,9 +45,9 @@ func main() {
 	h := handlers.NewHandlers(repository, tableClient)
 
 	e.GET("/healthz", h.Health)
-	e.POST("/booking", h.CreateBooking)
+	e.POST("/bookings", h.CreateBooking)
 	e.POST("/slot", h.BookingQuery)
-	e.DELETE("/booking/:id", h.DeleteBooking)
+	e.DELETE("/bookings/:id", h.DeleteBooking)
 	e.GET("/bookings/date/:date", h.GetBookingsByDate)
 
 	e.Logger.Fatal(e.Start(config.Port()))
