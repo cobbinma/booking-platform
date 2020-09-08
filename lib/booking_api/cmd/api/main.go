@@ -33,13 +33,20 @@ func main() {
 
 	e := echo.New()
 
+	if allowedOrigin := config.GetAllowOrigin(); allowedOrigin != "" {
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: []string{allowedOrigin},
+			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		}))
+	}
+
 	e.Use(middleware.Logger())
 
 	h := handlers.NewHandlers(repository, tableClient)
 
 	e.GET("/healthz", h.Health)
 	e.PUT("/booking", h.CreateBooking)
-	e.GET("/booking", h.BookingQuery)
+	e.POST("/slot", h.BookingQuery)
 	e.DELETE("/booking/:id", h.DeleteBooking)
 	e.GET("/bookings/date/:date", h.GetBookingsByDate)
 
