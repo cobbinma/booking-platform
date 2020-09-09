@@ -17,6 +17,35 @@ func NewPostgres(client DBClient) models.Repository {
 	return &postgres{dbClient: client}
 }
 
+func (p *postgres) GetVenue(ctx context.Context, id models.VenueID) (*models.Venue, error) {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id", "name").From("venues").Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not build statement", err)
+	}
+
+	venue, err := p.dbClient.GetVenue(sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not get venue from db client", err)
+	}
+
+	sql, args, err = sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("day_of_week", "opens", "closes").From("opening_hours").
+		Where(sq.Eq{"venue_id": id}).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not build statement", err)
+	}
+
+	openingHours, err := p.dbClient.GetOpeningHours(sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not get opening hours from db client", err)
+	}
+
+	venue.OpeningHours = openingHours
+
+	return venue, nil
+}
+
 func (p *postgres) CreateVenue(ctx context.Context, venue models.VenueInput) error {
 	tx, err := p.dbClient.BeginX()
 	if err != nil {

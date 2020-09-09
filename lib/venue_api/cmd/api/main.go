@@ -34,7 +34,7 @@ func main() {
 
 	e.GET("/healthz", handlers.Health)
 	e.POST("/venues", handlers.CreateVenue(repository))
-	e.GET("/venues/:id", handlers.Health)
+	e.GET("/venues/:id", handlers.GetVenue(repository))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

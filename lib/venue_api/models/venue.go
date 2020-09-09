@@ -5,8 +5,14 @@ import (
 	"time"
 )
 
+type VenueID int
+
+func NewVenueID(id int) VenueID {
+	return VenueID(id)
+}
+
 type Venue struct {
-	ID           string         `json:"id"`
+	ID           VenueID        `json:"id" db:"id"`
 	Name         string         `json:"name" db:"name"`
 	OpeningHours []OpeningHours `json:"openingHours"`
 }
@@ -17,9 +23,9 @@ type VenueInput struct {
 }
 
 type OpeningHours struct {
-	DayOfWeek int       `json:"dayOfWeek"`
-	Opens     timeOfDay `json:"opens"`
-	Closes    timeOfDay `json:"closes"`
+	DayOfWeek int       `json:"dayOfWeek" db:"day_of_week"`
+	Opens     timeOfDay `json:"opens" db:"opens"`
+	Closes    timeOfDay `json:"closes" db:"closes"`
 }
 
 type timeOfDay time.Time

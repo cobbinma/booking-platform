@@ -5,6 +5,7 @@ type errorCodes string
 const (
 	InvalidRequest errorCodes = "INVALID_REQUEST"
 	InternalError             = "INTERNAL_ERROR"
+	VenueNotFound             = "VENUE_NOT_FOUND"
 )
 
 type errorResponse struct {
