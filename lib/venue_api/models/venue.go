@@ -7,7 +7,7 @@ import (
 
 type Venue struct {
 	ID           string         `json:"id"`
-	Name         string         `json:"name"`
+	Name         string         `json:"name" db:"name"`
 	OpeningHours []OpeningHours `json:"openingHours"`
 }
 
@@ -42,4 +42,8 @@ func (t *timeOfDay) UnmarshalJSON(b []byte) error {
 	tod := timeOfDay(ret)
 	*t = tod
 	return nil
+}
+
+func (t timeOfDay) Time() time.Time {
+	return time.Time(t)
 }

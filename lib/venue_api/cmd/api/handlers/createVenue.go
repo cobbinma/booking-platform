@@ -10,18 +10,27 @@ import (
 	"net/http"
 )
 
-func CreateVenue(c echo.Context) error {
-	reqBody, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		logrus.Info(fmt.Errorf("%s : %w", "could not read request", err))
-		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
-	}
+func CreateVenue(repository models.Repository) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 
-	venue := models.VenueInput{}
-	if err := json.Unmarshal(reqBody, &venue); err != nil {
-		logrus.Info(fmt.Errorf("%s : %w", "could not unmarshall request", err))
-		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
-	}
+		reqBody, err := ioutil.ReadAll(c.Request().Body)
+		if err != nil {
+			logrus.Info(fmt.Errorf("%s : %w", "could not read request", err))
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
+		}
 
-	return nil
+		venue := models.VenueInput{}
+		if err := json.Unmarshal(reqBody, &venue); err != nil {
+			logrus.Info(fmt.Errorf("%s : %w", "could not unmarshall request", err))
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
+		}
+
+		if err := repository.CreateVenue(ctx, venue); err != nil {
+			logrus.Info(fmt.Errorf("%s : %w", "could not create venue in repository", err))
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InternalError, "internal error has occurred"))
+		}
+
+		return nil
+	}
 }

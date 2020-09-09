@@ -33,7 +33,7 @@ func main() {
 	e.Use(middleware.Logger())
 
 	e.GET("/healthz", handlers.Health)
-	e.POST("/venues", handlers.CreateVenue)
+	e.POST("/venues", handlers.CreateVenue(repository))
 	e.GET("/venues/:id", handlers.Health)
 
 	e.Logger.Fatal(e.Start(config.Port()))

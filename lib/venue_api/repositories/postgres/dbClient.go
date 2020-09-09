@@ -11,6 +11,7 @@ import (
 type DBClient interface {
 	DB() *sql.DB
 	Exec(query string, args ...interface{}) (sql.Result, error)
+	BeginX() (*sqlx.Tx, error)
 }
 
 type dbClient struct {
@@ -50,4 +51,8 @@ func (dbc *dbClient) DB() *sql.DB {
 
 func (dbc *dbClient) Exec(query string, args ...interface{}) (sql.Result, error) {
 	return dbc.db.Exec(query, args...)
+}
+
+func (dbc *dbClient) BeginX() (*sqlx.Tx, error) {
+	return dbc.db.Beginx()
 }
