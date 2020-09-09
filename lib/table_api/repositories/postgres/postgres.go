@@ -7,6 +7,8 @@ import (
 	"github.com/cobbinma/booking/lib/table_api/models"
 )
 
+var _ models.Repository = (*postgres)(nil)
+
 type postgres struct {
 	dbClient DBClient
 }

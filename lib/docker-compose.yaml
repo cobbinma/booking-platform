@@ -71,8 +71,11 @@ services:
   venue-api:
     build:
       context: ./venue_api
+      dockerfile: Dockerfile.dev
     ports:
-      - "9999:9999"
+      - "8888:8888"
+    volumes:
+      - ./venue_api:/go/src
     environment:
       - DB_HOST=venue_db
       - DB_PASSWORD=password
