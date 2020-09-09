@@ -28,9 +28,9 @@ func CreateVenue(repository models.Repository) func(c echo.Context) error {
 
 		if err := repository.CreateVenue(ctx, venue); err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "could not create venue in repository", err))
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InternalError, "internal error has occurred"))
+			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, "internal error has occurred"))
 		}
 
-		return nil
+		return c.NoContent(http.StatusCreated)
 	}
 }
