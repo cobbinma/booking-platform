@@ -10,7 +10,7 @@
 
 #### User Interfaces
 
-1. Go to the `booking-ui` lib directory.
+1. Go to the `booking-ui` lib directory. 
 1. Run `yarn` to install dependencies.
 1. Run `yarn start` from a specific ui library directory to start a user interface.
 
