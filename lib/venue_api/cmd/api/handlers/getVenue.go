@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/cobbinma/booking/lib/venue_api/models"
+	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -24,7 +23,7 @@ func GetVenue(repository models.Repository) func(c echo.Context) error {
 
 		venue, err := repository.GetVenue(ctx, id)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
+			if postgres.ErrVenueNotFound(err) {
 				m := "could not find venue"
 				logrus.Info(fmt.Errorf("%s : %w", m, err))
 				return c.JSON(http.StatusNotFound, newErrorResponse(VenueNotFound, m))

@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cobbinma/booking/lib/venue_api/models"
@@ -96,4 +98,8 @@ func (p *postgres) CreateVenue(ctx context.Context, venue models.VenueInput) err
 	}
 
 	return nil
+}
+
+func ErrVenueNotFound(err error) bool {
+	return errors.Is(err, sql.ErrNoRows)
 }
