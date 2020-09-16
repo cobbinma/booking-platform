@@ -14,14 +14,14 @@ type postgres struct {
 }
 
 func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) error {
-	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
-	if !ok || venueID == "" {
-		return fmt.Errorf("venue id was not in context")
+	venue, ok := ctx.Value(models.VenueCtxKey).(models.Venue)
+	if !ok {
+		return fmt.Errorf("venue was not in context")
 	}
 
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert("tables").Columns("venue_id", "name", "capacity").
-		Values(venueID, newTable.Name, newTable.Capacity).ToSql()
+		Values(venue.ID, newTable.Name, newTable.Capacity).ToSql()
 	if err != nil {
 		return fmt.Errorf("%s : %w", "could not build statement", err)
 	}
@@ -35,9 +35,9 @@ func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) er
 }
 
 func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([]models.Table, error) {
-	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
-	if !ok || venueID == "" {
-		return nil, fmt.Errorf("venue id was not in context")
+	venue, ok := ctx.Value(models.VenueCtxKey).(models.Venue)
+	if !ok {
+		return nil, fmt.Errorf("venue was not in context")
 	}
 
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
@@ -53,7 +53,7 @@ func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([
 			where = append(where, sq.Eq{"id": filter.IDs})
 		}
 	}
-	where = append(where, sq.Eq{"venue_id": venueID})
+	where = append(where, sq.Eq{"venue_id": venue.ID})
 	builder = builder.Where(where)
 
 	sql, args, err := builder.OrderBy("capacity ASC").ToSql()

@@ -5,6 +5,7 @@ import (
 	"github.com/cobbinma/booking/lib/booking_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/booking_api/config"
 	"github.com/cobbinma/booking/lib/booking_api/gateways/tableAPI"
+	"github.com/cobbinma/booking/lib/booking_api/gateways/venueAPI"
 	"github.com/cobbinma/booking/lib/booking_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,6 +32,8 @@ func main() {
 
 	tableClient := tableAPI.NewTableAPI()
 
+	venueClient := venueAPI.NewVenueAPI()
+
 	e := echo.New()
 
 	if allowedOrigin := config.GetAllowOrigin(); allowedOrigin != "" {
@@ -47,10 +50,10 @@ func main() {
 	h := handlers.NewHandlers(repository, tableClient)
 
 	e.GET("/healthz", h.Health)
-	e.POST("/venues/:venue_id/bookings", mw(h.CreateBooking))
-	e.POST("/venues/:venue_id/slot", mw(h.BookingQuery))
-	e.DELETE("/venues/:venue_id/bookings/:id", mw(h.DeleteBooking))
-	e.GET("/venues/:venue_id/bookings/date/:date", mw(h.GetBookingsByDate))
+	e.POST("/venues/:venue_id/bookings", mw(h.CreateBooking, venueClient))
+	e.POST("/venues/:venue_id/slot", mw(h.BookingQuery, venueClient))
+	e.DELETE("/venues/:venue_id/bookings/:id", mw(h.DeleteBooking, venueClient))
+	e.GET("/venues/:venue_id/bookings/date/:date", mw(h.GetBookingsByDate, venueClient))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

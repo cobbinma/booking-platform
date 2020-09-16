@@ -14,6 +14,7 @@ services:
       - DB_NAME=table_db
       - DB_USER=user
       - DB_SSLMODE=disable
+      - VENUE_API_ROOT=http://venue-api:8888
     depends_on:
       - table_db
     networks:
@@ -48,6 +49,7 @@ services:
       - DB_USER=user
       - DB_SSLMODE=disable
       - TABLE_API_ROOT=http://table-api:8989
+      - VENUE_API_ROOT=http://venue-api:8888
       - ALLOW_ORIGIN=http://localhost:3000
     depends_on:
       - booking_db

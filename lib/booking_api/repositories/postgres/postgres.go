@@ -12,15 +12,15 @@ type postgres struct {
 }
 
 func (p *postgres) CreateBooking(ctx context.Context, booking models.NewBooking) error {
-	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
-	if !ok || venueID == "" {
-		return fmt.Errorf("venue id was not in context")
+	venue, ok := ctx.Value(models.VenueCtxKey).(models.Venue)
+	if !ok {
+		return fmt.Errorf("venue was not in context")
 	}
 
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert("bookings").
 		Columns("venue_id", "customer_id", "table_id", "people", "date", "starts_at", "ends_at").
-		Values(venueID, booking.CustomerID, booking.TableID, booking.People, booking.Date.Time(), booking.StartsAt, booking.EndsAt).
+		Values(venue.ID, booking.CustomerID, booking.TableID, booking.People, booking.Date.Time(), booking.StartsAt, booking.EndsAt).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%s : %w", "could not build statement", err)
@@ -35,9 +35,9 @@ func (p *postgres) CreateBooking(ctx context.Context, booking models.NewBooking)
 }
 
 func (p *postgres) GetBookings(ctx context.Context, options ...func(*models.BookingFilter) *models.BookingFilter) ([]models.Booking, error) {
-	venueID, ok := ctx.Value(models.VenueCtxKey).(models.VenueID)
-	if !ok || venueID == "" {
-		return nil, fmt.Errorf("venue id was not in context")
+	venue, ok := ctx.Value(models.VenueCtxKey).(models.Venue)
+	if !ok {
+		return nil, fmt.Errorf("venue was not in context")
 	}
 
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
@@ -57,7 +57,7 @@ func (p *postgres) GetBookings(ctx context.Context, options ...func(*models.Book
 		where = append(where, sq.Eq{"table_id": filter.TableIDs})
 	}
 
-	where = append(where, sq.Eq{"venue_id": venueID})
+	where = append(where, sq.Eq{"venue_id": venue.ID})
 
 	builder = builder.Where(where)
 

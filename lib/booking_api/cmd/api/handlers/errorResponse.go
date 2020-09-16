@@ -7,6 +7,7 @@ const (
 	InternalError               = "INTERNAL_ERROR"
 	NoAvailableSlots            = "NO_AVAILABLE_SLOTS"
 	VenueNotGiven               = "VENUE_NOT_GIVEN"
+	VenueNotFound               = "VENUE_NOT_FOUND"
 )
 
 type errorResponse struct {

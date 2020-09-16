@@ -100,6 +100,20 @@ func (p *postgres) CreateVenue(ctx context.Context, venue models.VenueInput) err
 	return nil
 }
 
+func (p *postgres) DeleteVenue(ctx context.Context, id models.VenueID) error {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete("venues").Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return fmt.Errorf("%s : %w", "could not build statement", err)
+	}
+
+	if _, err := p.dbClient.Exec(sql, args...); err != nil {
+		return fmt.Errorf("%s : %w", "could not delete venue using db client", err)
+	}
+
+	return nil
+}
+
 func ErrVenueNotFound(err error) bool {
 	return errors.Is(err, sql.ErrNoRows)
 }

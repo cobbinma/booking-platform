@@ -22,6 +22,15 @@ func TableAPIRoot() string {
 	return url
 }
 
+func VenueAPIRoot() string {
+	url := os.Getenv("VENUE_API_ROOT")
+	if url == "" {
+		logrus.Fatal("Venue API URL not set")
+	}
+
+	return url
+}
+
 func GetAllowOrigin() string {
 	return os.Getenv("ALLOW_ORIGIN")
 }
