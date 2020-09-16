@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS opening_hours;
+DROP TABLE IF EXISTS venues;

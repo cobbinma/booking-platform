@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cobbinma/booking/lib/table_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/table_api/config"
+	"github.com/cobbinma/booking/lib/table_api/gateways/venueAPI"
 	"github.com/cobbinma/booking/lib/table_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -35,12 +36,14 @@ func main() {
 
 	h := handlers.NewHandlers(repository)
 
+	venueClient := venueAPI.NewVenueAPI()
+
 	e.GET("/healthz", h.Health)
-	e.POST("/venues/:venue_id/tables", mw(h.CreateTable))
-	e.GET("/venues/:venue_id/tables/:id", mw(h.GetTable))
-	e.DELETE("/venues/:venue_id/tables/:id", mw(h.DeleteTable))
-	e.GET("/venues/:venue_id/tables", mw(h.GetTables))
-	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(h.GetTablesWithCapacity))
+	e.POST("/venues/:venue_id/tables", mw(h.CreateTable, venueClient))
+	e.GET("/venues/:venue_id/tables/:id", mw(h.GetTable, venueClient))
+	e.DELETE("/venues/:venue_id/tables/:id", mw(h.DeleteTable, venueClient))
+	e.GET("/venues/:venue_id/tables", mw(h.GetTables, venueClient))
+	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(h.GetTablesWithCapacity, venueClient))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

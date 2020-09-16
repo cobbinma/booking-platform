@@ -6,6 +6,7 @@ const (
 	InvalidRequest errorCodes = "INVALID_REQUEST"
 	InternalError             = "INTERNAL_ERROR"
 	VenueNotGiven             = "VENUE_NOT_GIVEN"
+	VenueNotFound             = "VENUE_NOT_FOUND"
 )
 
 type errorResponse struct {

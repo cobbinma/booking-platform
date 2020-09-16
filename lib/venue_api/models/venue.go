@@ -2,20 +2,13 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 )
-
-const VenueCtxKey = "venue"
 
 type VenueID int
 
 func NewVenueID(id int) VenueID {
 	return VenueID(id)
-}
-
-func (vid VenueID) String() string {
-	return strconv.Itoa(int(vid))
 }
 
 type Venue struct {
