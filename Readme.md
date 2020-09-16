@@ -6,6 +6,8 @@
 
 #### APIs
 
+To run the APIs locally you will need docker-compose installed.
+
 1. Run `make dev` from root directory to run all APIs using docker compose.
 
 #### User Interfaces
