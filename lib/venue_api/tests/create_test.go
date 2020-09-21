@@ -3,18 +3,29 @@
 package tests
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/cobbinma/booking/lib/venue_api/cmd/api/handlers"
+	"github.com/cobbinma/booking/lib/venue_api/models"
 	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
+	"github.com/labstack/echo/v4"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/sirupsen/logrus"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
+)
 
-	_ "github.com/lib/pq"
+var (
+	repository models.Repository
 )
 
 func TestMain(m *testing.M) {
@@ -116,5 +127,71 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
+	repository = postgres.NewPostgres(dbClient)
+	if err := repository.Migrate(context.Background(), "file://../migrations"); err != nil {
+		log.Fatal("could not migrate : ", err)
+	}
+
 	code = m.Run()
+}
+
+func TestCreateVenue(t *testing.T) {
+	name := "hop and vine"
+	day := 1
+	opens := "07:00"
+	closes := "22:00"
+	venueJSON := fmt.Sprintf(`{"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, name, day, opens, closes)
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(venueJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	createVenue := handlers.CreateVenue(repository)
+	err := createVenue(c)
+	if err != nil {
+		t.Errorf("error returned from create venue handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var vr venueResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &vr); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	if vr.ID == 0 {
+		t.Errorf("venue ID should not equal 0")
+	}
+
+	if vr.Name != name {
+		t.Errorf("name was '%s', expected '%s'", vr.Name, name)
+	}
+
+	if vr.OpeningHours[0].DayOfWeek != day {
+		t.Errorf("day of week was '%v', expected '%v'", vr.OpeningHours[0].DayOfWeek, day)
+	}
+
+	if vr.OpeningHours[0].Opens != opens {
+		t.Errorf("opens was '%s', expected '%s'", vr.OpeningHours[0].Opens, opens)
+	}
+
+	if vr.OpeningHours[0].Closes != closes {
+		t.Errorf("closes was '%s', expected '%s'", vr.OpeningHours[0].Closes, closes)
+	}
+}
+
+type venueResponse struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	OpeningHours []struct {
+		DayOfWeek int    `json:"dayOfWeek"`
+		Opens     string `json:"opens"`
+		Closes    string `json:"closes"`
+	} `json:"openingHours"`
 }

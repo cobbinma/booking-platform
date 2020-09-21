@@ -48,28 +48,28 @@ func (p *postgres) GetVenue(ctx context.Context, id models.VenueID) (*models.Ven
 	return venue, nil
 }
 
-func (p *postgres) CreateVenue(ctx context.Context, venue models.VenueInput) error {
+func (p *postgres) CreateVenue(ctx context.Context, venue models.VenueInput) (*models.Venue, error) {
 	tx, err := p.dbClient.BeginX()
 	if err != nil {
-		return fmt.Errorf("%s : %w", "could not begin transaction", err)
+		return nil, fmt.Errorf("%s : %w", "could not begin transaction", err)
 	}
 
 	rows, err := tx.NamedQuery("INSERT INTO venues (name) VALUES (:name) RETURNING id", venue)
 	if err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("%s : %w", "could not perform named query to insert into venues", err)
+		return nil, fmt.Errorf("%s : %w", "could not perform named query to insert into venues", err)
 	}
 
 	var venueID int
 	if rows.Next() {
 		if err := rows.Scan(&venueID); err != nil {
 			_ = tx.Rollback()
-			return fmt.Errorf("%s : %w", "could not scan row", err)
+			return nil, fmt.Errorf("%s : %w", "could not scan row", err)
 		}
 	}
 	if err := rows.Close(); err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("%s : %w", "could not close rows", err)
+		return nil, fmt.Errorf("%s : %w", "could not close rows", err)
 	}
 
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
@@ -85,19 +85,23 @@ func (p *postgres) CreateVenue(ctx context.Context, venue models.VenueInput) err
 	sql, args, err := builder.ToSql()
 	if err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("%s : %w", "could not build sql statement", err)
+		return nil, fmt.Errorf("%s : %w", "could not build sql statement", err)
 	}
 	_, err = tx.Exec(sql, args...)
 	if err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("%s : %w", "could not execute sql statement", err)
+		return nil, fmt.Errorf("%s : %w", "could not execute sql statement", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("%s : %w", "could not commit transaction", err)
+		return nil, fmt.Errorf("%s : %w", "could not commit transaction", err)
 	}
 
-	return nil
+	return &models.Venue{
+		ID:           models.NewVenueID(venueID),
+		Name:         venue.Name,
+		OpeningHours: venue.OpeningHours,
+	}, nil
 }
 
 func (p *postgres) DeleteVenue(ctx context.Context, id models.VenueID) error {

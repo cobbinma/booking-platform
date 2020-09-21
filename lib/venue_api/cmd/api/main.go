@@ -24,7 +24,7 @@ func main() {
 	}()
 
 	repository := postgres.NewPostgres(dbClient)
-	if err := repository.Migrate(context.Background()); err != nil {
+	if err := repository.Migrate(context.Background(), "file://migrations"); err != nil {
 		log.Fatal("could not migrate : ", err)
 	}
 
