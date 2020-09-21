@@ -3,10 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/cobbinma/booking/lib/venue_api/config"
 	"github.com/cobbinma/booking/lib/venue_api/models"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"net/url"
 )
 
 type DBClient interface {
@@ -21,17 +21,10 @@ type dbClient struct {
 	db *sqlx.DB
 }
 
-func NewDBClient() (*dbClient, func() error, error) {
-	dsn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=%s",
-		config.DBHost,
-		config.DBName,
-		config.DBUser,
-		config.DBPassword,
-		config.DBSSLMode)
-
+func NewDBClient(url *url.URL) (*dbClient, func() error, error) {
 	driver := "postgres"
 
-	db, err := sqlx.Open(driver, dsn)
+	db, err := sqlx.Open(driver, url.String())
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not open database : %w", err)
 	}

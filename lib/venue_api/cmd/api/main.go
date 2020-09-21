@@ -13,7 +13,7 @@ import (
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	dbClient, closeDB, err := postgres.NewDBClient()
+	dbClient, closeDB, err := postgres.NewDBClient(config.PostgresURL())
 	if err != nil {
 		log.Fatal("could not create database client : ", err)
 	}
