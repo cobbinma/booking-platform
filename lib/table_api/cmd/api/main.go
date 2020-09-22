@@ -40,10 +40,10 @@ func main() {
 
 	e.GET("/healthz", h.Health)
 	e.POST("/venues/:venue_id/tables", mw(handlers.CreateTable(repository), venueClient))
-	e.GET("/venues/:venue_id/tables/:id", mw(h.GetTable, venueClient))
+	e.GET("/venues/:venue_id/tables/:id", mw(handlers.GetTable(repository), venueClient))
 	e.DELETE("/venues/:venue_id/tables/:id", mw(h.DeleteTable, venueClient))
-	e.GET("/venues/:venue_id/tables", mw(h.GetTables, venueClient))
-	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(h.GetTablesWithCapacity, venueClient))
+	e.GET("/venues/:venue_id/tables", mw(handlers.GetTables(repository), venueClient))
+	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(handlers.GetTablesWithCapacity(repository), venueClient))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

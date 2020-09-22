@@ -193,3 +193,253 @@ func TestCreateTable(t *testing.T) {
 		t.Errorf("capacity was '%v', expected '%v'", tr.Capacity, capacity)
 	}
 }
+
+func TestCreateGetTable(t *testing.T) {
+	name := "2"
+	capacity := 4
+	venueID := 1
+	venueName := "hop and vine"
+	day := 1
+	opens := "07:00"
+	closes := "22:00"
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/tables")
+	c.SetParamNames("venue_id")
+	c.SetParamValues(strconv.Itoa(venueID))
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(venueJSON))
+	}))
+	defer srv.Close()
+
+	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
+
+	err := createTable(c)
+	if err != nil {
+		t.Errorf("error returned from create table handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var tr models.Table
+	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	tableID := tr.ID
+	tr = models.Table{}
+
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/tables/:id")
+	c.SetParamNames("venue_id", "id")
+	c.SetParamValues(strconv.Itoa(venueID), tableID.String())
+
+	getTable := handlers.VenueMiddleware(handlers.GetTable(repository), venueAPI.NewVenueAPI(srv.URL))
+
+	if err := getTable(c); err != nil {
+		t.Errorf("error returned from get table handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	checkTable(t, tr, tableID, name, capacity)
+}
+
+func TestCreateGetTables(t *testing.T) {
+	name := "6"
+	capacity := 4
+	venueID := 1
+	venueName := "hop and vine"
+	day := 1
+	opens := "07:00"
+	closes := "22:00"
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/tables")
+	c.SetParamNames("venue_id")
+	c.SetParamValues(strconv.Itoa(venueID))
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(venueJSON))
+	}))
+	defer srv.Close()
+
+	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
+
+	err := createTable(c)
+	if err != nil {
+		t.Errorf("error returned from create table handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var tr models.Table
+	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	tableID := tr.ID
+	tr = models.Table{}
+
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/tables/:id")
+	c.SetParamNames("venue_id", "id")
+	c.SetParamValues(strconv.Itoa(venueID), tableID.String())
+
+	getTables := handlers.VenueMiddleware(handlers.GetTables(repository), venueAPI.NewVenueAPI(srv.URL))
+
+	if err := getTables(c); err != nil {
+		t.Errorf("error returned from get tables handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var tables []models.Table
+	if err := json.Unmarshal(rec.Body.Bytes(), &tables); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	for i := range tables {
+		if tables[i].ID == tableID {
+			checkTable(t, tables[i], tableID, name, capacity)
+			return
+		}
+	}
+	t.Errorf("could not find table in get tables response")
+}
+
+func TestCreateGetTablesWithCapacity(t *testing.T) {
+	name := "17"
+	capacity := 4
+	venueID := 1
+	venueName := "hop and vine"
+	day := 1
+	opens := "07:00"
+	closes := "22:00"
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/tables")
+	c.SetParamNames("venue_id")
+	c.SetParamValues(strconv.Itoa(venueID))
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(venueJSON))
+	}))
+	defer srv.Close()
+
+	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
+
+	err := createTable(c)
+	if err != nil {
+		t.Errorf("error returned from create table handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var tr models.Table
+	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	tableID := tr.ID
+	tr = models.Table{}
+
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/tables/capacity/:amount")
+	c.SetParamNames("venue_id", "amount")
+	c.SetParamValues(strconv.Itoa(venueID), strconv.Itoa(capacity))
+
+	getTables := handlers.VenueMiddleware(handlers.GetTablesWithCapacity(repository), venueAPI.NewVenueAPI(srv.URL))
+
+	if err := getTables(c); err != nil {
+		t.Errorf("error returned from get tables handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var tables []models.Table
+	if err := json.Unmarshal(rec.Body.Bytes(), &tables); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	for i := range tables {
+		if tables[i].ID == tableID {
+			checkTable(t, tables[i], tableID, name, capacity)
+			return
+		}
+	}
+	t.Errorf("could not find table in get tables response")
+}
+
+func checkTable(t *testing.T, tr models.Table, tableID models.TableID, name string, capacity int) {
+	if tr.ID != tableID {
+		t.Errorf("id was '%v', expected '%v'", tr.ID, tableID)
+	}
+
+	if tr.Name != name {
+		t.Errorf("name was '%s', expected '%s'", tr.Name, name)
+	}
+
+	if tr.Capacity != capacity {
+		t.Errorf("capacity was '%v', expected '%v'", tr.Capacity, capacity)
+	}
+}
