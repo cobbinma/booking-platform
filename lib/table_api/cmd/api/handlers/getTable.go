@@ -35,7 +35,7 @@ func GetTable(repository models.Repository) func(c echo.Context) error {
 		if len(tables) == 0 {
 			logrus.Error(fmt.Errorf("%s : %w", "table id does not exist", err))
 			message := "table does not exist"
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+			return c.JSON(http.StatusNotFound, newErrorResponse(InvalidRequest, message))
 		}
 
 		return c.JSON(http.StatusOK, tables[0])
