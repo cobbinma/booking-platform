@@ -219,3 +219,100 @@ func TestBookingQuery(t *testing.T) {
 		t.Errorf("ends at was '%v', expected '%v'", nb.EndsAt, endsAt)
 	}
 }
+
+func TestBookingQueryCreateBooking(t *testing.T) {
+	now := time.Now()
+	name := "2"
+	venueID := 1
+	venueName := "hop and vine"
+	day := 1
+	opens := "07:00"
+	closes := "22:00"
+	customer := "example@example.com"
+	people := 2
+	tableId := 1
+	tomorrow := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
+	tomorrowDate := models.Date(tomorrow)
+	tomorrowStr := tomorrowDate.Format(models.DateFormat)
+	startsAt := time.Date(now.Year(), now.Month(), now.Day()+1, 18, 0, 0, 0, time.UTC)
+	startsAtStr := startsAt.Format("2006-01-02T15:04:05Z")
+	endsAt := time.Date(now.Year(), now.Month(), now.Day()+1, 20, 0, 0, 0, time.UTC)
+	endsAtStr := endsAt.Format("2006-01-02T15:04:05Z")
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, tomorrowStr, startsAtStr, endsAtStr)
+	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(queryJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/slot")
+	c.SetParamNames("venue_id")
+	c.SetParamValues(strconv.Itoa(venueID))
+
+	venueSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(venueJSON))
+	}))
+	defer venueSrv.Close()
+
+	tableSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(tableJSON))
+	}))
+	defer tableSrv.Close()
+
+	queryBooking := handlers.VenueMiddleware(handlers.BookingQuery(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
+
+	err := queryBooking(c)
+	if err != nil {
+		t.Errorf("error returned from booking query handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusOK)
+		return
+	}
+
+	var nb models.NewBooking
+	if err := json.Unmarshal(rec.Body.Bytes(), &nb); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+
+	bookingJSON := fmt.Sprintf(`{"customer_id":"%s","table_id":%v,"people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, nb.TableID, people, tomorrowStr, startsAtStr, endsAtStr)
+
+	req = httptest.NewRequest(http.MethodPost, "/", strings.NewReader(bookingJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetPath("/venues/:venue_id/booking")
+	c.SetParamNames("venue_id")
+	c.SetParamValues(strconv.Itoa(venueID))
+
+	tableJSON = fmt.Sprintf(`{"id":%v,"name":"%v","capacity":%v}`, tableId, name, people)
+	tableSrv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(tableJSON))
+	}))
+
+	createBooking := handlers.VenueMiddleware(handlers.CreateBooking(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
+
+	err = createBooking(c)
+	if err != nil {
+		t.Errorf("error returned from create booking handler : %s", err)
+		return
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
+		return
+	}
+
+	var booking models.Booking
+	if err := json.Unmarshal(rec.Body.Bytes(), &booking); err != nil {
+		t.Errorf("could not unmarshall response : %s", err)
+		return
+	}
+}
