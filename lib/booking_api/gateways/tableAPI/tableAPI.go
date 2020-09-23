@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/cobbinma/booking/lib/booking_api/config"
 	"github.com/cobbinma/booking/lib/booking_api/models"
 	"io/ioutil"
 	"net/http"
@@ -13,12 +12,13 @@ import (
 var _ models.TableClient = (*tableAPI)(nil)
 
 type tableAPI struct {
-	client *http.Client
+	baseURL string
+	client  *http.Client
 }
 
-func NewTableAPI() models.TableClient {
+func NewTableAPI(baseURL string) models.TableClient {
 	client := http.DefaultClient
-	return &tableAPI{client: client}
+	return &tableAPI{baseURL: baseURL, client: client}
 }
 
 func (t tableAPI) GetTable(ctx context.Context, id models.TableID) (*models.Table, error) {
@@ -27,7 +27,7 @@ func (t tableAPI) GetTable(ctx context.Context, id models.TableID) (*models.Tabl
 		return nil, fmt.Errorf("venue was not in context")
 	}
 
-	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%v/tables/%v", config.TableAPIRoot(), venue.ID, id))
+	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%v/tables/%v", t.baseURL, venue.ID, id))
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not perform get request", err)
 	}
@@ -56,7 +56,7 @@ func (t tableAPI) GetTablesWithCapacity(ctx context.Context, capacity int) ([]mo
 		return nil, fmt.Errorf("venue was not in context")
 	}
 
-	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%v/tables/capacity/%v", config.TableAPIRoot(), venue.ID, capacity))
+	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%v/tables/capacity/%v", t.baseURL, venue.ID, capacity))
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not perform get request", err)
 	}

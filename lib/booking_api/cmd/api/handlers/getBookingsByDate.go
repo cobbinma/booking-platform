@@ -9,24 +9,26 @@ import (
 	"time"
 )
 
-func (h *Handlers) GetBookingsByDate(c echo.Context) error {
-	ctx := c.Request().Context()
+func GetBookingsByDate(repository models.Repository) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 
-	date, err := getDateFromRequest(c)
-	if err != nil {
-		logrus.Error(fmt.Errorf("%s : %w", "could not get date from request", err))
-		message := "invalid date"
-		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+		date, err := getDateFromRequest(c)
+		if err != nil {
+			logrus.Error(fmt.Errorf("%s : %w", "could not get date from request", err))
+			message := "invalid date"
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+		}
+
+		bookings, err := repository.GetBookings(ctx, models.BookingFilterWithDate(&date))
+		if err != nil {
+			logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
+			message := "could not get tables"
+			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+		}
+
+		return c.JSON(http.StatusOK, bookings)
 	}
-
-	bookings, err := h.repository.GetBookings(ctx, models.BookingFilterWithDate(&date))
-	if err != nil {
-		logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
-		message := "could not get tables"
-		return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
-	}
-
-	return c.JSON(http.StatusOK, bookings)
 }
 
 func getDateFromRequest(c echo.Context) (models.Date, error) {

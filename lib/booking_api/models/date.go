@@ -10,8 +10,10 @@ import (
 
 type Date time.Time
 
+const DateFormat string = "2006-01-02"
+
 func DateFromString(s string) (Date, error) {
-	t, err := time.Parse("2006-01-02", s)
+	t, err := time.Parse(DateFormat, s)
 	if err != nil {
 		return Date(time.Time{}), err
 	}
@@ -21,7 +23,7 @@ func DateFromString(s string) (Date, error) {
 
 func (d *Date) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
-	t, err := time.Parse("2006-01-02", s)
+	t, err := time.Parse(DateFormat, s)
 	if err != nil {
 		return err
 	}
@@ -30,7 +32,7 @@ func (d *Date) UnmarshalJSON(b []byte) error {
 }
 
 func (d Date) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.Format("2006-01-02"))
+	return json.Marshal(d.Format(DateFormat))
 }
 
 func (d Date) Format(s string) string {
