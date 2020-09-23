@@ -22,8 +22,8 @@ func GetBookingsByDate(repository models.Repository) func(c echo.Context) error 
 
 		bookings, err := repository.GetBookings(ctx, models.BookingFilterWithDate(&date))
 		if err != nil {
-			logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
-			message := "could not get tables"
+			logrus.Error(fmt.Errorf("%s : %w", "could not get bookings", err))
+			message := "could not get bookings"
 			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
 		}
 
