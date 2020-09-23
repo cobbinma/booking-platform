@@ -9,14 +9,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (p *postgres) Migrate(ctx context.Context) error {
+func (p *postgres) Migrate(ctx context.Context, sourceURL string) error {
 	driver, err := post.WithInstance(p.dbClient.DB(), &post.Config{})
 	if err != nil {
 		return fmt.Errorf("could not create database driver : %w", err)
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		sourceURL,
 		"postgres", driver)
 	if err != nil {
 		return fmt.Errorf("error instantiating migrate : %w", err)

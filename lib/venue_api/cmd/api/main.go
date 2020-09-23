@@ -13,7 +13,7 @@ import (
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	dbClient, closeDB, err := postgres.NewDBClient()
+	dbClient, closeDB, err := postgres.NewDBClient(config.PostgresURL())
 	if err != nil {
 		log.Fatal("could not create database client : ", err)
 	}
@@ -24,7 +24,7 @@ func main() {
 	}()
 
 	repository := postgres.NewPostgres(dbClient)
-	if err := repository.Migrate(context.Background()); err != nil {
+	if err := repository.Migrate(context.Background(), "file://migrations"); err != nil {
 		log.Fatal("could not migrate : ", err)
 	}
 

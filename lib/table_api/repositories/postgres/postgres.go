@@ -13,25 +13,33 @@ type postgres struct {
 	dbClient DBClient
 }
 
-func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) error {
+func (p *postgres) CreateTable(ctx context.Context, newTable models.NewTable) (*models.Table, error) {
 	venue, ok := ctx.Value(models.VenueCtxKey).(models.Venue)
 	if !ok {
-		return fmt.Errorf("venue was not in context")
+		return nil, fmt.Errorf("venue was not in context")
 	}
 
-	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Insert("tables").Columns("venue_id", "name", "capacity").
-		Values(venue.ID, newTable.Name, newTable.Capacity).ToSql()
+	args := map[string]interface{}{"venue_id": venue.ID, "name": newTable.Name, "capacity": newTable.Capacity}
+	rows, err := p.dbClient.NamedQuery("INSERT INTO tables (venue_id, name, capacity) VALUES (:venue_id, :name, :capacity) RETURNING id", args)
 	if err != nil {
-		return fmt.Errorf("%s : %w", "could not build statement", err)
+		return nil, fmt.Errorf("%s : %w", "could not perform named query to insert into tables", err)
 	}
 
-	_, err = p.dbClient.Exec(sql, args...)
-	if err != nil {
-		return fmt.Errorf("%s : %w", "could not execute", err)
+	var tableID int
+	if rows.Next() {
+		if err := rows.Scan(&tableID); err != nil {
+			return nil, fmt.Errorf("%s : %w", "could not scan row", err)
+		}
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("%s : %w", "could not close rows", err)
 	}
 
-	return nil
+	return &models.Table{
+		ID:       models.NewTableID(tableID),
+		Name:     newTable.Name,
+		Capacity: newTable.Capacity,
+	}, nil
 }
 
 func (p *postgres) GetTables(ctx context.Context, filter *models.TableFilter) ([]models.Table, error) {

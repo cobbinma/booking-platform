@@ -15,7 +15,7 @@ import (
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	dbClient, closeDB, err := postgres.NewDBClient()
+	dbClient, closeDB, err := postgres.NewDBClient(config.PostgresURL())
 	if err != nil {
 		log.Fatal("could not create database client : ", err)
 	}
@@ -26,13 +26,13 @@ func main() {
 	}()
 
 	repository := postgres.NewPostgres(dbClient)
-	if err := repository.Migrate(context.Background()); err != nil {
+	if err := repository.Migrate(context.Background(), "file://migrations"); err != nil {
 		log.Fatal("could not migrate : ", err)
 	}
 
-	tableClient := tableAPI.NewTableAPI()
+	tableClient := tableAPI.NewTableAPI(config.TableAPIRoot())
 
-	venueClient := venueAPI.NewVenueAPI()
+	venueClient := venueAPI.NewVenueAPI(config.VenueAPIRoot())
 
 	e := echo.New()
 
@@ -47,13 +47,11 @@ func main() {
 
 	mw := handlers.VenueMiddleware
 
-	h := handlers.NewHandlers(repository, tableClient)
-
-	e.GET("/healthz", h.Health)
-	e.POST("/venues/:venue_id/bookings", mw(h.CreateBooking, venueClient))
-	e.POST("/venues/:venue_id/slot", mw(h.BookingQuery, venueClient))
-	e.DELETE("/venues/:venue_id/bookings/:id", mw(h.DeleteBooking, venueClient))
-	e.GET("/venues/:venue_id/bookings/date/:date", mw(h.GetBookingsByDate, venueClient))
+	e.GET("/healthz", handlers.Health)
+	e.POST("/venues/:venue_id/bookings", mw(handlers.CreateBooking(repository, tableClient), venueClient))
+	e.POST("/venues/:venue_id/slot", mw(handlers.BookingQuery(repository, tableClient), venueClient))
+	e.DELETE("/venues/:venue_id/bookings/:id", mw(handlers.DeleteBooking(repository), venueClient))
+	e.GET("/venues/:venue_id/bookings/date/:date", mw(handlers.GetBookingsByDate(repository), venueClient))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

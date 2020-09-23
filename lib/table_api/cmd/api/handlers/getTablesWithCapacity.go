@@ -9,24 +9,26 @@ import (
 	"strconv"
 )
 
-func (h *Handlers) GetTablesWithCapacity(c echo.Context) error {
-	ctx := c.Request().Context()
+func GetTablesWithCapacity(repository models.Repository) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 
-	capacity, err := getCapacityFromRequest(c)
-	if err != nil {
-		logrus.Error(fmt.Errorf("%s : %w", "could not get capacity from request", err))
-		message := "invalid capacity"
-		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+		capacity, err := getCapacityFromRequest(c)
+		if err != nil {
+			logrus.Error(fmt.Errorf("%s : %w", "could not get capacity from request", err))
+			message := "invalid capacity"
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+		}
+
+		tables, err := repository.GetTables(ctx, models.NewTableFilter(capacity, nil))
+		if err != nil {
+			logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
+			message := "could not get tables"
+			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+		}
+
+		return c.JSON(http.StatusOK, tables)
 	}
-
-	tables, err := h.repository.GetTables(ctx, models.NewTableFilter(capacity, nil))
-	if err != nil {
-		logrus.Error(fmt.Errorf("%s : %w", "could not get tables", err))
-		message := "could not get tables"
-		return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
-	}
-
-	return c.JSON(http.StatusOK, tables)
 }
 
 func getCapacityFromRequest(c echo.Context) (models.Capacity, error) {

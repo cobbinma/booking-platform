@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cobbinma/booking/lib/table_api/config"
 	"github.com/cobbinma/booking/lib/table_api/models"
 	"io/ioutil"
 	"net/http"
@@ -14,16 +13,17 @@ import (
 var errVenueNotFound = fmt.Errorf("venue not found")
 
 type venueAPI struct {
-	client *http.Client
+	client  *http.Client
+	baseURL string
 }
 
-func NewVenueAPI() models.VenueClient {
+func NewVenueAPI(baseURL string) models.VenueClient {
 	client := http.DefaultClient
-	return &venueAPI{client: client}
+	return &venueAPI{client: client, baseURL: baseURL}
 }
 
 func (t venueAPI) GetVenue(ctx context.Context, id models.VenueID) (*models.Venue, error) {
-	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%v", config.VenueAPIRoot(), id))
+	resp, err := t.client.Get(fmt.Sprintf("%s/venues/%v", t.baseURL, id))
 	if err != nil {
 		return nil, fmt.Errorf("%s : %w", "could not perform get request", err)
 	}

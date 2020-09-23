@@ -22,6 +22,14 @@ type VenueInput struct {
 	OpeningHours []OpeningHours `json:"openingHours"`
 }
 
+func (vi VenueInput) Valid() error {
+	if vi.Name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+
+	return nil
+}
+
 type OpeningHours struct {
 	DayOfWeek int       `json:"dayOfWeek" db:"day_of_week"`
 	Opens     timeOfDay `json:"opens" db:"opens"`

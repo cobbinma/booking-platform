@@ -14,7 +14,7 @@ import (
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	dbClient, closeDB, err := postgres.NewDBClient()
+	dbClient, closeDB, err := postgres.NewDBClient(config.PostgresURL())
 	if err != nil {
 		log.Fatal("could not create database client : ", err)
 	}
@@ -25,7 +25,7 @@ func main() {
 	}()
 
 	repository := postgres.NewPostgres(dbClient)
-	if err := repository.Migrate(context.Background()); err != nil {
+	if err := repository.Migrate(context.Background(), "file://migrations"); err != nil {
 		log.Fatal("could not migrate : ", err)
 	}
 
@@ -36,14 +36,14 @@ func main() {
 
 	h := handlers.NewHandlers(repository)
 
-	venueClient := venueAPI.NewVenueAPI()
+	venueClient := venueAPI.NewVenueAPI(config.VenueAPIRoot())
 
 	e.GET("/healthz", h.Health)
-	e.POST("/venues/:venue_id/tables", mw(h.CreateTable, venueClient))
-	e.GET("/venues/:venue_id/tables/:id", mw(h.GetTable, venueClient))
-	e.DELETE("/venues/:venue_id/tables/:id", mw(h.DeleteTable, venueClient))
-	e.GET("/venues/:venue_id/tables", mw(h.GetTables, venueClient))
-	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(h.GetTablesWithCapacity, venueClient))
+	e.POST("/venues/:venue_id/tables", mw(handlers.CreateTable(repository), venueClient))
+	e.GET("/venues/:venue_id/tables/:id", mw(handlers.GetTable(repository), venueClient))
+	e.DELETE("/venues/:venue_id/tables/:id", mw(handlers.DeleteTable(repository), venueClient))
+	e.GET("/venues/:venue_id/tables", mw(handlers.GetTables(repository), venueClient))
+	e.GET("/venues/:venue_id/tables/capacity/:amount", mw(handlers.GetTablesWithCapacity(repository), venueClient))
 
 	e.Logger.Fatal(e.Start(config.Port()))
 }

@@ -1,6 +1,9 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Table struct {
 	ID       TableID `json:"id" db:"id"`
@@ -12,6 +15,10 @@ type TableID int
 
 func NewTableID(id int) TableID {
 	return TableID(id)
+}
+
+func (tid TableID) String() string {
+	return strconv.Itoa(int(tid))
 }
 
 func (tid TableID) Valid() error {

@@ -26,11 +26,16 @@ func CreateVenue(repository models.Repository) func(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
 		}
 
-		if err := repository.CreateVenue(ctx, venue); err != nil {
+		if err := venue.Valid(); err != nil {
+			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "request venue was not valid"))
+		}
+
+		dbVenue, err := repository.CreateVenue(ctx, venue)
+		if err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "could not create venue in repository", err))
 			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, "internal error has occurred"))
 		}
 
-		return c.NoContent(http.StatusCreated)
+		return c.JSON(http.StatusCreated, &dbVenue)
 	}
 }
