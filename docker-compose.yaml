@@ -2,7 +2,7 @@ version: '3'
 services:
   table-api:
     build:
-      context: ./table_api
+      context: ./lib/table_api
       dockerfile: Dockerfile.dev
     ports:
       - "8989:8989"
@@ -36,7 +36,7 @@ services:
           - table_db
   booking-api:
     build:
-      context: ./booking_api
+      context: ./lib/booking_api
       dockerfile: Dockerfile.dev
     ports:
       - "6969:6969"
@@ -72,7 +72,7 @@ services:
           - booking_db
   venue-api:
     build:
-      context: ./venue_api
+      context: ./lib/venue_api
       dockerfile: Dockerfile.dev
     ports:
       - "8888:8888"
