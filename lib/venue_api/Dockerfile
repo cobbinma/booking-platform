@@ -4,10 +4,15 @@ FROM golang:1.15-buster AS builder
 ENV GO111MODULE=on
 WORKDIR /src
 
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
 COPY . .
 
 RUN go test ./... \
-  go test -tags integration ./... \
+  && go test -tags integration ./... \
   && CGO_ENABLED=0 go build -a -o /main cmd/api/*.go
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
