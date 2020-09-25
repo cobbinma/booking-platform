@@ -5,8 +5,6 @@ IMAGE_PREFIX = booking-
 IMAGE_DIRS = $(wildcard lib/*)
 
 .PHONY: all ${IMAGE_DIRS}
-
-# Build all images
 all: ${IMAGE_DIRS}
 
 # Build and tag a single image
@@ -16,6 +14,13 @@ ${IMAGE_DIRS}:
 	docker build -t ${DOCKERHUB_OWNER}/${IMAGE_PREFIX}${IMAGE_NAME}:${IMAGES_TAG} -t ${DOCKERHUB_OWNER}/${IMAGE_PREFIX}${IMAGE_NAME}:latest --build-arg TAG=${IMAGE_PREFIX}${IMAGE_NAME} --build-arg GIT_SHA1=${GIT_SHA1} $@
 	docker push ${DOCKERHUB_OWNER}/${IMAGE_PREFIX}${IMAGE_NAME}:${IMAGES_TAG}
 	docker push ${DOCKERHUB_OWNER}/${IMAGE_PREFIX}${IMAGE_NAME}:latest
+
+.PHONY: test ${IMAGE_DIRS}
+test: ${IMAGE_DIRS}
+
+# Build and tag a single image
+${IMAGE_DIRS}:
+	$(MAKE) -C $@ test
 
 .PHONY: dev
 dev:
