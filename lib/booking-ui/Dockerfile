@@ -3,7 +3,7 @@ FROM node:14.4.0-alpine3.11 as build
 
 ENV CI=true
 
-RUN --target=/var/cache/apk apk add --update yarn;
+RUN apk add --update yarn;
 
 WORKDIR /root
 
@@ -18,7 +18,7 @@ FROM node:14.4.0-alpine3.11
 ENV CI=true
 ENV NODE_PRODUCTION=true
 
-RUN --target=/var/cache/apk apk add --update \
+RUN apk add --update \
     bash \
     curl \
     tini \
