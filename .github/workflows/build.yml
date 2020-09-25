@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      - 'add-ci'
-    tags: [ v* ]
 
 jobs:
   build:
@@ -17,7 +15,7 @@ jobs:
         with:
           go-version: 1.15.x
 
-      - name: Use Node
+      - name: Install Node
         uses: actions/setup-node@v1
         with:
           node-version: 12.x

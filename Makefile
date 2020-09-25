@@ -15,12 +15,9 @@ ${IMAGE_DIRS}:
 	docker push ${DOCKERHUB_OWNER}/${IMAGE_PREFIX}${IMAGE_NAME}:${IMAGES_TAG}
 	docker push ${DOCKERHUB_OWNER}/${IMAGE_PREFIX}${IMAGE_NAME}:latest
 
-.PHONY: test ${IMAGE_DIRS}
-test: ${IMAGE_DIRS}
-
-# Build and tag a single image
-${IMAGE_DIRS}:
-	$(MAKE) -C $@ test
+.PHONY: tests
+tests:
+	@for f in ${IMAGE_DIRS}; do $(MAKE) -C $${f} test; done
 
 .PHONY: dev
 dev:
