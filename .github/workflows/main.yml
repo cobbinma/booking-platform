@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - 'add-ci'
     tags: [ v* ]
 
 jobs:
