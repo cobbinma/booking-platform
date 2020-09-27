@@ -15,7 +15,7 @@ func NewCreateBookingService(repository models.Repository, tableClient models.Ta
 	return &createBookingService{repository: repository, tableClient: tableClient}
 }
 
-func (cbs *createBookingService) CreateBooking(ctx context.Context, slot models.NewBooking) (*models.Booking, error) {
+func (cbs *createBookingService) CreateBooking(ctx context.Context, slot models.Slot) (*models.Booking, error) {
 	if err := slot.Valid(ctx, cbs.tableClient); err != nil {
 		return nil, fmt.Errorf("slot is not valid : %s : %w", err, models.ErrInvalidRequest)
 	}

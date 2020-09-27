@@ -192,7 +192,7 @@ func TestBookingQuery(t *testing.T) {
 		return
 	}
 
-	var nb models.NewBooking
+	var nb models.Slot
 	if err := json.Unmarshal(rec.Body.Bytes(), &nb); err != nil {
 		t.Errorf("could not unmarshall response : %s", err)
 		return
@@ -264,7 +264,7 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 		return
 	}
 
-	var nb models.NewBooking
+	var nb models.Slot
 	if err := json.Unmarshal(rec.Body.Bytes(), &nb); err != nil {
 		t.Errorf("could not unmarshall response : %s", err)
 		return
@@ -351,7 +351,7 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 		return
 	}
 
-	var nb models.NewBooking
+	var nb models.Slot
 	if err := json.Unmarshal(rec.Body.Bytes(), &nb); err != nil {
 		t.Errorf("could not unmarshall response : %s", err)
 		return
@@ -478,7 +478,7 @@ func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {
 		return
 	}
 
-	var nb models.NewBooking
+	var nb models.Slot
 	if err := json.Unmarshal(rec.Body.Bytes(), &nb); err != nil {
 		t.Errorf("could not unmarshall response : %s", err)
 		return

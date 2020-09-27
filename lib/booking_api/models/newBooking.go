@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type NewBooking struct {
+type Slot struct {
 	CustomerID CustomerID `json:"customer_id" db:"customer_id"`
 	TableID    TableID    `json:"table_id" db:"table_id"`
 	People     int        `json:"people" db:"people"`
@@ -15,20 +15,20 @@ type NewBooking struct {
 	EndsAt     time.Time  `json:"ends_at" db:"ends_at"`
 }
 
-func (nb NewBooking) Valid(ctx context.Context, tc TableClient) error {
-	if err := nb.CustomerID.Valid(); err != nil {
+func (s Slot) Valid(ctx context.Context, tc TableClient) error {
+	if err := s.CustomerID.Valid(); err != nil {
 		return err
 	}
 
-	if err := nb.TableID.Valid(); err != nil {
+	if err := s.TableID.Valid(); err != nil {
 		return err
 	}
 
-	if nb.People < 1 {
+	if s.People < 1 {
 		return fmt.Errorf("must have positive people")
 	}
 
-	if err := dateTimesValidator(nb.Date, nb.StartsAt, nb.EndsAt); err != nil {
+	if err := dateTimesValidator(s.Date, s.StartsAt, s.EndsAt); err != nil {
 		return err
 	}
 
@@ -36,16 +36,16 @@ func (nb NewBooking) Valid(ctx context.Context, tc TableClient) error {
 	if !ok {
 		return fmt.Errorf("venue was not in context")
 	}
-	if !venue.IsOpen(nb.Date.Time().Day(), nb.StartsAt, nb.EndsAt) {
+	if !venue.IsOpen(s.Date.Time().Day(), s.StartsAt, s.EndsAt) {
 		return fmt.Errorf("venue is not open at those times")
 	}
 
-	table, err := tc.GetTable(ctx, nb.TableID)
+	table, err := tc.GetTable(ctx, s.TableID)
 	if err != nil {
 		return fmt.Errorf("could not find table : %w", err)
 	}
 
-	if !table.HasCapacity(nb.People) {
+	if !table.HasCapacity(s.People) {
 		return fmt.Errorf("requested table does not have capacity")
 	}
 

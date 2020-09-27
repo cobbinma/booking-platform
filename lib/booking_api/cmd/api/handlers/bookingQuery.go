@@ -65,7 +65,7 @@ func BookingQuery(repository models.Repository, tableClient models.TableClient) 
 			if overlap {
 				continue
 			}
-			return c.JSON(http.StatusOK, models.NewBooking{
+			return c.JSON(http.StatusOK, models.Slot{
 				CustomerID: query.CustomerID,
 				TableID:    tables[i].ID,
 				People:     query.People,

@@ -21,7 +21,7 @@ func CreateBooking(repository models.Repository, tableClient models.TableClient)
 			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
 		}
 
-		slot := models.NewBooking{}
+		slot := models.Slot{}
 		if err := json.Unmarshal(reqBody, &slot); err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "could not unmarshall request", err))
 			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
