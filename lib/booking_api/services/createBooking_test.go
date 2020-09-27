@@ -61,5 +61,38 @@ var _ = Describe("CreateCoupon", func() {
 				Expect(err).Should(MatchError(models.ErrInvalidRequest))
 			})
 		})
+		When("table does not have capacity", func() {
+			tableID := models.TableID(1)
+			table := models.Table{
+				Name:     "small table",
+				Capacity: 2,
+			}
+			slot := models.Slot{
+				CustomerID: "test@test.test",
+				TableID:    tableID,
+				People:     4,
+				Date:       twoDaysDate,
+				StartsAt:   startsAt,
+				EndsAt:     endsAt,
+			}
+			venue := models.Venue{
+				ID:   1,
+				Name: "Hop and Vine",
+				OpeningHours: []models.OpeningHours{{
+					DayOfWeek: twoDays.Day(),
+					Opens:     models.TimeOfDay(startsAt),
+					Closes:    models.TimeOfDay(endsAt),
+				}},
+			}
+			BeforeEach(func() {
+				ctx = context.WithValue(ctx, models.VenueCtxKey, venue)
+				tableClient.EXPECT().GetTable(gomock.Eq(ctx), gomock.Eq(tableID)).Return(&table, nil)
+			})
+			It("should return a invalid request error", func() {
+				service := services.NewCreateBookingService(repository, tableClient)
+				_, err := service.CreateBooking(ctx, slot)
+				Expect(err).Should(MatchError(models.ErrInvalidRequest))
+			})
+		})
 	})
 })
