@@ -26,7 +26,7 @@ func BookingQuery(repository models.Repository, tableClient models.TableClient) 
 			return WriteError(c, models.ErrInvalidRequest)
 		}
 
-		if err := query.Valid(); err != nil {
+		if err := query.Valid(ctx); err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "invalid request", err))
 			return WriteError(c, models.ErrInvalidRequest)
 		}
@@ -45,7 +45,6 @@ func BookingQuery(repository models.Repository, tableClient models.TableClient) 
 		tableIDs := []models.TableID{}
 		for i := range tables {
 			tableIDs = append(tableIDs, tables[i].ID)
-
 		}
 
 		bookings, err := repository.GetBookings(
