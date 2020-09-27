@@ -45,7 +45,7 @@ func (nb NewBooking) Valid(ctx context.Context, tc TableClient) error {
 		return fmt.Errorf("could not find table : %w", err)
 	}
 
-	if table.Capacity < nb.People {
+	if !table.HasCapacity(nb.People) {
 		return fmt.Errorf("requested table does not have capacity")
 	}
 
