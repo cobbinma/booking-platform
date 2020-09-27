@@ -50,6 +50,10 @@ func dateTimesValidator(date Date, startsAt time.Time, endsAt time.Time) error {
 		return fmt.Errorf("date must not be in the past")
 	}
 
+	if !sameDate(date.Time(), startsAt) || !sameDate(date.Time(), endsAt) || !sameDate(endsAt, startsAt) {
+		return fmt.Errorf("all times must be on same date")
+	}
+
 	if startsAt.After(endsAt) {
 		return fmt.Errorf("starts at cannot be after ends at")
 	}
@@ -64,4 +68,11 @@ func dateTimesValidator(date Date, startsAt time.Time, endsAt time.Time) error {
 	}
 
 	return nil
+}
+
+func sameDate(a time.Time, b time.Time) bool {
+	if a.Day() == b.Day() && a.Month() == b.Month() && a.Year() == b.Year() {
+		return true
+	}
+	return false
 }

@@ -16,15 +16,13 @@ func GetBookingsByDate(repository models.Repository) func(c echo.Context) error 
 		date, err := getDateFromRequest(c)
 		if err != nil {
 			logrus.Error(fmt.Errorf("%s : %w", "could not get date from request", err))
-			message := "invalid date"
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+			return WriteError(c, models.ErrInvalidRequest)
 		}
 
 		bookings, err := repository.GetBookings(ctx, models.BookingFilterWithDate(&date))
 		if err != nil {
 			logrus.Error(fmt.Errorf("%s : %w", "could not get bookings", err))
-			message := "could not get bookings"
-			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+			return WriteError(c, models.ErrInternalError)
 		}
 
 		return c.JSON(http.StatusOK, bookings)

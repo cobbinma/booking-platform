@@ -7,7 +7,7 @@ services:
     ports:
       - "8989:8989"
     volumes:
-      - ./table_api:/go/src
+      - ./lib/table_api:/go/src
     environment:
       - DB_HOST=table_db
       - DB_PASSWORD=password
@@ -41,7 +41,7 @@ services:
     ports:
       - "6969:6969"
     volumes:
-      - ./booking_api:/go/src
+      - ./lib/booking_api:/go/src
     environment:
       - DB_HOST=booking_db
       - DB_PASSWORD=password
@@ -65,7 +65,7 @@ services:
       - POSTGRES_DB=booking_db
       - POSTGRES_USER=user
     volumes:
-      - booking_data:/var/lib/postgresql/data
+      - ./lib/booking_data:/var/lib/postgresql/data
     networks:
       main:
         aliases:
@@ -77,7 +77,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./venue_api:/go/src
+      - ./lib/venue_api:/go/src
     environment:
       - DB_HOST=venue_db
       - DB_PASSWORD=password

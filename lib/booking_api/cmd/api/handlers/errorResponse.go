@@ -1,5 +1,13 @@
 package handlers
 
+import (
+	"errors"
+	"github.com/cobbinma/booking/lib/booking_api/gateways/venueAPI"
+	"github.com/cobbinma/booking/lib/booking_api/models"
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
+
 type errorCodes string
 
 const (
@@ -16,8 +24,21 @@ type errorResponse struct {
 }
 
 func newErrorResponse(code errorCodes, message string) *errorResponse {
-	return &errorResponse{
-		Code:    code,
-		Message: message,
+	return &errorResponse{Code: code, Message: message}
+}
+
+func WriteError(c echo.Context, err error) error {
+	if errors.Is(err, models.ErrInvalidRequest) {
+		return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
 	}
+	if errors.Is(err, ErrVenueNotGiven) {
+		return c.JSON(http.StatusBadRequest, newErrorResponse(VenueNotFound, "venue was not given"))
+	}
+	if venueAPI.ErrVenueNotFound(err) {
+		return c.JSON(http.StatusBadRequest, newErrorResponse(VenueNotGiven, "venue could not be found"))
+	}
+	if errors.Is(err, models.ErrNoAvailableSlots) {
+		return c.JSON(http.StatusInternalServerError, newErrorResponse(NoAvailableSlots, "no available slots"))
+	}
+	return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, "could not create booking"))
 }

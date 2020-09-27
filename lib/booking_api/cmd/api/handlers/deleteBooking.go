@@ -16,15 +16,13 @@ func DeleteBooking(repository models.Repository) func(c echo.Context) error {
 		id, err := getBookingIDFromRequest(c)
 		if err != nil {
 			logrus.Error(fmt.Errorf("%s : %w", "could not get id from request", err))
-			message := "invalid id"
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+			return WriteError(c, models.ErrInvalidRequest)
 		}
 
 		err = repository.DeleteBookings(ctx, []int{id})
 		if err != nil {
 			logrus.Error(fmt.Errorf("%s : %w", "could not delete booking", err))
-			message := "could not delete booking"
-			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+			return WriteError(c, models.ErrInternalError)
 		}
 
 		return c.NoContent(http.StatusOK)
