@@ -36,7 +36,7 @@ func (s Slot) Valid(ctx context.Context, tc TableClient) error {
 	if !ok {
 		return fmt.Errorf("venue was not in context")
 	}
-	if !venue.IsOpen(s.Date.Time().Day(), s.StartsAt, s.EndsAt) {
+	if !venue.IsOpen(int(s.Date.Time().Weekday()), s.StartsAt, s.EndsAt) {
 		return fmt.Errorf("venue is not open at those times")
 	}
 

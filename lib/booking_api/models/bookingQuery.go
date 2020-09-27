@@ -31,7 +31,7 @@ func (bq BookingQuery) Valid(ctx context.Context) error {
 	if !ok {
 		return fmt.Errorf("venue was not in context")
 	}
-	if !venue.IsOpen(bq.Date.Time().Day(), bq.StartsAt, bq.EndsAt) {
+	if !venue.IsOpen(int(bq.Date.Time().Weekday()), bq.StartsAt, bq.EndsAt) {
 		return fmt.Errorf("venue is not open at those times")
 	}
 
