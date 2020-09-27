@@ -26,6 +26,16 @@ func (vi VenueInput) Valid() error {
 	if vi.Name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
+	days := map[int]bool{}
+	for i := range vi.OpeningHours {
+		if err := vi.OpeningHours[i].Valid(); err != nil {
+			return fmt.Errorf("opening hours was not valid : %w", err)
+		}
+		if days[vi.OpeningHours[i].DayOfWeek] {
+			return fmt.Errorf("cannot have duplicate day opening hours")
+		}
+		days[vi.OpeningHours[i].DayOfWeek] = true
+	}
 
 	return nil
 }
@@ -34,6 +44,17 @@ type OpeningHours struct {
 	DayOfWeek int       `json:"dayOfWeek" db:"day_of_week"`
 	Opens     timeOfDay `json:"opens" db:"opens"`
 	Closes    timeOfDay `json:"closes" db:"closes"`
+}
+
+func (oh OpeningHours) Valid() error {
+	if oh.DayOfWeek > 6 {
+		return fmt.Errorf("day of week cannot be greater than 6")
+	}
+	if oh.Opens.Time().IsZero() || oh.Closes.Time().IsZero() {
+		return fmt.Errorf("times cannot be zero")
+	}
+
+	return nil
 }
 
 type timeOfDay time.Time
