@@ -32,6 +32,14 @@ func (nb NewBooking) Valid(ctx context.Context, tc TableClient) error {
 		return err
 	}
 
+	venue, ok := ctx.Value(VenueCtxKey).(Venue)
+	if !ok {
+		return fmt.Errorf("venue was not in context")
+	}
+	if !venue.IsOpen(nb.Date.Time().Day(), nb.StartsAt, nb.EndsAt) {
+		return fmt.Errorf("venue is not open at those times")
+	}
+
 	table, err := tc.GetTable(ctx, nb.TableID)
 	if err != nil {
 		return fmt.Errorf("could not find table : %w", err)

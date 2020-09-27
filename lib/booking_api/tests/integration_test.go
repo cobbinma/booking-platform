@@ -33,7 +33,6 @@ var (
 	name       = "2"
 	venueID    = 1
 	venueName  = "hop and vine"
-	day        = 1
 	opens      = "07:00"
 	closes     = "22:00"
 	customer   = "example@example.com"
@@ -156,7 +155,7 @@ func TestBookingQuery(t *testing.T) {
 	startsAtStr := startsAt.Format("2006-01-02T15:04:05Z")
 	endsAt := time.Date(now.Year(), now.Month(), now.Day()+1, 20, 0, 0, 0, time.UTC)
 	endsAtStr := endsAt.Format("2006-01-02T15:04:05Z")
-	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, startsAt.Day(), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, tomorrowStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
 	e := echo.New()
@@ -228,7 +227,7 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 	startsAtStr := startsAt.Format("2006-01-02T15:04:05Z")
 	endsAt := time.Date(now.Year(), now.Month(), now.Day()+1, 20, 0, 0, 0, time.UTC)
 	endsAtStr := endsAt.Format("2006-01-02T15:04:05Z")
-	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, startsAt.Day(), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, tomorrowStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
 	e := echo.New()
@@ -315,7 +314,7 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 	startsAtStr := startsAt.Format("2006-01-02T15:04:05Z")
 	endsAt := time.Date(now.Year(), now.Month(), now.Day()+2, 20, 0, 0, 0, time.UTC)
 	endsAtStr := endsAt.Format("2006-01-02T15:04:05Z")
-	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, startsAt.Day(), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, twoDaysStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
 	e := echo.New()
@@ -442,7 +441,7 @@ func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {
 	startsAtStr := startsAt.Format("2006-01-02T15:04:05Z")
 	endsAt := time.Date(now.Year(), now.Month(), now.Day()+3, 20, 0, 0, 0, time.UTC)
 	endsAtStr := endsAt.Format("2006-01-02T15:04:05Z")
-	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
+	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, startsAt.Day(), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, threeDaysStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
 	e := echo.New()
