@@ -5,3 +5,7 @@ type Table struct {
 	Name     string  `json:"name"`
 	Capacity int     `json:"capacity"`
 }
+
+func (t Table) HasCapacity(people int) bool {
+	return people <= t.Capacity
+}

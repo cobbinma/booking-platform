@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-var errVenueNotFound = fmt.Errorf("venue not found")
+var errVenueNotFound = fmt.Errorf("VENUE_NOT_FOUND")
 
 type venueAPI struct {
 	baseURL string

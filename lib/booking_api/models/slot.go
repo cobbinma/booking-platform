@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type NewBooking struct {
+type Slot struct {
 	CustomerID CustomerID `json:"customer_id" db:"customer_id"`
 	TableID    TableID    `json:"table_id" db:"table_id"`
 	People     int        `json:"people" db:"people"`
@@ -15,29 +15,37 @@ type NewBooking struct {
 	EndsAt     time.Time  `json:"ends_at" db:"ends_at"`
 }
 
-func (nb NewBooking) Valid(ctx context.Context, tc TableClient) error {
-	if err := nb.CustomerID.Valid(); err != nil {
+func (s Slot) Valid(ctx context.Context, tc TableClient) error {
+	if err := s.CustomerID.Valid(); err != nil {
 		return err
 	}
 
-	if err := nb.TableID.Valid(); err != nil {
+	if err := s.TableID.Valid(); err != nil {
 		return err
 	}
 
-	if nb.People < 1 {
+	if s.People < 1 {
 		return fmt.Errorf("must have positive people")
 	}
 
-	if err := dateTimesValidator(nb.Date, nb.StartsAt, nb.EndsAt); err != nil {
+	if err := dateTimesValidator(s.Date, s.StartsAt, s.EndsAt); err != nil {
 		return err
 	}
 
-	table, err := tc.GetTable(ctx, nb.TableID)
+	venue, ok := ctx.Value(VenueCtxKey).(Venue)
+	if !ok {
+		return fmt.Errorf("venue was not in context")
+	}
+	if !venue.IsOpen(s.Date.Time().Day(), s.StartsAt, s.EndsAt) {
+		return fmt.Errorf("venue is not open at those times")
+	}
+
+	table, err := tc.GetTable(ctx, s.TableID)
 	if err != nil {
 		return fmt.Errorf("could not find table : %w", err)
 	}
 
-	if table.Capacity < nb.People {
+	if !table.HasCapacity(s.People) {
 		return fmt.Errorf("requested table does not have capacity")
 	}
 
@@ -48,6 +56,10 @@ func dateTimesValidator(date Date, startsAt time.Time, endsAt time.Time) error {
 	now := time.Now()
 	if date.Time().Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())) {
 		return fmt.Errorf("date must not be in the past")
+	}
+
+	if !sameDate(date.Time(), startsAt) || !sameDate(date.Time(), endsAt) || !sameDate(endsAt, startsAt) {
+		return fmt.Errorf("all times must be on same date")
 	}
 
 	if startsAt.After(endsAt) {
@@ -64,4 +76,11 @@ func dateTimesValidator(date Date, startsAt time.Time, endsAt time.Time) error {
 	}
 
 	return nil
+}
+
+func sameDate(a time.Time, b time.Time) bool {
+	if a.Day() == b.Day() && a.Month() == b.Month() && a.Year() == b.Year() {
+		return true
+	}
+	return false
 }

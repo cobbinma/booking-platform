@@ -17,45 +17,41 @@ func BookingQuery(repository models.Repository, tableClient models.TableClient) 
 		reqBody, err := ioutil.ReadAll(c.Request().Body)
 		if err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "could not read request", err))
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
+			return WriteError(c, models.ErrInvalidRequest)
 		}
 
 		query := models.BookingQuery{}
 		if err := json.Unmarshal(reqBody, &query); err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "could not unmarshall request", err))
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, "incorrect user request"))
+			return WriteError(c, models.ErrInvalidRequest)
 		}
 
-		if err := query.Valid(); err != nil {
+		if err := query.Valid(ctx); err != nil {
 			logrus.Info(fmt.Errorf("%s : %w", "invalid request", err))
-			message := fmt.Sprintf("incorrect user request : %s", err)
-			return c.JSON(http.StatusBadRequest, newErrorResponse(InvalidRequest, message))
+			return WriteError(c, models.ErrInvalidRequest)
 		}
 
 		tables, err := tableClient.GetTablesWithCapacity(ctx, query.People)
 		if err != nil {
 			logrus.Error(fmt.Errorf("%s : %w", "could not get tables with capacity", err))
-			message := "could not get booking request"
-			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+			return WriteError(c, models.ErrInternalError)
 		}
 
 		if len(tables) == 0 {
 			logrus.Info(fmt.Errorf("%s : %w", "no available tables", err))
-			return c.JSON(http.StatusNotFound, newErrorResponse(NoAvailableSlots, "no available tables"))
+			return WriteError(c, models.ErrNoAvailableSlots)
 		}
 
 		tableIDs := []models.TableID{}
 		for i := range tables {
 			tableIDs = append(tableIDs, tables[i].ID)
-
 		}
 
 		bookings, err := repository.GetBookings(
 			ctx, models.BookingFilterWithTableIDs(tableIDs), models.BookingFilterWithDate(&query.Date))
 		if err != nil {
 			logrus.Error(fmt.Errorf("%s : %w", "could not get bookings", err))
-			message := "could not get booking request"
-			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, message))
+			return WriteError(c, models.ErrInternalError)
 		}
 
 		for i := range tables {
@@ -69,7 +65,7 @@ func BookingQuery(repository models.Repository, tableClient models.TableClient) 
 			if overlap {
 				continue
 			}
-			return c.JSON(http.StatusOK, models.NewBooking{
+			return c.JSON(http.StatusOK, models.Slot{
 				CustomerID: query.CustomerID,
 				TableID:    tables[i].ID,
 				People:     query.People,
@@ -80,6 +76,6 @@ func BookingQuery(repository models.Repository, tableClient models.TableClient) 
 		}
 
 		logrus.Info(fmt.Errorf("%s : %w", "no available slots", err))
-		return c.JSON(http.StatusNotFound, newErrorResponse(NoAvailableSlots, "no available slots"))
+		return WriteError(c, models.ErrNoAvailableSlots)
 	}
 }

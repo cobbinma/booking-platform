@@ -11,7 +11,7 @@ type postgres struct {
 	dbClient DBClient
 }
 
-func (p *postgres) CreateBooking(ctx context.Context, booking models.NewBooking) (*models.Booking, error) {
+func (p *postgres) CreateBooking(ctx context.Context, booking models.Slot) (*models.Booking, error) {
 	venue, ok := ctx.Value(models.VenueCtxKey).(models.Venue)
 	if !ok {
 		return nil, fmt.Errorf("venue was not in context")
