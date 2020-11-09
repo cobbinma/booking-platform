@@ -194,6 +194,7 @@ func TestCreateGetTable(t *testing.T) {
 	closes := "22:00"
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
 	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -266,6 +267,7 @@ func TestCreateGetTables(t *testing.T) {
 	closes := "22:00"
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
 	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -339,6 +341,7 @@ func TestCreateGetTablesWithCapacity(t *testing.T) {
 	closes := "22:00"
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
 	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -403,6 +406,7 @@ func TestCreateDeleteGetTable(t *testing.T) {
 	closes := "22:00"
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
 	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
