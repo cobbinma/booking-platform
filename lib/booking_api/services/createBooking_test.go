@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cobbinma/booking/lib/booking_api/models"
 	mockmodels "github.com/cobbinma/booking/lib/booking_api/models/mock"
+	"github.com/cobbinma/booking/lib/booking_api/repositories/fakeRepository"
 	"github.com/cobbinma/booking/lib/booking_api/services"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -23,14 +24,14 @@ var _ = Describe("CreateCoupon", func() {
 	var (
 		ctx         context.Context
 		ctrl        *gomock.Controller
-		repository  *mockmodels.MockRepository
+		repository  models.Repository
 		tableClient *mockmodels.MockTableClient
 	)
 
 	BeforeEach(func() {
 		ctx = context.Background()
 		ctrl = gomock.NewController(GinkgoT())
-		repository = mockmodels.NewMockRepository(ctrl)
+		repository = fakeRepository.NewFakeRepository()
 		tableClient = mockmodels.NewMockTableClient(ctrl)
 	})
 
