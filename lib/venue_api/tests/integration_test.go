@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bradleyjkemp/cupaloy"
 	"github.com/cobbinma/booking/lib/venue_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/venue_api/models"
 	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
@@ -160,31 +161,7 @@ func TestCreateVenue(t *testing.T) {
 		return
 	}
 
-	var vr venueResponse
-	if err := json.Unmarshal(rec.Body.Bytes(), &vr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	if vr.ID == 0 {
-		t.Errorf("venue ID should not equal 0")
-	}
-
-	if vr.Name != name {
-		t.Errorf("name was '%s', expected '%s'", vr.Name, name)
-	}
-
-	if vr.OpeningHours[0].DayOfWeek != day {
-		t.Errorf("day of week was '%v', expected '%v'", vr.OpeningHours[0].DayOfWeek, day)
-	}
-
-	if vr.OpeningHours[0].Opens != opens {
-		t.Errorf("opens was '%s', expected '%s'", vr.OpeningHours[0].Opens, opens)
-	}
-
-	if vr.OpeningHours[0].Closes != closes {
-		t.Errorf("closes was '%s', expected '%s'", vr.OpeningHours[0].Closes, closes)
-	}
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateGetVenue(t *testing.T) {
@@ -233,26 +210,7 @@ func TestCreateGetVenue(t *testing.T) {
 		return
 	}
 
-	if err := json.Unmarshal(rec.Body.Bytes(), &vr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	if vr.Name != name {
-		t.Errorf("name was '%s', expected '%s'", vr.Name, name)
-	}
-
-	if vr.OpeningHours[0].DayOfWeek != day {
-		t.Errorf("day of week was '%v', expected '%v'", vr.OpeningHours[0].DayOfWeek, day)
-	}
-
-	if vr.OpeningHours[0].Opens != opens {
-		t.Errorf("opens was '%s', expected '%s'", vr.OpeningHours[0].Opens, opens)
-	}
-
-	if vr.OpeningHours[0].Closes != closes {
-		t.Errorf("closes was '%s', expected '%s'", vr.OpeningHours[0].Closes, closes)
-	}
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateDeleteGetVenue(t *testing.T) {
