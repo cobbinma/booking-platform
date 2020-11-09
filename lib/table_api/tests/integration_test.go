@@ -175,13 +175,7 @@ func TestCreateTable(t *testing.T) {
 		return
 	}
 
-	var tr models.Table
-	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, tr)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateGetTable(t *testing.T) {
@@ -249,12 +243,7 @@ func TestCreateGetTable(t *testing.T) {
 		return
 	}
 
-	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, tr)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateGetTables(t *testing.T) {
@@ -322,13 +311,7 @@ func TestCreateGetTables(t *testing.T) {
 		return
 	}
 
-	var tables []models.Table
-	if err := json.Unmarshal(rec.Body.Bytes(), &tables); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, tables)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateGetTablesWithCapacity(t *testing.T) {
@@ -387,13 +370,7 @@ func TestCreateGetTablesWithCapacity(t *testing.T) {
 		return
 	}
 
-	var tables []models.Table
-	if err := json.Unmarshal(rec.Body.Bytes(), &tables); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, tables)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateDeleteGetTable(t *testing.T) {

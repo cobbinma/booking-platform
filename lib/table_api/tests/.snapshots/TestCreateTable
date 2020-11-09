@@ -1,5 +1,2 @@
-(models.Table) {
-  ID: (models.TableID) 1,
-  Name: (string) (len=1) "2",
-  Capacity: (int) 4
-}
+{"id":1,"name":"2","capacity":4}
+

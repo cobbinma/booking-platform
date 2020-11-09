@@ -190,13 +190,7 @@ func TestBookingQuery(t *testing.T) {
 		return
 	}
 
-	var nb models.Slot
-	if err := json.Unmarshal(rec.Body.Bytes(), &nb); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, nb)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestBookingQueryCreateBooking(t *testing.T) {
@@ -274,13 +268,7 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 		return
 	}
 
-	var booking models.Booking
-	if err := json.Unmarshal(rec.Body.Bytes(), &booking); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, booking)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
@@ -377,13 +365,7 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 		return
 	}
 
-	var bookings []models.Booking
-	if err := json.Unmarshal(rec.Body.Bytes(), &bookings); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, bookings)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {

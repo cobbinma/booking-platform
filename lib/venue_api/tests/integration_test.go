@@ -161,13 +161,7 @@ func TestCreateVenue(t *testing.T) {
 		return
 	}
 
-	var vr venueResponse
-	if err := json.Unmarshal(rec.Body.Bytes(), &vr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, vr)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateGetVenue(t *testing.T) {
@@ -216,12 +210,7 @@ func TestCreateGetVenue(t *testing.T) {
 		return
 	}
 
-	if err := json.Unmarshal(rec.Body.Bytes(), &vr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	cupaloy.SnapshotT(t, vr)
+	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
 func TestCreateDeleteGetVenue(t *testing.T) {

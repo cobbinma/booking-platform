@@ -1,15 +1,2 @@
-([]models.Booking) (len=1) {
-  (models.Booking) {
-    ID: (int) 2,
-    CustomerID: (models.CustomerID) (len=19) "example@example.com",
-    TableID: (models.TableID) 1,
-    People: (int) 2,
-    Date: (models.Date) {
-      wall: (uint64) 0,
-      ext: (int64) 63740649600,
-      loc: (*time.Location)(<nil>)
-    },
-    StartsAt: (time.Time) 2020-11-11 18:00:00 +0000 UTC,
-    EndsAt: (time.Time) 2020-11-11 20:00:00 +0000 UTC
-  }
-}
+[{"id":2,"customer_id":"example@example.com","table_id":1,"people":2,"date":"2020-11-11","starts_at":"2020-11-11T18:00:00Z","ends_at":"2020-11-11T20:00:00Z"}]
+
