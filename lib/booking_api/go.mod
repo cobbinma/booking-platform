@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/Masterminds/squirrel v1.4.0
+	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.11.0
 	github.com/golang/mock v1.4.0
 	github.com/jmoiron/sqlx v1.2.0

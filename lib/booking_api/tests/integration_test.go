@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bradleyjkemp/cupaloy"
 	"github.com/cobbinma/booking/lib/booking_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/booking_api/gateways/tableAPI"
 	"github.com/cobbinma/booking/lib/booking_api/gateways/venueAPI"
@@ -158,6 +159,7 @@ func TestBookingQuery(t *testing.T) {
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, int(startsAt.Weekday()), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, tomorrowStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(queryJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -167,16 +169,12 @@ func TestBookingQuery(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	venueSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	venueSrv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer venueSrv.Close()
 
-	tableSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(tableJSON))
-	}))
+	//set up mock table server
+	tableSrv := mockServer(http.StatusOK, []byte(tableJSON))
 	defer tableSrv.Close()
 
 	queryBooking := handlers.VenueMiddleware(handlers.BookingQuery(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
@@ -198,25 +196,7 @@ func TestBookingQuery(t *testing.T) {
 		return
 	}
 
-	if nb.CustomerID != models.CustomerID(customer) {
-		t.Errorf("customer was '%s', expected '%s'", nb.CustomerID, customer)
-	}
-
-	if nb.TableID != models.TableID(tableId) {
-		t.Errorf("table id was '%v', expected '%v'", nb.TableID, tableId)
-	}
-
-	if nb.Date != tomorrowDate {
-		t.Errorf("date was '%v', expected '%v'", nb.Date, tomorrowDate)
-	}
-
-	if nb.StartsAt != startsAt {
-		t.Errorf("starts at was '%v', expected '%v'", nb.StartsAt, startsAt)
-	}
-
-	if nb.EndsAt != endsAt {
-		t.Errorf("ends at was '%v', expected '%v'", nb.EndsAt, endsAt)
-	}
+	cupaloy.SnapshotT(t, nb)
 }
 
 func TestBookingQueryCreateBooking(t *testing.T) {
@@ -230,6 +210,7 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, int(startsAt.Weekday()), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, tomorrowStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(queryJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -239,16 +220,12 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	venueSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	venueSrv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer venueSrv.Close()
 
-	tableSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(tableJSON))
-	}))
+	//set up mock table server
+	tableSrv := mockServer(http.StatusOK, []byte(tableJSON))
 	defer tableSrv.Close()
 
 	queryBooking := handlers.VenueMiddleware(handlers.BookingQuery(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
@@ -280,11 +257,9 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
+	//set up mock table server
 	tableJSON = fmt.Sprintf(`{"id":%v,"name":"%v","capacity":%v}`, tableId, name, people)
-	tableSrv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(tableJSON))
-	}))
+	tableSrv = mockServer(http.StatusOK, []byte(tableJSON))
 
 	createBooking := handlers.VenueMiddleware(handlers.CreateBooking(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
 
@@ -304,12 +279,13 @@ func TestBookingQueryCreateBooking(t *testing.T) {
 		t.Errorf("could not unmarshall response : %s", err)
 		return
 	}
+
+	cupaloy.SnapshotT(t, booking)
 }
 
 func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 	twoDays := time.Date(now.Year(), now.Month(), now.Day()+2, 0, 0, 0, 0, time.UTC)
 	twoDaysStr := twoDays.Format(models.DateFormat)
-	twoDaysDate := models.Date(twoDays)
 	startsAt := time.Date(now.Year(), now.Month(), now.Day()+2, 18, 0, 0, 0, time.UTC)
 	startsAtStr := startsAt.Format("2006-01-02T15:04:05Z")
 	endsAt := time.Date(now.Year(), now.Month(), now.Day()+2, 20, 0, 0, 0, time.UTC)
@@ -317,6 +293,7 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, int(startsAt.Weekday()), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, twoDaysStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(queryJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -326,16 +303,12 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	venueSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	venueSrv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer venueSrv.Close()
 
-	tableSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(tableJSON))
-	}))
+	//set up mock table server
+	tableSrv := mockServer(http.StatusOK, []byte(tableJSON))
 	defer tableSrv.Close()
 
 	queryBooking := handlers.VenueMiddleware(handlers.BookingQuery(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
@@ -368,10 +341,7 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 	c.SetParamValues(strconv.Itoa(venueID))
 
 	tableJSON = fmt.Sprintf(`{"id":%v,"name":"%v","capacity":%v}`, tableId, name, people)
-	tableSrv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(tableJSON))
-	}))
+	tableSrv = mockServer(http.StatusOK, []byte(tableJSON))
 
 	createBooking := handlers.VenueMiddleware(handlers.CreateBooking(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
 
@@ -413,25 +383,7 @@ func TestBookingQueryCreateBookingGetBookingByDate(t *testing.T) {
 		return
 	}
 
-	if bookings[0].CustomerID != models.CustomerID(customer) {
-		t.Errorf("customer was '%s', expected '%s'", bookings[0].CustomerID, customer)
-	}
-
-	if bookings[0].TableID != models.TableID(tableId) {
-		t.Errorf("table id was '%v', expected '%v'", bookings[0].TableID, tableId)
-	}
-
-	if bookings[0].Date != twoDaysDate {
-		t.Errorf("date was '%v', expected '%v'", bookings[0].Date, twoDaysStr)
-	}
-
-	if bookings[0].StartsAt != startsAt {
-		t.Errorf("starts at was '%v', expected '%v'", bookings[0].StartsAt, startsAt)
-	}
-
-	if bookings[0].EndsAt != endsAt {
-		t.Errorf("ends at was '%v', expected '%v'", bookings[0].EndsAt, endsAt)
-	}
+	cupaloy.SnapshotT(t, bookings)
 }
 
 func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {
@@ -444,6 +396,7 @@ func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, int(startsAt.Weekday()), opens, closes)
 	queryJSON := fmt.Sprintf(`{"customer_id":"%s","people":%v,"date":"%s","starts_at":"%s","ends_at":"%s"}`, customer, people, threeDaysStr, startsAtStr, endsAtStr)
 	tableJSON := fmt.Sprintf(`[{"id":%v,"name":"%v","capacity":%v}]`, tableId, name, people)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(queryJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -453,16 +406,12 @@ func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	venueSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	venueSrv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer venueSrv.Close()
 
-	tableSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(tableJSON))
-	}))
+	//set up mock table server
+	tableSrv := mockServer(http.StatusOK, []byte(tableJSON))
 	defer tableSrv.Close()
 
 	queryBooking := handlers.VenueMiddleware(handlers.BookingQuery(repository, tableAPI.NewTableAPI(tableSrv.URL)), venueAPI.NewVenueAPI(venueSrv.URL))
@@ -571,4 +520,11 @@ func TestBookingQueryCreateBookingDeleteBookingGetBookingByDate(t *testing.T) {
 		t.Errorf("should not have found bookings")
 		return
 	}
+}
+
+func mockServer(code int, body []byte) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(code)
+		_, _ = w.Write(body)
+	}))
 }
