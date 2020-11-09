@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"github.com/cobbinma/booking/lib/venue_api/models"
-	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -21,14 +20,10 @@ func DeleteVenue(repository models.Repository) func(c echo.Context) error {
 
 		if err := repository.DeleteVenue(ctx, id); err != nil {
 			m := "could not delete venue"
-			if postgres.ErrVenueNotFound(err) {
-				logrus.Info(fmt.Errorf("%s : %w", m, err))
-				return c.JSON(http.StatusNotFound, newErrorResponse(VenueNotFound, m))
-			}
 			logrus.Error(fmt.Errorf("%s : %w", m, err))
 			return c.JSON(http.StatusInternalServerError, newErrorResponse(InternalError, m))
 		}
 
-		return c.NoContent(http.StatusOK)
+		return c.NoContent(http.StatusNoContent)
 	}
 }

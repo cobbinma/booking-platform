@@ -3,10 +3,10 @@ package handlers_test
 import (
 	"context"
 	"encoding/json"
-	"github.com/bradleyjkemp/cupaloy"
 	"github.com/cobbinma/booking/lib/venue_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/venue_api/models"
 	"github.com/cobbinma/booking/lib/venue_api/repositories/fakeRepository"
+	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-func TestGetVenueNotFound(t *testing.T) {
+func TestDeleteVenueNotFound(t *testing.T) {
 	repository := fakeRepository.NewFakeRepository()
 
 	id := 1
@@ -26,22 +26,20 @@ func TestGetVenueNotFound(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(strconv.Itoa(id))
 
-	getVenue := handlers.GetVenue(repository)
+	deleteVenue := handlers.DeleteVenue(repository)
 
-	if err := getVenue(c); err != nil {
-		t.Errorf("error returned from get venue handler : %s", err)
+	if err := deleteVenue(c); err != nil {
+		t.Errorf("error returned from delete venue handler : %s", err)
 		return
 	}
 
-	if rec.Code != http.StatusNotFound {
-		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusNotFound)
+	if rec.Code != http.StatusNoContent {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusNoContent)
 		return
 	}
-
-	cupaloy.SnapshotT(t, rec.Body.String())
 }
 
-func TestGetVenueFound(t *testing.T) {
+func TestDeleteVenueFound(t *testing.T) {
 	repository := fakeRepository.NewFakeRepository()
 
 	var input models.VenueInput
@@ -64,17 +62,21 @@ func TestGetVenueFound(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(strconv.Itoa(id))
 
-	getVenue := handlers.GetVenue(repository)
+	deleteVenue := handlers.DeleteVenue(repository)
 
-	if err := getVenue(c); err != nil {
-		t.Errorf("error returned from get venue handler : %s", err)
+	if err := deleteVenue(c); err != nil {
+		t.Errorf("error returned from delete venue handler : %s", err)
 		return
 	}
 
-	if rec.Code != http.StatusOK {
-		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusOK)
+	if rec.Code != http.StatusNoContent {
+		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusNoContent)
 		return
 	}
 
-	cupaloy.SnapshotT(t, rec.Body.String())
+	_, err := repository.GetVenue(context.Background(), models.VenueID(id))
+	if !postgres.ErrVenueNotFound(err) {
+		t.Errorf("should have returned error venue not found")
+		return
+	}
 }

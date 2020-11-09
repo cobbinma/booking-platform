@@ -259,7 +259,7 @@ func TestCreateDeleteGetVenue(t *testing.T) {
 		return
 	}
 
-	if rec.Code != http.StatusOK {
+	if rec.Code != http.StatusNoContent {
 		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusOK)
 	}
 
