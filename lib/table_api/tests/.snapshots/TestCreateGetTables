@@ -1,0 +1,17 @@
+([]models.Table) (len=3) {
+  (models.Table) {
+    ID: (models.TableID) 1,
+    Name: (string) (len=1) "2",
+    Capacity: (int) 4
+  },
+  (models.Table) {
+    ID: (models.TableID) 2,
+    Name: (string) (len=1) "2",
+    Capacity: (int) 4
+  },
+  (models.Table) {
+    ID: (models.TableID) 3,
+    Name: (string) (len=1) "6",
+    Capacity: (int) 4
+  }
+}

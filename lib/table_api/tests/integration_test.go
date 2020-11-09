@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bradleyjkemp/cupaloy"
 	"github.com/cobbinma/booking/lib/table_api/cmd/api/handlers"
 	"github.com/cobbinma/booking/lib/table_api/gateways/venueAPI"
 	"github.com/cobbinma/booking/lib/table_api/models"
@@ -147,6 +148,7 @@ func TestCreateTable(t *testing.T) {
 	closes := "22:00"
 	venueJSON := fmt.Sprintf(`{"id":%v,"name":"%s","openingHours":[{"dayOfWeek":%v,"opens":"%s","closes":"%s"}]}`, venueID, venueName, day, opens, closes)
 	tableJSON := fmt.Sprintf(`{"name": "%v","capacity": %v}`, name, capacity)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tableJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -156,10 +158,8 @@ func TestCreateTable(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	srv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer srv.Close()
 
 	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
@@ -181,17 +181,7 @@ func TestCreateTable(t *testing.T) {
 		return
 	}
 
-	if tr.ID == 0 {
-		t.Errorf("table ID should not equal 0")
-	}
-
-	if tr.Name != name {
-		t.Errorf("name was '%s', expected '%s'", tr.Name, name)
-	}
-
-	if tr.Capacity != capacity {
-		t.Errorf("capacity was '%v', expected '%v'", tr.Capacity, capacity)
-	}
+	cupaloy.SnapshotT(t, tr)
 }
 
 func TestCreateGetTable(t *testing.T) {
@@ -213,10 +203,8 @@ func TestCreateGetTable(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	srv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer srv.Close()
 
 	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
@@ -265,7 +253,7 @@ func TestCreateGetTable(t *testing.T) {
 		return
 	}
 
-	checkTable(t, tr, tableID, name, capacity)
+	cupaloy.SnapshotT(t, tr)
 }
 
 func TestCreateGetTables(t *testing.T) {
@@ -287,10 +275,8 @@ func TestCreateGetTables(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	srv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer srv.Close()
 
 	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
@@ -340,13 +326,7 @@ func TestCreateGetTables(t *testing.T) {
 		return
 	}
 
-	for i := range tables {
-		if tables[i].ID == tableID {
-			checkTable(t, tables[i], tableID, name, capacity)
-			return
-		}
-	}
-	t.Errorf("could not find table in get tables response")
+	cupaloy.SnapshotT(t, tables)
 }
 
 func TestCreateGetTablesWithCapacity(t *testing.T) {
@@ -368,10 +348,8 @@ func TestCreateGetTablesWithCapacity(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	srv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer srv.Close()
 
 	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
@@ -386,15 +364,6 @@ func TestCreateGetTablesWithCapacity(t *testing.T) {
 		t.Errorf("response code '%v' was not expected '%v'", rec.Code, http.StatusCreated)
 		return
 	}
-
-	var tr models.Table
-	if err := json.Unmarshal(rec.Body.Bytes(), &tr); err != nil {
-		t.Errorf("could not unmarshall response : %s", err)
-		return
-	}
-
-	tableID := tr.ID
-	tr = models.Table{}
 
 	req = httptest.NewRequest(http.MethodGet, "/", nil)
 	rec = httptest.NewRecorder()
@@ -421,13 +390,7 @@ func TestCreateGetTablesWithCapacity(t *testing.T) {
 		return
 	}
 
-	for i := range tables {
-		if tables[i].ID == tableID {
-			checkTable(t, tables[i], tableID, name, capacity)
-			return
-		}
-	}
-	t.Errorf("could not find table in get tables response")
+	cupaloy.SnapshotT(t, tables)
 }
 
 func TestCreateDeleteGetTable(t *testing.T) {
@@ -449,10 +412,8 @@ func TestCreateDeleteGetTable(t *testing.T) {
 	c.SetParamNames("venue_id")
 	c.SetParamValues(strconv.Itoa(venueID))
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(venueJSON))
-	}))
+	//set up mock venue server
+	srv := mockServer(http.StatusOK, []byte(venueJSON))
 	defer srv.Close()
 
 	createTable := handlers.VenueMiddleware(handlers.CreateTable(repository), venueAPI.NewVenueAPI(srv.URL))
@@ -516,16 +477,9 @@ func TestCreateDeleteGetTable(t *testing.T) {
 	}
 }
 
-func checkTable(t *testing.T, tr models.Table, tableID models.TableID, name string, capacity int) {
-	if tr.ID != tableID {
-		t.Errorf("id was '%v', expected '%v'", tr.ID, tableID)
-	}
-
-	if tr.Name != name {
-		t.Errorf("name was '%s', expected '%s'", tr.Name, name)
-	}
-
-	if tr.Capacity != capacity {
-		t.Errorf("capacity was '%v', expected '%v'", tr.Capacity, capacity)
-	}
+func mockServer(code int, response []byte) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(code)
+		_, _ = w.Write(response)
+	}))
 }

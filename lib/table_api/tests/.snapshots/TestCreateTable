@@ -1,0 +1,5 @@
+(models.Table) {
+  ID: (models.TableID) 1,
+  Name: (string) (len=1) "2",
+  Capacity: (int) 4
+}
