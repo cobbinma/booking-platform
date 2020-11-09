@@ -1,0 +1,11 @@
+(tests.venueResponse) {
+  ID: (int) 1,
+  Name: (string) (len=12) "hop and vine",
+  OpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\"" }) (len=1) {
+    (struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\"" }) {
+      DayOfWeek: (int) 1,
+      Opens: (string) (len=5) "07:00",
+      Closes: (string) (len=5) "22:00"
+    }
+  }
+}
