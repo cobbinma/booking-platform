@@ -1,7 +1,7 @@
 #!/bin/sh
 echo starting...
 set -e
-git fetch origin master
+git fetch origin
 go get -u github.com/charypar/monobuild
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$branch" = "master" ]
