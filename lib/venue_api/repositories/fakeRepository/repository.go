@@ -3,7 +3,7 @@ package fakeRepository
 import (
 	"context"
 	"database/sql"
-	"github.com/cobbinma/booking/lib/venue_api/models"
+	"github.com/cobbinma/booking-platform/lib/venue_api/models"
 )
 
 type fakeRepository struct {

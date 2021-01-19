@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/cobbinma/booking/lib/table_api/models"
+	"github.com/cobbinma/booking-platform/lib/table_api/models"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"net/http"

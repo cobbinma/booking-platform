@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	"github.com/cobbinma/booking/lib/table_api/gateways/venueAPI"
-	"github.com/cobbinma/booking/lib/table_api/models"
+	"github.com/cobbinma/booking-platform/lib/table_api/gateways/venueAPI"
+	"github.com/cobbinma/booking-platform/lib/table_api/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"

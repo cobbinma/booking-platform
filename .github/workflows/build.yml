@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
 
 jobs:
   build:
@@ -22,11 +20,13 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Login to DockerHub Registry
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-      - name: Build & Push Docker Images
+      - name: Build Script
         env:
           DOCKERHUB_OWNER: ${{ secrets.DOCKERHUB_USERNAME }}
-        run: make
+        run: .github/script.sh

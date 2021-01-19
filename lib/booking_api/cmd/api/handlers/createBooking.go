@@ -3,8 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cobbinma/booking/lib/booking_api/models"
-	"github.com/cobbinma/booking/lib/booking_api/services"
+	"github.com/cobbinma/booking-platform/lib/booking_api/models"
+	"github.com/cobbinma/booking-platform/lib/booking_api/services"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"

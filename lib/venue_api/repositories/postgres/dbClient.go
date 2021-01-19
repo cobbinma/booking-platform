@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/cobbinma/booking/lib/venue_api/models"
+	"github.com/cobbinma/booking-platform/lib/venue_api/models"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"net/url"

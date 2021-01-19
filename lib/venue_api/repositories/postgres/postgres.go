@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/cobbinma/booking/lib/venue_api/models"
+	"github.com/cobbinma/booking-platform/lib/venue_api/models"
 )
 
 var _ models.Repository = (*postgres)(nil)

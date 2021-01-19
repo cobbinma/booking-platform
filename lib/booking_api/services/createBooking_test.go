@@ -2,10 +2,10 @@ package services_test
 
 import (
 	"context"
-	"github.com/cobbinma/booking/lib/booking_api/models"
-	mockmodels "github.com/cobbinma/booking/lib/booking_api/models/mock"
-	"github.com/cobbinma/booking/lib/booking_api/repositories/fakeRepository"
-	"github.com/cobbinma/booking/lib/booking_api/services"
+	"github.com/cobbinma/booking-platform/lib/booking_api/models"
+	mockmodels "github.com/cobbinma/booking-platform/lib/booking_api/models/mock"
+	"github.com/cobbinma/booking-platform/lib/booking_api/repositories/fakeRepository"
+	"github.com/cobbinma/booking-platform/lib/booking_api/services"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
