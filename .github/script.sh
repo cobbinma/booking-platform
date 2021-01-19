@@ -7,7 +7,7 @@ if [ "$branch" = "master" ]
 then
 changed_libs=$(monobuild diff --main-branch)
 else
-changed_libs=$(monobuild diff)
+changed_libs=$(monobuild diff --base-branch remotes/origin/master)
 fi
 get_tag() {
   DOCKERHUB_OWNER="cobbinma"
