@@ -5,9 +5,9 @@ go get -u github.com/charypar/monobuild
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$branch" = "master" ]
 then
-changed_libs=$(monobuild diff --main-branch)
+dependencies=$(monobuild diff --main-branch)
 else
-changed_libs=$(monobuild diff --base-branch remotes/origin/master)
+dependencies=$(monobuild diff --base-branch remotes/origin/master)
 fi
 get_tag() {
   DOCKERHUB_OWNER=${DOCKERHUB_OWNER}
@@ -18,28 +18,28 @@ get_tag() {
 }
 
 # test
-for lib in $changed_libs
+for dep in $dependencies
 do
-  echo testing "$lib"
-  lib=$(echo "$lib" | sed 's/\://g')
-  make -C "$lib" test
+  echo testing "$dep"
+  dep=$(echo "$dep" | sed 's/\://g')
+  make -C "$dep" test
 done
 
 # build docker images
-for lib in $changed_libs
+for dep in $dependencies
 do
-  echo building "$lib"
-  lib=$(echo "$lib" | sed 's/\://g')
-  docker build "$lib" -t "$(get_tag "$lib")"
+  echo building "$dep"
+  dep=$(echo "$dep" | sed 's/\://g')
+  docker build "$dep" -t "$(get_tag "$dep")"
 done
 
 # push docker images
 if [ "$branch" = "master" ]
 then
-for lib in $changed_libs
+for dep in $dependencies
 do
-    echo building "$lib"
-    lib=$(echo "$lib" | sed 's/\://g')
-    docker push "$(get_tag "$lib")"
+    echo building "$dep"
+    dep=$(echo "$dep" | sed 's/\://g')
+    docker push "$(get_tag "$dep")"
 done
 fi
