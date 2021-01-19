@@ -24,9 +24,11 @@ type BookingInput struct {
 }
 
 type OpeningHoursSpecification struct {
-	DayOfWeek int    `json:"dayOfWeek"`
-	Opens     string `json:"opens"`
-	Closes    string `json:"closes"`
+	DayOfWeek    int     `json:"dayOfWeek"`
+	Opens        string  `json:"opens"`
+	Closes       string  `json:"closes"`
+	ValidFrom    *string `json:"validFrom"`
+	ValidThrough *string `json:"validThrough"`
 }
 
 type Slot struct {
@@ -50,7 +52,8 @@ type SlotInput struct {
 }
 
 type Venue struct {
-	ID           string                       `json:"id"`
-	Name         string                       `json:"name"`
-	OpeningHours []*OpeningHoursSpecification `json:"openingHours"`
+	ID                  string                       `json:"id"`
+	Name                string                       `json:"name"`
+	OpeningHours        []*OpeningHoursSpecification `json:"openingHours"`
+	SpecialOpeningHours []*OpeningHoursSpecification `json:"specialOpeningHours"`
 }

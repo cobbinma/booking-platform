@@ -60,9 +60,11 @@ type ComplexityRoot struct {
 	}
 
 	OpeningHoursSpecification struct {
-		Closes    func(childComplexity int) int
-		DayOfWeek func(childComplexity int) int
-		Opens     func(childComplexity int) int
+		Closes       func(childComplexity int) int
+		DayOfWeek    func(childComplexity int) int
+		Opens        func(childComplexity int) int
+		ValidFrom    func(childComplexity int) int
+		ValidThrough func(childComplexity int) int
 	}
 
 	Query struct {
@@ -81,9 +83,10 @@ type ComplexityRoot struct {
 	}
 
 	Venue struct {
-		ID           func(childComplexity int) int
-		Name         func(childComplexity int) int
-		OpeningHours func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		Name                func(childComplexity int) int
+		OpeningHours        func(childComplexity int) int
+		SpecialOpeningHours func(childComplexity int) int
 	}
 }
 
@@ -211,6 +214,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OpeningHoursSpecification.Opens(childComplexity), true
 
+	case "OpeningHoursSpecification.validFrom":
+		if e.complexity.OpeningHoursSpecification.ValidFrom == nil {
+			break
+		}
+
+		return e.complexity.OpeningHoursSpecification.ValidFrom(childComplexity), true
+
+	case "OpeningHoursSpecification.validThrough":
+		if e.complexity.OpeningHoursSpecification.ValidThrough == nil {
+			break
+		}
+
+		return e.complexity.OpeningHoursSpecification.ValidThrough(childComplexity), true
+
 	case "Query.getVenue":
 		if e.complexity.Query.GetVenue == nil {
 			break
@@ -299,6 +316,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Venue.OpeningHours(childComplexity), true
+
+	case "Venue.specialOpeningHours":
+		if e.complexity.Venue.SpecialOpeningHours == nil {
+			break
+		}
+
+		return e.complexity.Venue.SpecialOpeningHours(childComplexity), true
 
 	}
 	return 0, false
@@ -413,12 +437,15 @@ type Venue {
   id: ID!
   name: String!
   openingHours: [OpeningHoursSpecification!]!
+  specialOpeningHours: [OpeningHoursSpecification!]!
 }
 
 type OpeningHoursSpecification {
   dayOfWeek: Int!,
   opens: TimeOfDay!,
   closes: TimeOfDay!,
+  validFrom: Date,
+  validThrough: Date,
 }
 
 type Query {
@@ -1003,6 +1030,70 @@ func (ec *executionContext) _OpeningHoursSpecification_closes(ctx context.Contex
 	return ec.marshalNTimeOfDay2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _OpeningHoursSpecification_validFrom(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "OpeningHoursSpecification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ValidFrom, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "OpeningHoursSpecification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ValidThrough, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1485,6 +1576,41 @@ func (ec *executionContext) _Venue_openingHours(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.OpeningHours, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.OpeningHoursSpecification)
+	fc.Result = res
+	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_specialOpeningHours(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SpecialOpeningHours, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2848,6 +2974,10 @@ func (ec *executionContext) _OpeningHoursSpecification(ctx context.Context, sel 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "validFrom":
+			out.Values[i] = ec._OpeningHoursSpecification_validFrom(ctx, field, obj)
+		case "validThrough":
+			out.Values[i] = ec._OpeningHoursSpecification_validThrough(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2988,6 +3118,11 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "openingHours":
 			out.Values[i] = ec._Venue_openingHours(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "specialOpeningHours":
+			out.Values[i] = ec._Venue_specialOpeningHours(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3687,6 +3822,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalODate2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalString(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODate2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalString(*v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

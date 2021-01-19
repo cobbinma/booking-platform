@@ -47,12 +47,15 @@ type Venue {
   id: ID!
   name: String!
   openingHours: [OpeningHoursSpecification!]!
+  specialOpeningHours: [OpeningHoursSpecification!]!
 }
 
 type OpeningHoursSpecification {
   dayOfWeek: Int!,
   opens: TimeOfDay!,
   closes: TimeOfDay!,
+  validFrom: Date,
+  validThrough: Date,
 }
 
 type Query {
