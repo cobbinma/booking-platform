@@ -1,9 +1,15 @@
 #!/bin/sh
 echo starting...
 set -e
+git fetch origin master
 go get -u github.com/charypar/monobuild
 branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" = "master" ]
+then
+changed_libs=$(monobuild diff --main-branch)
+else
 changed_libs=$(monobuild diff)
+fi
 get_tag() {
   DOCKERHUB_OWNER="cobbinma"
   IMAGE_PREFIX="booking"
