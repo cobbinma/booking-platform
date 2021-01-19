@@ -27,5 +27,4 @@ jobs:
       - name: Build & Push Docker Images
         env:
           DOCKERHUB_OWNER: ${{ secrets.DOCKERHUB_USERNAME }}
-        run: |
-          "${GITHUB_WORKSPACE}/.github/script.sh"
+        run: .github/script.sh
