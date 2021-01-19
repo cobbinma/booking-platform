@@ -21,8 +21,7 @@ get_tag() {
 for lib in $changed_libs
 do
   echo testing "$lib"
-  # shellcheck disable=SC2039
-  lib="${lib//:}"
+  lib=$(echo "$lib" | sed 's/\://g')
   make -C "$lib" test
 done
 
@@ -30,8 +29,7 @@ done
 for lib in $changed_libs
 do
   echo building "$lib"
-  # shellcheck disable=SC2039
-  lib="${lib//:}"
+  lib=$(echo "$lib" | sed 's/\://g')
   docker build "$lib" -t "$(get_tag "$lib")"
 done
 
@@ -41,7 +39,7 @@ then
 for lib in $changed_libs
 do
     echo building "$lib"
-    # shellcheck disable=SC2039
-    docker push "$(get_tag "${lib//:}")"
+    lib=$(echo "$lib" | sed 's/\://g')
+    docker push "$(get_tag "$lib")"
 done
 fi
