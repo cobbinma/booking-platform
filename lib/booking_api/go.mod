@@ -1,6 +1,6 @@
-module github.com/cobbinma/booking/lib/booking_api
+module github.com/cobbinma/booking-platform/lib/booking_api
 
-go 1.14
+go 1.15
 
 require (
 	github.com/Masterminds/squirrel v1.4.0

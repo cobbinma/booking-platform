@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/cobbinma/booking/lib/booking_api/models"
+	"github.com/cobbinma/booking-platform/lib/booking_api/models"
 )
 
 type postgres struct {

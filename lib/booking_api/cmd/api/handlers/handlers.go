@@ -1,6 +1,6 @@
 package handlers
 
-import "github.com/cobbinma/booking/lib/booking_api/models"
+import "github.com/cobbinma/booking-platform/lib/booking_api/models"
 
 type Handlers struct {
 	repository  models.Repository

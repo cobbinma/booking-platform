@@ -1,4 +1,4 @@
-module github.com/cobbinma/booking/lib/venue_api
+module github.com/cobbinma/booking-platform/lib/venue_api
 
 go 1.14
 

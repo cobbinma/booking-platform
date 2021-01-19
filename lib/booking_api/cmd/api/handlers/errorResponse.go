@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"errors"
-	"github.com/cobbinma/booking/lib/booking_api/gateways/venueAPI"
-	"github.com/cobbinma/booking/lib/booking_api/models"
+	"github.com/cobbinma/booking-platform/lib/booking_api/gateways/venueAPI"
+	"github.com/cobbinma/booking-platform/lib/booking_api/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )

@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/cobbinma/booking/lib/booking_api/models"
+	"github.com/cobbinma/booking-platform/lib/booking_api/models"
 )
 
 type createBookingService struct {

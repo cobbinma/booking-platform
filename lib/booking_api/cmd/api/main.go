@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/cobbinma/booking/lib/booking_api/cmd/api/handlers"
-	"github.com/cobbinma/booking/lib/booking_api/config"
-	"github.com/cobbinma/booking/lib/booking_api/gateways/tableAPI"
-	"github.com/cobbinma/booking/lib/booking_api/gateways/venueAPI"
-	"github.com/cobbinma/booking/lib/booking_api/repositories/postgres"
+	"github.com/cobbinma/booking-platform/lib/booking_api/cmd/api/handlers"
+	"github.com/cobbinma/booking-platform/lib/booking_api/config"
+	"github.com/cobbinma/booking-platform/lib/booking_api/gateways/tableAPI"
+	"github.com/cobbinma/booking-platform/lib/booking_api/gateways/venueAPI"
+	"github.com/cobbinma/booking-platform/lib/booking_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	log "github.com/sirupsen/logrus"

@@ -6,7 +6,7 @@ package mock_models
 
 import (
 	context "context"
-	models "github.com/cobbinma/booking/lib/booking_api/models"
+	models "github.com/cobbinma/booking-platform/lib/booking_api/models"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

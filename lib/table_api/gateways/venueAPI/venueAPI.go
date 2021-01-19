@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cobbinma/booking/lib/table_api/models"
+	"github.com/cobbinma/booking-platform/lib/table_api/models"
 	"io/ioutil"
 	"net/http"
 )

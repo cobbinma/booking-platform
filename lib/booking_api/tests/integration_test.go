@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bradleyjkemp/cupaloy"
-	"github.com/cobbinma/booking/lib/booking_api/cmd/api/handlers"
-	"github.com/cobbinma/booking/lib/booking_api/gateways/tableAPI"
-	"github.com/cobbinma/booking/lib/booking_api/gateways/venueAPI"
-	"github.com/cobbinma/booking/lib/booking_api/models"
-	"github.com/cobbinma/booking/lib/booking_api/repositories/postgres"
+	"github.com/cobbinma/booking-platform/lib/booking_api/cmd/api/handlers"
+	"github.com/cobbinma/booking-platform/lib/booking_api/gateways/tableAPI"
+	"github.com/cobbinma/booking-platform/lib/booking_api/gateways/venueAPI"
+	"github.com/cobbinma/booking-platform/lib/booking_api/models"
+	"github.com/cobbinma/booking-platform/lib/booking_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -30,7 +30,7 @@ import (
 
 var (
 	repository models.Repository
-	now        = time.Now()
+	now        = time.Date(3000, 11, 11, 0, 0, 0, 0, time.UTC)
 	name       = "2"
 	venueID    = 1
 	venueName  = "hop and vine"

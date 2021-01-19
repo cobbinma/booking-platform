@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/cobbinma/booking/lib/table_api/models"
+	"github.com/cobbinma/booking-platform/lib/table_api/models"
 )
 
 var _ models.Repository = (*postgres)(nil)

@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/cobbinma/booking/lib/venue_api/models"
-	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
+	"github.com/cobbinma/booking-platform/lib/venue_api/models"
+	"github.com/cobbinma/booking-platform/lib/venue_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"net/http"

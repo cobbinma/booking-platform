@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/cobbinma/booking/lib/venue_api/cmd/api/handlers"
-	"github.com/cobbinma/booking/lib/venue_api/config"
-	"github.com/cobbinma/booking/lib/venue_api/repositories/postgres"
+	"github.com/cobbinma/booking-platform/lib/venue_api/cmd/api/handlers"
+	"github.com/cobbinma/booking-platform/lib/venue_api/config"
+	"github.com/cobbinma/booking-platform/lib/venue_api/repositories/postgres"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	log "github.com/sirupsen/logrus"

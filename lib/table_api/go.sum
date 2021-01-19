@@ -56,11 +56,11 @@ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDk
 github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58/go.mod h1:EOBUe0h4xcZ5GoxqC5SDxFQ8gwyZPKQoEzownBlhI80=
 github.com/cobbinma/booking v0.0.0-20200908170315-36e04c755606 h1:xva6U3XPWvjo0WnS5g9o6OPose9qwzBHROW5aIBoBp0=
 github.com/cobbinma/booking v0.0.0-20200908190433-10767207368c h1:qOVu7Bx7uhesbheDW/syyI4gftTfJUomp9SosEvC9qw=
-github.com/cobbinma/booking/lib/booking_api v0.0.0-20200908170315-36e04c755606 h1:Rj9cK74xkMagnhEPncolpjbN69xbK8n4bJkRKl/hR/o=
-github.com/cobbinma/booking/lib/booking_api v0.0.0-20200908170315-36e04c755606/go.mod h1:JKRWwC6TB33laHvOCaEBkF+L2q1U1QnJszF26aZIWkw=
-github.com/cobbinma/booking/lib/booking_api v0.0.0-20200908190433-10767207368c h1:k8WcvuVL9WRjkIVzzTsH4eZQO9HVoJjREOWoDj2ZYcc=
-github.com/cobbinma/booking/lib/booking_api v0.0.0-20200908190433-10767207368c/go.mod h1:JKRWwC6TB33laHvOCaEBkF+L2q1U1QnJszF26aZIWkw=
-github.com/cobbinma/booking/lib/table_api v0.0.0-20200718121826-4c61f08af37e/go.mod h1:yYTnxbxxVM5z+W4iFgcEMBWNgXrqZnj5RYRK8hdVESA=
+github.com/cobbinma/booking-platform/lib/booking_api v0.0.0-20200908170315-36e04c755606 h1:Rj9cK74xkMagnhEPncolpjbN69xbK8n4bJkRKl/hR/o=
+github.com/cobbinma/booking-platform/lib/booking_api v0.0.0-20200908170315-36e04c755606/go.mod h1:JKRWwC6TB33laHvOCaEBkF+L2q1U1QnJszF26aZIWkw=
+github.com/cobbinma/booking-platform/lib/booking_api v0.0.0-20200908190433-10767207368c h1:k8WcvuVL9WRjkIVzzTsH4eZQO9HVoJjREOWoDj2ZYcc=
+github.com/cobbinma/booking-platform/lib/booking_api v0.0.0-20200908190433-10767207368c/go.mod h1:JKRWwC6TB33laHvOCaEBkF+L2q1U1QnJszF26aZIWkw=
+github.com/cobbinma/booking-platform/lib/table_api v0.0.0-20200718121826-4c61f08af37e/go.mod h1:yYTnxbxxVM5z+W4iFgcEMBWNgXrqZnj5RYRK8hdVESA=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/cockroachdb/cockroach-go v0.0.0-20190925194419-606b3d062051/go.mod h1:XGLbWH/ujMcbPbhZq52Nv6UrCghb1yGn//133kEsvDk=
 github.com/containerd/containerd v1.3.3/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
