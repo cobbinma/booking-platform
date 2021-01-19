@@ -38,7 +38,7 @@ if [ "$branch" = "master" ]
 then
 for dep in $dependencies
 do
-    echo building "$dep"
+    echo deploying "$dep"
     dep=$(echo "$dep" | sed 's/\://g')
     docker push "$(get_tag "$dep")"
 done
