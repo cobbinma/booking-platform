@@ -26,7 +26,7 @@ jobs:
       - name: Login to DockerHub Registry
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-      - name: Build & Push Docker Images
+      - name: Build Script
         env:
           DOCKERHUB_OWNER: ${{ secrets.DOCKERHUB_USERNAME }}
         run: .github/script.sh

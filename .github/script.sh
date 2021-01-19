@@ -10,7 +10,7 @@ else
 changed_libs=$(monobuild diff --base-branch remotes/origin/master)
 fi
 get_tag() {
-  DOCKERHUB_OWNER="cobbinma"
+  DOCKERHUB_OWNER=${DOCKERHUB_OWNER}
   IMAGE_PREFIX="booking"
   IMAGE_NAME=$(echo "$1" | sed 's:.*/::')
   IMAGES_TAG="$branch"
