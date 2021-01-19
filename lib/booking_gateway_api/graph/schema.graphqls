@@ -1,28 +1,65 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+scalar Date
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
+scalar TimeOfDay
+
+input SlotInput {
+  venueId: ID!
+  customerId: ID!,
+  people: Int!,
+  date: Date!,
+  startsAt: TimeOfDay!,
+  duration: Int!,
 }
 
-type User {
+type Slot {
+  id: ID!
+  venueId: ID!
+  customerId: ID!,
+  people: Int!,
+  date: Date!,
+  startsAt: TimeOfDay!,
+  endsAt: TimeOfDay!,
+  duration: Int!,
+}
+
+input BookingInput {
+  id: ID!
+  venueId: ID!
+  customerId: ID!,
+  people: Int!,
+  date: Date!,
+  startsAt: TimeOfDay!,
+  duration: Int!,
+}
+
+type Booking {
+  id: ID!
+  venueId: ID!
+  customerId: ID!,
+  people: Int!,
+  date: Date!,
+  startsAt: TimeOfDay!,
+  endsAt: TimeOfDay!,
+  duration: Int!,
+}
+
+type Venue {
   id: ID!
   name: String!
+  openingHours: [OpeningHoursSpecification!]!
+}
+
+type OpeningHoursSpecification {
+  dayOfWeek: Int!,
+  opens: TimeOfDay!,
+  closes: TimeOfDay!,
 }
 
 type Query {
-  todos: [Todo!]!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
+  getVenue(id: ID!): Venue!
 }
 
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  createSlot(input: SlotInput!): Slot!
+  createBooking(input: BookingInput!): Booking!
 }

@@ -8,14 +8,18 @@ import (
 	"fmt"
 
 	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/graph/generated"
-	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/graph/model"
+	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/models"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+func (r *mutationResolver) CreateSlot(ctx context.Context, input models.SlotInput) (*models.Slot, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
