@@ -29,7 +29,7 @@ func (t *TimeOfDay) UnmarshalGQL(v interface{}) error {
 }
 
 func (t TimeOfDay) MarshalGQL(w io.Writer) {
-	_, _ = w.Write([]byte(t))
+	_, _ = w.Write([]byte(fmt.Sprintf(`"%s"`, t)))
 }
 
 func (t TimeOfDay) Time() (time.Time, error) {

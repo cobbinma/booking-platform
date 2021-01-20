@@ -33,5 +33,5 @@ func (i *DayOfWeek) UnmarshalGQL(v interface{}) error {
 }
 
 func (i DayOfWeek) MarshalGQL(w io.Writer) {
-	_, _ = w.Write([]byte(strconv.Itoa((int)(i))))
+	_, _ = w.Write([]byte(fmt.Sprintf(`"%s"`, strconv.Itoa((int)(i)))))
 }

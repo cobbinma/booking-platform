@@ -25,5 +25,5 @@ func (d *Date) UnmarshalGQL(v interface{}) error {
 }
 
 func (d Date) MarshalGQL(w io.Writer) {
-	_, _ = w.Write([]byte(d))
+	_, _ = w.Write([]byte(fmt.Sprintf(`"%s"`, d)))
 }

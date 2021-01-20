@@ -543,7 +543,7 @@ func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Contex
 	var arg0 models.BookingInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐBookingInput(ctx, tmp)
+		arg0, err = ec.unmarshalNBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -558,7 +558,7 @@ func (ec *executionContext) field_Mutation_createSlot_args(ctx context.Context, 
 	var arg0 models.SlotInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐSlotInput(ctx, tmp)
+		arg0, err = ec.unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -807,7 +807,7 @@ func (ec *executionContext) _Booking_date(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(models.Date)
 	fc.Result = res
-	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
+	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_startsAt(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -842,7 +842,7 @@ func (ec *executionContext) _Booking_startsAt(ctx context.Context, field graphql
 	}
 	res := resTmp.(models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_endsAt(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -877,7 +877,7 @@ func (ec *executionContext) _Booking_endsAt(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_duration(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -989,7 +989,7 @@ func (ec *executionContext) _Mutation_createSlot(ctx context.Context, field grap
 	}
 	res := resTmp.(*models.Slot)
 	fc.Result = res
-	return ec.marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐSlot(ctx, field.Selections, res)
+	return ec.marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createBooking(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1031,7 +1031,7 @@ func (ec *executionContext) _Mutation_createBooking(ctx context.Context, field g
 	}
 	res := resTmp.(*models.Booking)
 	fc.Result = res
-	return ec.marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐBooking(ctx, field.Selections, res)
+	return ec.marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1066,7 +1066,7 @@ func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Con
 	}
 	res := resTmp.(models.DayOfWeek)
 	fc.Result = res
-	return ec.marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDayOfWeek(ctx, field.Selections, res)
+	return ec.marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_opens(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1101,7 +1101,7 @@ func (ec *executionContext) _OpeningHoursSpecification_opens(ctx context.Context
 	}
 	res := resTmp.(models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_closes(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1136,7 +1136,7 @@ func (ec *executionContext) _OpeningHoursSpecification_closes(ctx context.Contex
 	}
 	res := resTmp.(models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_validFrom(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1168,7 +1168,7 @@ func (ec *executionContext) _OpeningHoursSpecification_validFrom(ctx context.Con
 	}
 	res := resTmp.(*models.Date)
 	fc.Result = res
-	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
+	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1200,7 +1200,7 @@ func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.
 	}
 	res := resTmp.(*models.Date)
 	fc.Result = res
-	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
+	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1242,7 +1242,7 @@ func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*models.Venue)
 	fc.Result = res
-	return ec.marshalNVenue2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐVenue(ctx, field.Selections, res)
+	return ec.marshalNVenue2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1453,7 +1453,7 @@ func (ec *executionContext) _Slot_date(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(models.Date)
 	fc.Result = res
-	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
+	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_startsAt(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -1488,7 +1488,7 @@ func (ec *executionContext) _Slot_startsAt(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_endsAt(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -1523,7 +1523,7 @@ func (ec *executionContext) _Slot_endsAt(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_duration(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -1663,7 +1663,7 @@ func (ec *executionContext) _Venue_openingHours(ctx context.Context, field graph
 	}
 	res := resTmp.([]*models.OpeningHoursSpecification)
 	fc.Result = res
-	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Venue_specialOpeningHours(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
@@ -1698,7 +1698,7 @@ func (ec *executionContext) _Venue_specialOpeningHours(ctx context.Context, fiel
 	}
 	res := resTmp.([]*models.OpeningHoursSpecification)
 	fc.Result = res
-	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2822,7 +2822,7 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, v)
+			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2830,7 +2830,7 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startsAt"))
-			it.StartsAt, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			it.StartsAt, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2882,7 +2882,7 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, v)
+			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2890,7 +2890,7 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startsAt"))
-			it.StartsAt, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			it.StartsAt, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3448,11 +3448,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNBooking2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐBooking(ctx context.Context, sel ast.SelectionSet, v models.Booking) graphql.Marshaler {
+func (ec *executionContext) marshalNBooking2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx context.Context, sel ast.SelectionSet, v models.Booking) graphql.Marshaler {
 	return ec._Booking(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐBooking(ctx context.Context, sel ast.SelectionSet, v *models.Booking) graphql.Marshaler {
+func (ec *executionContext) marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx context.Context, sel ast.SelectionSet, v *models.Booking) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3462,7 +3462,7 @@ func (ec *executionContext) marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbooking
 	return ec._Booking(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐBookingInput(ctx context.Context, v interface{}) (models.BookingInput, error) {
+func (ec *executionContext) unmarshalNBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingInput(ctx context.Context, v interface{}) (models.BookingInput, error) {
 	res, err := ec.unmarshalInputBookingInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3482,23 +3482,23 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {
+func (ec *executionContext) unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {
 	var res models.Date
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
+func (ec *executionContext) marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, v interface{}) (models.DayOfWeek, error) {
+func (ec *executionContext) unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, v interface{}) (models.DayOfWeek, error) {
 	var res models.DayOfWeek
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, sel ast.SelectionSet, v models.DayOfWeek) graphql.Marshaler {
+func (ec *executionContext) marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, sel ast.SelectionSet, v models.DayOfWeek) graphql.Marshaler {
 	return v
 }
 
@@ -3532,7 +3532,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.OpeningHoursSpecification) graphql.Marshaler {
+func (ec *executionContext) marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.OpeningHoursSpecification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3556,7 +3556,7 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcom
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐOpeningHoursSpecification(ctx, sel, v[i])
+			ret[i] = ec.marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecification(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3569,7 +3569,7 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcom
 	return ret
 }
 
-func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐOpeningHoursSpecification(ctx context.Context, sel ast.SelectionSet, v *models.OpeningHoursSpecification) graphql.Marshaler {
+func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecification(ctx context.Context, sel ast.SelectionSet, v *models.OpeningHoursSpecification) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3579,11 +3579,11 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋ
 	return ec._OpeningHoursSpecification(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSlot2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v models.Slot) graphql.Marshaler {
+func (ec *executionContext) marshalNSlot2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v models.Slot) graphql.Marshaler {
 	return ec._Slot(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v *models.Slot) graphql.Marshaler {
+func (ec *executionContext) marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v *models.Slot) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3593,7 +3593,7 @@ func (ec *executionContext) marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑ
 	return ec._Slot(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐSlotInput(ctx context.Context, v interface{}) (models.SlotInput, error) {
+func (ec *executionContext) unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotInput(ctx context.Context, v interface{}) (models.SlotInput, error) {
 	res, err := ec.unmarshalInputSlotInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3613,21 +3613,21 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, v interface{}) (models.TimeOfDay, error) {
+func (ec *executionContext) unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, v interface{}) (models.TimeOfDay, error) {
 	var res models.TimeOfDay
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, sel ast.SelectionSet, v models.TimeOfDay) graphql.Marshaler {
+func (ec *executionContext) marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, sel ast.SelectionSet, v models.TimeOfDay) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) marshalNVenue2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐVenue(ctx context.Context, sel ast.SelectionSet, v models.Venue) graphql.Marshaler {
+func (ec *executionContext) marshalNVenue2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenue(ctx context.Context, sel ast.SelectionSet, v models.Venue) graphql.Marshaler {
 	return ec._Venue(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNVenue2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐVenue(ctx context.Context, sel ast.SelectionSet, v *models.Venue) graphql.Marshaler {
+func (ec *executionContext) marshalNVenue2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenue(ctx context.Context, sel ast.SelectionSet, v *models.Venue) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3890,7 +3890,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (*models.Date, error) {
+func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (*models.Date, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -3899,7 +3899,7 @@ func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbooking�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v *models.Date) graphql.Marshaler {
+func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v *models.Date) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
