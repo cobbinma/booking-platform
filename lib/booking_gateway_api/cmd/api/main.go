@@ -11,7 +11,7 @@ import (
 	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/graph/generated"
 )
 
-const defaultPort = "8080"
+const defaultPort = "9999"
 
 func main() {
 	port := os.Getenv("PORT")
