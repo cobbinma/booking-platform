@@ -17,6 +17,17 @@ get_tag() {
   echo "$DOCKERHUB_OWNER"/"$IMAGE_PREFIX"-"$IMAGE_NAME":"$IMAGES_TAG"
 }
 
+# inject makefile if not in lib
+for dep in $dependencies
+do
+  dep=$(echo "$dep" | sed 's/\://g')
+  FILE="$dep"/Makefile
+if [ ! -f "$FILE" ]; then
+  echo "copying default makefile to $FILE"
+  cp lib/Makefile "$dep"/Makefile
+fi
+done
+
 # test
 for dep in $dependencies
 do
@@ -30,7 +41,7 @@ for dep in $dependencies
 do
   echo building "$dep"
   dep=$(echo "$dep" | sed 's/\://g')
-  docker build "$dep" -t "$(get_tag "$dep")"
+  make -C "$dep" TAG="$(get_tag "$dep")" build
 done
 
 # push docker images
@@ -40,6 +51,6 @@ for dep in $dependencies
 do
     echo deploying "$dep"
     dep=$(echo "$dep" | sed 's/\://g')
-    docker push "$(get_tag "$dep")"
+    make -C "$dep" TAG="$(get_tag "$dep")" deploy
 done
 fi
