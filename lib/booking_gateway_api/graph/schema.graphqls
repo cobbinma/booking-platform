@@ -9,6 +9,11 @@ Time (hh:mm)
 scalar TimeOfDay
 
 """
+Day of Week (Monday = 1, Sunday = 7)
+"""
+scalar DayOfWeek
+
+"""
 Slot Input is a booking enquiry.
 """
 input SlotInput {
@@ -107,7 +112,7 @@ Day specific operating hours.
 """
 type OpeningHoursSpecification {
   "the day of the week for which these opening hours are valid"
-  dayOfWeek: Int!,
+  dayOfWeek: DayOfWeek!,
   "the opening time of the place or service on the given day(s) of the week"
   opens: TimeOfDay!,
   "the closing time of the place or service on the given day(s) of the week"

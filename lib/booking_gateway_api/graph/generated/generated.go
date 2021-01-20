@@ -399,6 +399,11 @@ Time (hh:mm)
 scalar TimeOfDay
 
 """
+Day of Week (Monday = 1, Sunday = 7)
+"""
+scalar DayOfWeek
+
+"""
 Slot Input is a booking enquiry.
 """
 input SlotInput {
@@ -410,7 +415,7 @@ input SlotInput {
   people: Int!,
   "desired date of the booking (dd-mm-yyyy)"
   date: Date!,
-  "desired start time of the booking (17:00)"
+  "desired start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
   "desired duration of the booking in minutes"
   duration: Int!,
@@ -426,11 +431,11 @@ type Slot {
   customerId: ID!,
   "amount of people attending the booking"
   people: Int!,
-  "potential date of the booking (01-05-1992)"
+  "potential date of the booking (dd-mm-yyyy)"
   date: Date!,
-  "potential start time of the booking (17:00)"
+  "potential start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
-  "potential ending time of the booking (17:00)"
+  "potential ending time of the booking (hh:mm)"
   endsAt: TimeOfDay!,
   "potential duration of the booking in minutes"
   duration: Int!,
@@ -446,9 +451,9 @@ input BookingInput {
   customerId: ID!,
   "amount of people attending the booking"
   people: Int!,
-  "date of the booking (01-05-1992)"
+  "date of the booking (dd-mm-yyyy)"
   date: Date!,
-  "start time of the booking (17:00)"
+  "start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
   "duration of the booking in minutes"
   duration: Int!,
@@ -466,11 +471,11 @@ type Booking {
   customerId: ID!,
   "amount of people attending the booking"
   people: Int!,
-  "date of the booking (01-05-1992)"
+  "date of the booking (dd-mm-yyyy)"
   date: Date!,
-  "start time of the booking (17:00)"
+  "start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
-  "end time of the booking (17:00)"
+  "end time of the booking (hh:mm)"
   endsAt: TimeOfDay!,
   "duration of the booking in minutes"
   duration: Int!,
@@ -497,7 +502,7 @@ Day specific operating hours.
 """
 type OpeningHoursSpecification {
   "the day of the week for which these opening hours are valid"
-  dayOfWeek: Int!,
+  dayOfWeek: DayOfWeek!,
   "the opening time of the place or service on the given day(s) of the week"
   opens: TimeOfDay!,
   "the closing time of the place or service on the given day(s) of the week"
@@ -1059,9 +1064,9 @@ func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Con
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(models.DayOfWeek)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDayOfWeek(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_opens(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -3484,6 +3489,16 @@ func (ec *executionContext) unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑp
 }
 
 func (ec *executionContext) marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, v interface{}) (models.DayOfWeek, error) {
+	var res models.DayOfWeek
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, sel ast.SelectionSet, v models.DayOfWeek) graphql.Marshaler {
 	return v
 }
 

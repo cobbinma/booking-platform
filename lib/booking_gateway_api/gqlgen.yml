@@ -58,3 +58,5 @@ models:
     model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.TimeOfDay
   Date:
     model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.Date
+  DayOfWeek:
+    model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.DayOfWeek

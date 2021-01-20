@@ -12,11 +12,11 @@ type Booking struct {
 	CustomerID string `json:"customerId"`
 	// amount of people attending the booking
 	People int `json:"people"`
-	// date of the booking (01-05-1992)
+	// date of the booking (dd-mm-yyyy)
 	Date Date `json:"date"`
-	// start time of the booking (17:00)
+	// start time of the booking (hh:mm)
 	StartsAt TimeOfDay `json:"startsAt"`
-	// end time of the booking (17:00)
+	// end time of the booking (hh:mm)
 	EndsAt TimeOfDay `json:"endsAt"`
 	// duration of the booking in minutes
 	Duration int `json:"duration"`
@@ -32,9 +32,9 @@ type BookingInput struct {
 	CustomerID string `json:"customerId"`
 	// amount of people attending the booking
 	People int `json:"people"`
-	// date of the booking (01-05-1992)
+	// date of the booking (dd-mm-yyyy)
 	Date Date `json:"date"`
-	// start time of the booking (17:00)
+	// start time of the booking (hh:mm)
 	StartsAt TimeOfDay `json:"startsAt"`
 	// duration of the booking in minutes
 	Duration int `json:"duration"`
@@ -43,7 +43,7 @@ type BookingInput struct {
 // Day specific operating hours.
 type OpeningHoursSpecification struct {
 	// the day of the week for which these opening hours are valid
-	DayOfWeek int `json:"dayOfWeek"`
+	DayOfWeek DayOfWeek `json:"dayOfWeek"`
 	// the opening time of the place or service on the given day(s) of the week
 	Opens TimeOfDay `json:"opens"`
 	// the closing time of the place or service on the given day(s) of the week
@@ -62,11 +62,11 @@ type Slot struct {
 	CustomerID string `json:"customerId"`
 	// amount of people attending the booking
 	People int `json:"people"`
-	// potential date of the booking (01-05-1992)
+	// potential date of the booking (dd-mm-yyyy)
 	Date Date `json:"date"`
-	// potential start time of the booking (17:00)
+	// potential start time of the booking (hh:mm)
 	StartsAt TimeOfDay `json:"startsAt"`
-	// potential ending time of the booking (17:00)
+	// potential ending time of the booking (hh:mm)
 	EndsAt TimeOfDay `json:"endsAt"`
 	// potential duration of the booking in minutes
 	Duration int `json:"duration"`
@@ -82,7 +82,7 @@ type SlotInput struct {
 	People int `json:"people"`
 	// desired date of the booking (dd-mm-yyyy)
 	Date Date `json:"date"`
-	// desired start time of the booking (17:00)
+	// desired start time of the booking (hh:mm)
 	StartsAt TimeOfDay `json:"startsAt"`
 	// desired duration of the booking in minutes
 	Duration int `json:"duration"`
