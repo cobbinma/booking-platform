@@ -3,53 +3,53 @@
 package models
 
 type Booking struct {
-	ID         string `json:"id"`
-	VenueID    string `json:"venueId"`
-	CustomerID string `json:"customerId"`
-	People     int    `json:"people"`
-	Date       string `json:"date"`
-	StartsAt   string `json:"startsAt"`
-	EndsAt     string `json:"endsAt"`
-	Duration   int    `json:"duration"`
-	TableID    string `json:"tableId"`
+	ID         string    `json:"id"`
+	VenueID    string    `json:"venueId"`
+	CustomerID string    `json:"customerId"`
+	People     int       `json:"people"`
+	Date       string    `json:"date"`
+	StartsAt   TimeOfDay `json:"startsAt"`
+	EndsAt     TimeOfDay `json:"endsAt"`
+	Duration   int       `json:"duration"`
+	TableID    string    `json:"tableId"`
 }
 
 type BookingInput struct {
-	ID         string `json:"id"`
-	VenueID    string `json:"venueId"`
-	CustomerID string `json:"customerId"`
-	People     int    `json:"people"`
-	Date       string `json:"date"`
-	StartsAt   string `json:"startsAt"`
-	Duration   int    `json:"duration"`
+	ID         string    `json:"id"`
+	VenueID    string    `json:"venueId"`
+	CustomerID string    `json:"customerId"`
+	People     int       `json:"people"`
+	Date       string    `json:"date"`
+	StartsAt   TimeOfDay `json:"startsAt"`
+	Duration   int       `json:"duration"`
 }
 
 type OpeningHoursSpecification struct {
-	DayOfWeek    int     `json:"dayOfWeek"`
-	Opens        string  `json:"opens"`
-	Closes       string  `json:"closes"`
-	ValidFrom    *string `json:"validFrom"`
-	ValidThrough *string `json:"validThrough"`
+	DayOfWeek    int       `json:"dayOfWeek"`
+	Opens        TimeOfDay `json:"opens"`
+	Closes       TimeOfDay `json:"closes"`
+	ValidFrom    *string   `json:"validFrom"`
+	ValidThrough *string   `json:"validThrough"`
 }
 
 type Slot struct {
-	ID         string `json:"id"`
-	VenueID    string `json:"venueId"`
-	CustomerID string `json:"customerId"`
-	People     int    `json:"people"`
-	Date       string `json:"date"`
-	StartsAt   string `json:"startsAt"`
-	EndsAt     string `json:"endsAt"`
-	Duration   int    `json:"duration"`
+	ID         string    `json:"id"`
+	VenueID    string    `json:"venueId"`
+	CustomerID string    `json:"customerId"`
+	People     int       `json:"people"`
+	Date       string    `json:"date"`
+	StartsAt   TimeOfDay `json:"startsAt"`
+	EndsAt     TimeOfDay `json:"endsAt"`
+	Duration   int       `json:"duration"`
 }
 
 type SlotInput struct {
-	VenueID    string `json:"venueId"`
-	CustomerID string `json:"customerId"`
-	People     int    `json:"people"`
-	Date       string `json:"date"`
-	StartsAt   string `json:"startsAt"`
-	Duration   int    `json:"duration"`
+	VenueID    string    `json:"venueId"`
+	CustomerID string    `json:"customerId"`
+	People     int       `json:"people"`
+	Date       string    `json:"date"`
+	StartsAt   TimeOfDay `json:"startsAt"`
+	Duration   int       `json:"duration"`
 }
 
 type Venue struct {
