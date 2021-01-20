@@ -7,7 +7,7 @@ type Booking struct {
 	VenueID    string    `json:"venueId"`
 	CustomerID string    `json:"customerId"`
 	People     int       `json:"people"`
-	Date       string    `json:"date"`
+	Date       Date      `json:"date"`
 	StartsAt   TimeOfDay `json:"startsAt"`
 	EndsAt     TimeOfDay `json:"endsAt"`
 	Duration   int       `json:"duration"`
@@ -19,7 +19,7 @@ type BookingInput struct {
 	VenueID    string    `json:"venueId"`
 	CustomerID string    `json:"customerId"`
 	People     int       `json:"people"`
-	Date       string    `json:"date"`
+	Date       Date      `json:"date"`
 	StartsAt   TimeOfDay `json:"startsAt"`
 	Duration   int       `json:"duration"`
 }
@@ -28,8 +28,8 @@ type OpeningHoursSpecification struct {
 	DayOfWeek    int       `json:"dayOfWeek"`
 	Opens        TimeOfDay `json:"opens"`
 	Closes       TimeOfDay `json:"closes"`
-	ValidFrom    *string   `json:"validFrom"`
-	ValidThrough *string   `json:"validThrough"`
+	ValidFrom    *Date     `json:"validFrom"`
+	ValidThrough *Date     `json:"validThrough"`
 }
 
 type Slot struct {
@@ -37,7 +37,7 @@ type Slot struct {
 	VenueID    string    `json:"venueId"`
 	CustomerID string    `json:"customerId"`
 	People     int       `json:"people"`
-	Date       string    `json:"date"`
+	Date       Date      `json:"date"`
 	StartsAt   TimeOfDay `json:"startsAt"`
 	EndsAt     TimeOfDay `json:"endsAt"`
 	Duration   int       `json:"duration"`
@@ -47,7 +47,7 @@ type SlotInput struct {
 	VenueID    string    `json:"venueId"`
 	CustomerID string    `json:"customerId"`
 	People     int       `json:"people"`
-	Date       string    `json:"date"`
+	Date       Date      `json:"date"`
 	StartsAt   TimeOfDay `json:"startsAt"`
 	Duration   int       `json:"duration"`
 }

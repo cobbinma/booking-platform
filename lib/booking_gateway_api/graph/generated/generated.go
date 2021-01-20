@@ -740,9 +740,9 @@ func (ec *executionContext) _Booking_date(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(models.Date)
 	fc.Result = res
-	return ec.marshalNDate2string(ctx, field.Selections, res)
+	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_startsAt(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -1101,9 +1101,9 @@ func (ec *executionContext) _OpeningHoursSpecification_validFrom(ctx context.Con
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*models.Date)
 	fc.Result = res
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1133,9 +1133,9 @@ func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*models.Date)
 	fc.Result = res
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1421,9 +1421,9 @@ func (ec *executionContext) _Slot_date(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(models.Date)
 	fc.Result = res
-	return ec.marshalNDate2string(ctx, field.Selections, res)
+	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_startsAt(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -2800,7 +2800,7 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2string(ctx, v)
+			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2860,7 +2860,7 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2string(ctx, v)
+			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3465,19 +3465,14 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDate2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
+func (ec *executionContext) unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {
+	var res models.Date
+	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDate2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
+func (ec *executionContext) marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -3868,19 +3863,20 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalODate2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (*models.Date, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalString(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	var res = new(models.Date)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalODate2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋbooking_gateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v *models.Date) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return graphql.MarshalString(*v)
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

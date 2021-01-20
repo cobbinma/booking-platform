@@ -17,7 +17,7 @@ func (t *TimeOfDay) UnmarshalGQL(v interface{}) error {
 	}
 
 	if _, err := time.Parse(timeOfDayFormat, tod); err != nil {
-		return fmt.Errorf("could not parse time of day : %w", err)
+		return fmt.Errorf("time of day must have format '%s'", timeOfDayFormat)
 	}
 
 	*t = (TimeOfDay)(tod)

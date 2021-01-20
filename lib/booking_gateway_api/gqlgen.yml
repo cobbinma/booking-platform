@@ -56,3 +56,5 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   TimeOfDay:
     model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.TimeOfDay
+  Date:
+    model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.Date
