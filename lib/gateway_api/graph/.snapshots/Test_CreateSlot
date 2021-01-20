@@ -1,0 +1,11 @@
+(struct { CreateSlot struct { VenueID string "json:\"venueId\""; CustomerID string "json:\"customerId\""; People int "json:\"people\""; Date string "json:\"date\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\"" } "json:\"createSlot\"" }) {
+  CreateSlot: (struct { VenueID string "json:\"venueId\""; CustomerID string "json:\"customerId\""; People int "json:\"people\""; Date string "json:\"date\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\"" }) {
+    VenueID: (string) (len=36) "8a18e89b-339b-4e51-ab53-825aae59a070",
+    CustomerID: (string) (len=36) "23a4d31c-d6e4-4cfc-9cf0-b00b08faba55",
+    People: (int) 5,
+    Date: (string) (len=10) "01-05-3000",
+    StartsAt: (string) (len=5) "15:00",
+    EndsAt: (string) (len=5) "16:00",
+    Duration: (int) 60
+  }
+}

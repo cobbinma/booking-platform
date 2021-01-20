@@ -1,7 +1,8 @@
+#DEFAULT MAKEFILE FOR LIBS
+
 .PHONY: test
 test:
-	yarn
-	yarn test
+	echo "nothing to test"
 
 .PHONY: build
 build:
