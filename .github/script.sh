@@ -2,14 +2,18 @@
 echo starting...
 set -e
 go get -u github.com/charypar/monobuild
+
+# get dependencies that need to be built
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$branch" = "master" ]
 then
-dependencies=$(monobuild diff --main-branch)
+  dependencies=$(monobuild diff --main-branch)
 else
-dependencies=$(monobuild diff --base-branch remotes/origin/master)
+  dependencies=$(monobuild diff --base-branch remotes/origin/master)
 fi
-get_tag() {
+
+# get docker tag from library
+get_docker_tag() {
   DOCKERHUB_OWNER=${DOCKERHUB_OWNER}
   IMAGE_PREFIX="booking"
   IMAGE_NAME=$(echo "$1" | sed 's:.*/::')
@@ -41,7 +45,7 @@ for dep in $dependencies
 do
   echo building "$dep"
   dep=$(echo "$dep" | sed 's/\://g')
-  make -C "$dep" TAG="$(get_tag "$dep")" build
+  make -C "$dep" TAG="$(get_docker_tag "$dep")" build
 done
 
 # push docker images
@@ -51,6 +55,6 @@ for dep in $dependencies
 do
     echo deploying "$dep"
     dep=$(echo "$dep" | sed 's/\://g')
-    make -C "$dep" TAG="$(get_tag "$dep")" deploy
+    make -C "$dep" TAG="$(get_docker_tag "$dep")" deploy
 done
 fi
