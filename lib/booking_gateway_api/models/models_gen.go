@@ -11,6 +11,7 @@ type Booking struct {
 	StartsAt   string `json:"startsAt"`
 	EndsAt     string `json:"endsAt"`
 	Duration   int    `json:"duration"`
+	TableID    string `json:"tableId"`
 }
 
 type BookingInput struct {

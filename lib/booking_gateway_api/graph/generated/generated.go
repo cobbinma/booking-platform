@@ -51,6 +51,7 @@ type ComplexityRoot struct {
 		ID         func(childComplexity int) int
 		People     func(childComplexity int) int
 		StartsAt   func(childComplexity int) int
+		TableID    func(childComplexity int) int
 		VenueID    func(childComplexity int) int
 	}
 
@@ -161,6 +162,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Booking.StartsAt(childComplexity), true
+
+	case "Booking.tableId":
+		if e.complexity.Booking.TableID == nil {
+			break
+		}
+
+		return e.complexity.Booking.TableID(childComplexity), true
 
 	case "Booking.venueId":
 		if e.complexity.Booking.VenueID == nil {
@@ -431,6 +439,7 @@ type Booking {
   startsAt: TimeOfDay!,
   endsAt: TimeOfDay!,
   duration: Int!,
+  tableId: ID!,
 }
 
 type Venue {
@@ -839,6 +848,41 @@ func (ec *executionContext) _Booking_duration(ctx context.Context, field graphql
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Booking_tableId(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Booking",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TableID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createSlot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2898,6 +2942,11 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "duration":
 			out.Values[i] = ec._Booking_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "tableId":
+			out.Values[i] = ec._Booking_tableId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

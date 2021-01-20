@@ -41,6 +41,7 @@ type Booking {
   startsAt: TimeOfDay!,
   endsAt: TimeOfDay!,
   duration: Int!,
+  tableId: ID!,
 }
 
 type Venue {
