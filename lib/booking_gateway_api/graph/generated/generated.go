@@ -77,7 +77,6 @@ type ComplexityRoot struct {
 		Date       func(childComplexity int) int
 		Duration   func(childComplexity int) int
 		EndsAt     func(childComplexity int) int
-		ID         func(childComplexity int) int
 		People     func(childComplexity int) int
 		StartsAt   func(childComplexity int) int
 		VenueID    func(childComplexity int) int
@@ -276,13 +275,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Slot.EndsAt(childComplexity), true
 
-	case "Slot.id":
-		if e.complexity.Slot.ID == nil {
-			break
-		}
-
-		return e.complexity.Slot.ID(childComplexity), true
-
 	case "Slot.people":
 		if e.complexity.Slot.People == nil {
 			break
@@ -396,73 +388,141 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema.graphqls", Input: `scalar Date
+	{Name: "graph/schema.graphqls", Input: `"""
+Date (dd-mm-yyyy)
+"""
+scalar Date
 
+"""
+Time (hh:mm)
+"""
 scalar TimeOfDay
 
+"""
+Slot Input is a booking enquiry.
+"""
 input SlotInput {
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "desired date of the booking (dd-mm-yyyy)"
   date: Date!,
+  "desired start time of the booking (17:00)"
   startsAt: TimeOfDay!,
+  "desired duration of the booking in minutes"
   duration: Int!,
 }
 
+"""
+Slot is a possible booking that has yet to be confirmed.
+"""
 type Slot {
-  id: ID!
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "potential date of the booking (01-05-1992)"
   date: Date!,
+  "potential start time of the booking (17:00)"
   startsAt: TimeOfDay!,
+  "potential ending time of the booking (17:00)"
   endsAt: TimeOfDay!,
+  "potential duration of the booking in minutes"
   duration: Int!,
 }
 
+"""
+Slot is a possible booking that has yet to be confirmed.
+"""
 input BookingInput {
-  id: ID!
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "date of the booking (01-05-1992)"
   date: Date!,
+  "start time of the booking (17:00)"
   startsAt: TimeOfDay!,
+  "duration of the booking in minutes"
   duration: Int!,
 }
 
+"""
+Booking has now been confirmed.
+"""
 type Booking {
+  "unique identifier of the booking"
   id: ID!
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "date of the booking (01-05-1992)"
   date: Date!,
+  "start time of the booking (17:00)"
   startsAt: TimeOfDay!,
+  "end time of the booking (17:00)"
   endsAt: TimeOfDay!,
+  "duration of the booking in minutes"
   duration: Int!,
+  "unique identifier of the booking table"
   tableId: ID!,
 }
 
+"""
+Venue where a booking can take place.
+"""
 type Venue {
+  "unique identifier of the venue"
   id: ID!
+  "name of the venue"
   name: String!
+  "operating hours of the venue"
   openingHours: [OpeningHoursSpecification!]!
+  "special operating hours of the venue"
   specialOpeningHours: [OpeningHoursSpecification!]!
 }
 
+"""
+Day specific operating hours.
+"""
 type OpeningHoursSpecification {
+  "the day of the week for which these opening hours are valid"
   dayOfWeek: Int!,
+  "the opening time of the place or service on the given day(s) of the week"
   opens: TimeOfDay!,
+  "the closing time of the place or service on the given day(s) of the week"
   closes: TimeOfDay!,
+  "date the special opening hours starts at. only valid for special opening hours"
   validFrom: Date,
+  "date the special opening hours ends at. only valid for special opening hours"
   validThrough: Date,
 }
 
+"""
+Booking queries.
+"""
 type Query {
+  "get venue information from an venue identifier"
   getVenue(id: ID!): Venue!
 }
 
+"""
+Booking mutations.
+"""
 type Mutation {
+  "create slot is a booking enquiry"
   createSlot(input: SlotInput!): Slot!
+  "create booking is a confirming a booking slot"
   createBooking(input: BookingInput!): Booking!
 }`, BuiltIn: false},
 }
@@ -1249,41 +1309,6 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Slot_id(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Slot",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_venueId(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -2764,14 +2789,6 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 
 	for k, v := range asMap {
 		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "venueId":
 			var err error
 
@@ -3093,11 +3110,6 @@ func (ec *executionContext) _Slot(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Slot")
-		case "id":
-			out.Values[i] = ec._Slot_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "venueId":
 			out.Values[i] = ec._Slot_venueId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

@@ -1,69 +1,137 @@
+"""
+Date (dd-mm-yyyy)
+"""
 scalar Date
 
+"""
+Time (hh:mm)
+"""
 scalar TimeOfDay
 
+"""
+Slot Input is a booking enquiry.
+"""
 input SlotInput {
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "desired date of the booking (dd-mm-yyyy)"
   date: Date!,
+  "desired start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
+  "desired duration of the booking in minutes"
   duration: Int!,
 }
 
+"""
+Slot is a possible booking that has yet to be confirmed.
+"""
 type Slot {
-  id: ID!
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "potential date of the booking (dd-mm-yyyy)"
   date: Date!,
+  "potential start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
+  "potential ending time of the booking (hh:mm)"
   endsAt: TimeOfDay!,
+  "potential duration of the booking in minutes"
   duration: Int!,
 }
 
+"""
+Slot is a possible booking that has yet to be confirmed.
+"""
 input BookingInput {
-  id: ID!
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "date of the booking (dd-mm-yyyy)"
   date: Date!,
+  "start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
+  "duration of the booking in minutes"
   duration: Int!,
 }
 
+"""
+Booking has now been confirmed.
+"""
 type Booking {
+  "unique identifier of the booking"
   id: ID!
+  "unique identifier of the venue"
   venueId: ID!
+  "unique identifier of the customer"
   customerId: ID!,
+  "amount of people attending the booking"
   people: Int!,
+  "date of the booking (dd-mm-yyyy)"
   date: Date!,
+  "start time of the booking (hh:mm)"
   startsAt: TimeOfDay!,
+  "end time of the booking (hh:mm)"
   endsAt: TimeOfDay!,
+  "duration of the booking in minutes"
   duration: Int!,
+  "unique identifier of the booking table"
   tableId: ID!,
 }
 
+"""
+Venue where a booking can take place.
+"""
 type Venue {
+  "unique identifier of the venue"
   id: ID!
+  "name of the venue"
   name: String!
+  "operating hours of the venue"
   openingHours: [OpeningHoursSpecification!]!
+  "special operating hours of the venue"
   specialOpeningHours: [OpeningHoursSpecification!]!
 }
 
+"""
+Day specific operating hours.
+"""
 type OpeningHoursSpecification {
+  "the day of the week for which these opening hours are valid"
   dayOfWeek: Int!,
+  "the opening time of the place or service on the given day(s) of the week"
   opens: TimeOfDay!,
+  "the closing time of the place or service on the given day(s) of the week"
   closes: TimeOfDay!,
+  "date the special opening hours starts at. only valid for special opening hours"
   validFrom: Date,
+  "date the special opening hours ends at. only valid for special opening hours"
   validThrough: Date,
 }
 
+"""
+Booking queries.
+"""
 type Query {
+  "get venue information from an venue identifier"
   getVenue(id: ID!): Venue!
 }
 
+"""
+Booking mutations.
+"""
 type Mutation {
+  "create slot is a booking enquiry"
   createSlot(input: SlotInput!): Slot!
+  "create booking is a confirming a booking slot"
   createBooking(input: BookingInput!): Booking!
 }

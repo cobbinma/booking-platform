@@ -2,59 +2,100 @@
 
 package models
 
+// Booking has now been confirmed.
 type Booking struct {
-	ID         string    `json:"id"`
-	VenueID    string    `json:"venueId"`
-	CustomerID string    `json:"customerId"`
-	People     int       `json:"people"`
-	Date       Date      `json:"date"`
-	StartsAt   TimeOfDay `json:"startsAt"`
-	EndsAt     TimeOfDay `json:"endsAt"`
-	Duration   int       `json:"duration"`
-	TableID    string    `json:"tableId"`
+	// unique identifier of the booking
+	ID string `json:"id"`
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// unique identifier of the customer
+	CustomerID string `json:"customerId"`
+	// amount of people attending the booking
+	People int `json:"people"`
+	// date of the booking (01-05-1992)
+	Date Date `json:"date"`
+	// start time of the booking (17:00)
+	StartsAt TimeOfDay `json:"startsAt"`
+	// end time of the booking (17:00)
+	EndsAt TimeOfDay `json:"endsAt"`
+	// duration of the booking in minutes
+	Duration int `json:"duration"`
+	// unique identifier of the booking table
+	TableID string `json:"tableId"`
 }
 
+// Slot is a possible booking that has yet to be confirmed.
 type BookingInput struct {
-	ID         string    `json:"id"`
-	VenueID    string    `json:"venueId"`
-	CustomerID string    `json:"customerId"`
-	People     int       `json:"people"`
-	Date       Date      `json:"date"`
-	StartsAt   TimeOfDay `json:"startsAt"`
-	Duration   int       `json:"duration"`
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// unique identifier of the customer
+	CustomerID string `json:"customerId"`
+	// amount of people attending the booking
+	People int `json:"people"`
+	// date of the booking (01-05-1992)
+	Date Date `json:"date"`
+	// start time of the booking (17:00)
+	StartsAt TimeOfDay `json:"startsAt"`
+	// duration of the booking in minutes
+	Duration int `json:"duration"`
 }
 
+// Day specific operating hours.
 type OpeningHoursSpecification struct {
-	DayOfWeek    int       `json:"dayOfWeek"`
-	Opens        TimeOfDay `json:"opens"`
-	Closes       TimeOfDay `json:"closes"`
-	ValidFrom    *Date     `json:"validFrom"`
-	ValidThrough *Date     `json:"validThrough"`
+	// the day of the week for which these opening hours are valid
+	DayOfWeek int `json:"dayOfWeek"`
+	// the opening time of the place or service on the given day(s) of the week
+	Opens TimeOfDay `json:"opens"`
+	// the closing time of the place or service on the given day(s) of the week
+	Closes TimeOfDay `json:"closes"`
+	// date the special opening hours starts at. only valid for special opening hours
+	ValidFrom *Date `json:"validFrom"`
+	// date the special opening hours ends at. only valid for special opening hours
+	ValidThrough *Date `json:"validThrough"`
 }
 
+// Slot is a possible booking that has yet to be confirmed.
 type Slot struct {
-	ID         string    `json:"id"`
-	VenueID    string    `json:"venueId"`
-	CustomerID string    `json:"customerId"`
-	People     int       `json:"people"`
-	Date       Date      `json:"date"`
-	StartsAt   TimeOfDay `json:"startsAt"`
-	EndsAt     TimeOfDay `json:"endsAt"`
-	Duration   int       `json:"duration"`
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// unique identifier of the customer
+	CustomerID string `json:"customerId"`
+	// amount of people attending the booking
+	People int `json:"people"`
+	// potential date of the booking (01-05-1992)
+	Date Date `json:"date"`
+	// potential start time of the booking (17:00)
+	StartsAt TimeOfDay `json:"startsAt"`
+	// potential ending time of the booking (17:00)
+	EndsAt TimeOfDay `json:"endsAt"`
+	// potential duration of the booking in minutes
+	Duration int `json:"duration"`
 }
 
+// Slot Input is a booking enquiry.
 type SlotInput struct {
-	VenueID    string    `json:"venueId"`
-	CustomerID string    `json:"customerId"`
-	People     int       `json:"people"`
-	Date       Date      `json:"date"`
-	StartsAt   TimeOfDay `json:"startsAt"`
-	Duration   int       `json:"duration"`
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// unique identifier of the customer
+	CustomerID string `json:"customerId"`
+	// amount of people attending the booking
+	People int `json:"people"`
+	// desired date of the booking (dd-mm-yyyy)
+	Date Date `json:"date"`
+	// desired start time of the booking (17:00)
+	StartsAt TimeOfDay `json:"startsAt"`
+	// desired duration of the booking in minutes
+	Duration int `json:"duration"`
 }
 
+// Venue where a booking can take place.
 type Venue struct {
-	ID                  string                       `json:"id"`
-	Name                string                       `json:"name"`
-	OpeningHours        []*OpeningHoursSpecification `json:"openingHours"`
+	// unique identifier of the venue
+	ID string `json:"id"`
+	// name of the venue
+	Name string `json:"name"`
+	// operating hours of the venue
+	OpeningHours []*OpeningHoursSpecification `json:"openingHours"`
+	// special operating hours of the venue
 	SpecialOpeningHours []*OpeningHoursSpecification `json:"specialOpeningHours"`
 }
