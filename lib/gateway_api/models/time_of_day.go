@@ -10,6 +10,10 @@ const timeOfDayFormat = "15:04"
 
 type TimeOfDay string
 
+func NewTimeOfDay(t time.Time) TimeOfDay {
+	return (TimeOfDay)(t.Format(timeOfDayFormat))
+}
+
 func (t *TimeOfDay) UnmarshalGQL(v interface{}) error {
 	tod, ok := v.(string)
 	if !ok {
@@ -26,4 +30,8 @@ func (t *TimeOfDay) UnmarshalGQL(v interface{}) error {
 
 func (t TimeOfDay) MarshalGQL(w io.Writer) {
 	_, _ = w.Write([]byte(t))
+}
+
+func (t TimeOfDay) Time() (time.Time, error) {
+	return time.Parse(timeOfDayFormat, (string)(t))
 }

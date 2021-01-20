@@ -7,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/graph"
-	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/graph/generated"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 )
 
 const defaultPort = "9999"

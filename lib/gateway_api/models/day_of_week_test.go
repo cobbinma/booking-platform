@@ -1,7 +1,7 @@
 package models_test
 
 import (
-	"github.com/cobbinma/booking-platform/lib/booking_gateway_api/models"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"testing"
 )
 

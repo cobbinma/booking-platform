@@ -1,4 +1,4 @@
-module github.com/cobbinma/booking-platform/lib/booking_gateway_api
+module github.com/cobbinma/booking-platform/lib/gateway_api
 
 go 1.15
 

@@ -35,7 +35,7 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "github.com/cobbinma/booking-platform/lib/booking_gateway_api/models"
+  - "github.com/cobbinma/booking-platform/lib/gateway_api/models"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -55,8 +55,8 @@ models:
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
   TimeOfDay:
-    model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.TimeOfDay
+    model: github.com/cobbinma/booking-platform/lib/gateway_api/models.TimeOfDay
   Date:
-    model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.Date
+    model: github.com/cobbinma/booking-platform/lib/gateway_api/models.Date
   DayOfWeek:
-    model: github.com/cobbinma/booking-platform/lib/booking_gateway_api/models.DayOfWeek
+    model: github.com/cobbinma/booking-platform/lib/gateway_api/models.DayOfWeek
