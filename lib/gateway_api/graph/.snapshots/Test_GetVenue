@@ -1,0 +1,45 @@
+(struct { GetVenue struct { ID string "json:\"id\""; Name string "json:\"name\""; OpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"openingHours\""; SpecialOpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"specialOpeningHours\"" } "json:\"getVenue\"" }) {
+  GetVenue: (struct { ID string "json:\"id\""; Name string "json:\"name\""; OpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"openingHours\""; SpecialOpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"specialOpeningHours\"" }) {
+    ID: (string) (len=36) "a3291740-e89f-4cc0-845c-75c4c39842c9",
+    Name: (string) (len=12) "Hop and Vine",
+    OpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) (len=7) {
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 1,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 2,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 3,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 4,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 5,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 6,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 7,
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      }
+    },
+    SpecialOpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+    }
+  }
+}

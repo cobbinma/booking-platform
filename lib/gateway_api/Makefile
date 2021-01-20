@@ -1,7 +1,6 @@
 .PHONY: test
 test:
-	echo "nothing to do here..."
-	#go test -tags integration ./...
+	go test -tags integration ./...
 
 .PHONY: build
 build:
