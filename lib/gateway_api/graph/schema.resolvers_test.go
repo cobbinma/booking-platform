@@ -18,11 +18,15 @@ func Test_GetVenue(t *testing.T) {
 			Name         string `json:"name"`
 			OpeningHours []struct {
 				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
 				ValidFrom    string `json:"validFrom"`
 				ValidThrough string `json:"validThrough"`
 			} `json:"openingHours"`
 			SpecialOpeningHours []struct {
 				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
 				ValidFrom    string `json:"validFrom"`
 				ValidThrough string `json:"validThrough"`
 			} `json:"specialOpeningHours"`
