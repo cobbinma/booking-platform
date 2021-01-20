@@ -1,0 +1,16 @@
+query GetVenue($venueID: ID!) {
+    getVenue(id: $venueID) {
+        id
+        name
+        openingHours {
+            dayOfWeek
+            validFrom
+            validThrough
+        }
+        specialOpeningHours {
+            dayOfWeek
+            validFrom
+            validThrough
+        }
+    }
+}

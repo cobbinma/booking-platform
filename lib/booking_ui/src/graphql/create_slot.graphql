@@ -1,0 +1,11 @@
+mutation CreateSlot($slot: SlotInput!) {
+    createSlot(input: $slot) {
+        venueId
+        customerId
+        people
+        date
+        startsAt
+        endsAt
+        duration
+    }
+}
