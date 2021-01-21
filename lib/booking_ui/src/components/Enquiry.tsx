@@ -23,13 +23,14 @@ const Enquiry: React.FC<EnquiryProps> = ({
     startsAt: "18:00",
     duration: 60,
   };
+
   const [createSlotMutation] = useCreateSlotMutation({
     variables: {
       slot: enquiry,
     },
   });
 
-  const handleClick = (e: { preventDefault: () => void }) => {
+  const handleClick = (e: any) => {
     e.preventDefault();
     createSlotMutation()
       .then((r) => {
