@@ -3,6 +3,12 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AppState, Auth0Provider } from "@auth0/auth0-react";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
+
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  uri: "http://localhost:9999/query",
+});
 
 const onRedirectCallback = (appState: AppState) => {
   window.history.replaceState(
@@ -21,7 +27,9 @@ ReactDOM.render(
     redirectUri={window.location.origin}
     onRedirectCallback={onRedirectCallback}
   >
-    <App />
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
   </Auth0Provider>,
   document.getElementById("root")
 );
