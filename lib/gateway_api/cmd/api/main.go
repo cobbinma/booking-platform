@@ -25,6 +25,7 @@ func main() {
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 	e := echo.New()
+	e.Use(middleware.Logger())
 
 	corsURL, present := os.LookupEnv("ALLOW_CORS_URL")
 	if present {

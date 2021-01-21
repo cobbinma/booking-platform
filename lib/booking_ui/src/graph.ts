@@ -167,7 +167,7 @@ export type CreateBookingMutation = (
   { __typename?: 'Mutation' }
   & { createBooking: (
     { __typename?: 'Booking' }
-    & Pick<Booking, 'venueId' | 'customerId' | 'people' | 'date' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
+    & Pick<Booking, 'id' | 'venueId' | 'customerId' | 'people' | 'date' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
   ) }
 );
 
@@ -196,10 +196,10 @@ export type GetVenueQuery = (
     & Pick<Venue, 'id' | 'name'>
     & { openingHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
-      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'validFrom' | 'validThrough'>
+      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
     )>, specialOpeningHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
-      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'validFrom' | 'validThrough'>
+      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
     )> }
   ) }
 );
@@ -208,6 +208,7 @@ export type GetVenueQuery = (
 export const CreateBookingDocument = gql`
     mutation CreateBooking($slot: BookingInput!) {
   createBooking(input: $slot) {
+    id
     venueId
     customerId
     people
@@ -289,11 +290,15 @@ export const GetVenueDocument = gql`
     name
     openingHours {
       dayOfWeek
+      opens
+      closes
       validFrom
       validThrough
     }
     specialOpeningHours {
       dayOfWeek
+      opens
+      closes
       validFrom
       validThrough
     }

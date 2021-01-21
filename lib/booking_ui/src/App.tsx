@@ -1,21 +1,19 @@
 import React, { useState } from "react";
 import LoginButton from "./components/LoginButton";
-import LogoutButton from "./components/LogoutButton";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   useParams,
 } from "react-router-dom";
-import Profile from "./components/Profile";
 import { AppState, Auth0Provider } from "@auth0/auth0-react";
-
+import Secure from "./components/Secure";
 export interface Params {
   venueId: string;
   returnURL: string;
 }
 
-function App() {
+const App = () => {
   const [params, setParams] = useState<Params | null>(null);
   const onRedirectCallback = (appState: AppState) => {
     setParams(appState && appState.params);
@@ -31,29 +29,23 @@ function App() {
         >
           <Router>
             <Switch>
-              <Route path="/:venueId/:returnURL" children={<Child />} />
+              <Route path="/:venueId/:returnURL" children={<GetParams />} />
             </Switch>
           </Router>
-          {params && (
-            <div>
-              venueId: {params.venueId}, return url: {params.returnURL}
-              <LogoutButton />
-              <Profile />
-            </div>
-          )}
+          {params && <Secure params={params} />}
         </Auth0Provider>
       </header>
     </div>
   );
-}
+};
 
-function Child() {
+const GetParams = () => {
   let params = useParams<Params>();
   return (
     <div>
       <LoginButton params={params} />
     </div>
   );
-}
+};
 
 export default App;
