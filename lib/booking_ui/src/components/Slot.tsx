@@ -2,7 +2,7 @@ import React from "react";
 import { BookingStage } from "./Booking";
 import { Booking, Slot as SlotType, useCreateBookingMutation } from "../graph";
 import { Button } from "baseui/button";
-import { H2, Paragraph1 } from "baseui/typography";
+import { H2 } from "baseui/typography";
 import { Table } from "baseui/table";
 
 interface SlotProps {
@@ -28,7 +28,8 @@ const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
   if (slot == null) {
     return (
       <div>
-        sorry we could not find a slot
+        <H2>sorry we could not find a slot</H2>
+        <br />
         <Button
           onClick={(e) => {
             e.preventDefault();
@@ -45,7 +46,6 @@ const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
     e.preventDefault();
     createBookingMutation()
       .then((b) => {
-        console.log(slot);
         setBooking(b?.data?.createBooking || null);
       })
       .catch((e) => {
@@ -62,6 +62,15 @@ const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
         columns={["Guests", "Date", "Starts", "Ends"]}
         data={[[slot.people, slot.date, slot.startsAt, slot.endsAt]]}
       />
+      <br />
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          setBookingStage(BookingStage.Enquiry);
+        }}
+      >
+        Back
+      </Button>{" "}
       <Button onClick={handleClick}>Confirm</Button>
     </div>
   );

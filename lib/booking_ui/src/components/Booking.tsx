@@ -6,6 +6,7 @@ import Enquiry from "./Enquiry";
 import Slot from "./Slot";
 import Confirmation from "./Confirmation";
 import { Booking as BookingType, Slot as SlotType } from "../graph";
+import { Button } from "baseui/button";
 
 export enum BookingStage {
   Enquiry = 1,
@@ -58,9 +59,13 @@ const Booking: React.FC<BookingProps> = ({ params, email }) => {
 
   return (
     <div>
-      <LogoutButton />
       {getStageComponent(stage)}
       <Venue venueId={venueId} />
+      <br />
+      <a href={decodeURIComponent(returnURL)}>
+        <Button type="button">Exit</Button>
+      </a>{" "}
+      <LogoutButton />
     </div>
   );
 };
