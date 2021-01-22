@@ -1,6 +1,7 @@
 package main
 
 import (
+	mw "github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,9 +24,19 @@ func main() {
 		port = defaultPort
 	}
 
+	domain, present := os.LookupEnv("AUTH0_DOMAIN")
+	if !present {
+		panic("AUTH0_DOMAIN environment variable not set")
+	}
+	apiId, present := os.LookupEnv("AUTH0_API_IDENTIFIER")
+	if !present {
+		panic("AUTH0_API_IDENTIFIER environment variable not set")
+	}
+
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 	e := echo.New()
 	e.Use(middleware.Logger())
+	e.Use(echo.WrapMiddleware(mw.JwtMiddleware(apiId, domain).Handler))
 
 	corsURL, present := os.LookupEnv("ALLOW_CORS_URL")
 	if present {
