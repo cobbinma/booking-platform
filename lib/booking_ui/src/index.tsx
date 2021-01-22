@@ -2,7 +2,19 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { Client as Styletron } from "styletron-engine-atomic";
+import { Provider as StyletronProvider } from "styletron-react";
+import { LightTheme, BaseProvider, styled } from "baseui";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
+
+const engine = new Styletron();
+
+const Theme = styled("div", {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100%",
+});
 
 const client = new ApolloClient({
   cache: new InMemoryCache(),
@@ -11,7 +23,13 @@ const client = new ApolloClient({
 
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <App />
+    <StyletronProvider value={engine}>
+      <BaseProvider theme={LightTheme}>
+        <Theme>
+          <App />
+        </Theme>
+      </BaseProvider>
+    </StyletronProvider>
   </ApolloProvider>,
   document.getElementById("root")
 );

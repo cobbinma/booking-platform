@@ -1,5 +1,8 @@
 import React from "react";
 import { useGetVenueQuery } from "../graph";
+import { Spinner } from "baseui/spinner";
+import { H2, Paragraph1 } from "baseui/typography";
+import { Table } from "baseui/table";
 
 const weekday = new Array(7);
 weekday[0] = "Unknown";
@@ -18,25 +21,29 @@ const Venue: React.FC<{ venueId: string }> = ({ venueId }) => {
     },
   });
 
-  if (loading) return <p>Loading...</p>;
+  if (loading)
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
   if (error) return <p>error</p>;
+
+  const opening: React.ReactNode[][] | undefined = data?.getVenue?.openingHours
+    .slice()
+    .sort((h1, h2) => h1.dayOfWeek - h2.dayOfWeek)
+    .map((hours) => {
+      return [weekday[hours.dayOfWeek], hours.opens, hours.closes];
+    });
 
   return (
     <div>
-      <h2>{data?.getVenue.name}</h2>
-      {data?.getVenue?.openingHours
-        .slice()
-        .sort((h1, h2) => h1.dayOfWeek - h2.dayOfWeek)
-        .map((hours) => {
-          return (
-            <div key={hours.dayOfWeek}>
-              <p>
-                {weekday[hours.dayOfWeek]}: opens {hours.opens} until{" "}
-                {hours.closes}
-              </p>
-            </div>
-          );
-        })}
+      <H2>{data?.getVenue.name}</H2>
+      {opening ? (
+        <Table columns={["Day", "Opens", "Closes"]} data={opening} />
+      ) : (
+        <div />
+      )}
     </div>
   );
 };

@@ -1,6 +1,9 @@
 import React from "react";
 import { Booking } from "../graph";
 import { BookingStage } from "./Booking";
+import { Button } from "baseui/button";
+import { H2, Paragraph1 } from "baseui/typography";
+import { Table } from "baseui/table";
 
 interface ConfirmationProps {
   booking: Booking | null;
@@ -17,27 +20,29 @@ const Confirmation: React.FC<ConfirmationProps> = ({
     return (
       <div>
         sorry something went wrong
-        <button
+        <Button
           onClick={(e) => {
             e.preventDefault();
             setBookingStage(BookingStage.Enquiry);
           }}
         >
           try again
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
     <div>
-      <h2>Confirmed!</h2>
-      <p>
-        table for {booking?.people} people, starting at {booking?.startsAt},
-        ending at {booking?.endsAt}
-      </p>
+      <H2>Confirmed!</H2>
+      <Table
+        columns={["Guests", "Date", "Starts", "Ends"]}
+        data={[
+          [booking.people, booking.date, booking.startsAt, booking.endsAt],
+        ]}
+      />
       <a href={decodeURIComponent(returnURL)}>
-        <button type="button">Continue</button>
+        <Button type="button">Continue</Button>
       </a>
     </div>
   );
