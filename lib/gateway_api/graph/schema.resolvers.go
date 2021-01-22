@@ -30,7 +30,7 @@ func (r *mutationResolver) CreateSlot(ctx context.Context, input models.SlotInpu
 }
 
 func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
-	user, err := models.UserFromContext(ctx)
+	user, err := r.userService.GetUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user from context : %w", err)
 	}

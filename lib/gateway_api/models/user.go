@@ -1,21 +1,12 @@
 package models
 
-import (
-	"context"
-	"fmt"
-)
+import "context"
 
-const UserCtxKey = "user-ctx-key"
+type UserService interface {
+	GetUser(ctx context.Context) (*User, error)
+}
 
 type User struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
-}
-
-func UserFromContext(ctx context.Context) (User, error) {
-	if user, ok := ctx.Value(UserCtxKey).(User); ok {
-		return user, nil
-	}
-
-	return User{}, fmt.Errorf("user not found in context")
 }

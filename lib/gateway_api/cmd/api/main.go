@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cobbinma/booking-platform/lib/gateway_api/auth0"
 	mw "github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -34,7 +35,8 @@ func main() {
 		panic("AUTH0_API_IDENTIFIER environment variable not set")
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
+		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(domain))}))
 	e := echo.New()
 	e.Use(middleware.Logger())
 
@@ -44,7 +46,7 @@ func main() {
 	}
 
 	e.GET("/", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")))
-	e.POST("/query", echo.WrapHandler(srv), echo.WrapMiddleware(mw.IsAuthenticated(apiId, domain).Handler), mw.AddUserToContext(domain))
+	e.POST("/query", echo.WrapHandler(srv), echo.WrapMiddleware(mw.IsAuthenticated(apiId, domain).Handler), mw.AddTokenToContext())
 	e.OPTIONS("/query", PreflightCors())
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
