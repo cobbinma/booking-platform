@@ -6,7 +6,7 @@ option go_package = "github.com/cobbinma/booking-platform/lib/protobuf/autogen/l
 
 import "src/venue/models/models.proto";
 
-service VenueService {
+service VenueAPI {
   rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
 }
 

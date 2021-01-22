@@ -3,8 +3,7 @@ test:
 	echo "nothing to test"
 
 .PHONY: build
-build:
-	echo "nothing to build"
+build: gen-lang-go
 
 .PHONY: deploy
 deploy:
