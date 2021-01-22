@@ -1,7 +1,7 @@
 import React from "react";
 import { useGetVenueQuery } from "../graph";
 import { Spinner } from "baseui/spinner";
-import { H2, Paragraph1 } from "baseui/typography";
+import { H2 } from "baseui/typography";
 import { Table } from "baseui/table";
 
 const weekday = new Array(7);
@@ -27,7 +27,10 @@ const Venue: React.FC<{ venueId: string }> = ({ venueId }) => {
         <Spinner />
       </div>
     );
-  if (error) return <p>error</p>;
+  if (error) {
+    console.log(error);
+    return <p>error</p>;
+  }
 
   const opening: React.ReactNode[][] | undefined = data?.getVenue?.openingHours
     .slice()
@@ -38,7 +41,7 @@ const Venue: React.FC<{ venueId: string }> = ({ venueId }) => {
 
   return (
     <div>
-      <H2>{data?.getVenue.name}</H2>
+      <H2>{data?.getVenue.name.toLowerCase()}</H2>
       {opening ? (
         <Table columns={["Day", "Opens", "Closes"]} data={opening} />
       ) : (

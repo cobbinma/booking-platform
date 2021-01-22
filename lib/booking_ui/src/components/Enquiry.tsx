@@ -6,7 +6,7 @@ import { TimePicker } from "baseui/timepicker";
 import { Slider } from "baseui/slider";
 import { Combobox } from "baseui/combobox";
 import { Button } from "baseui/button";
-import { Label1 } from "baseui/typography";
+import { H2, Label1 } from "baseui/typography";
 
 let durations = new Map<string, number>([
   ["30 mins", 30],
@@ -30,19 +30,23 @@ const Enquiry: React.FC<EnquiryProps> = ({
   setSlot,
   setBookingStage,
 }) => {
-  const [date, setDate] = React.useState([
-    new Date("2021-01-12T00:00:00.000Z"),
-  ]);
-  const [time, setTime] = React.useState(new Date("2021-01-22T00:01:42.445Z"));
+  const [date, setDate] = React.useState([new Date(Date.now())]);
+  const [time, setTime] = React.useState(new Date(Date.now()));
   const [people, setPeople] = React.useState([4]);
   const [duration, setDuration] = React.useState<string>("1 hour");
-  let enquiry: SlotInput = {
+  const enquiry: SlotInput = {
     venueId: venueId,
     customerId: email,
-    people: 4,
-    date: "21-01-2021",
-    startsAt: "18:00",
-    duration: 60,
+    people: people[0],
+    date: `${("0" + date[0].getDate()).slice(-2)}-${(
+      "0" +
+      date[0].getMonth() +
+      1
+    ).slice(-2)}-${date[0].getFullYear()}`,
+    startsAt: `${("0" + time.getHours()).slice(-2)}:${(
+      "0" + time.getMinutes()
+    ).slice(-2)}`,
+    duration: durations.get(duration) || 60,
   };
 
   const [createSlotMutation] = useCreateSlotMutation({
@@ -66,18 +70,18 @@ const Enquiry: React.FC<EnquiryProps> = ({
 
   return (
     <div>
+      <H2>book a table</H2>
       <Label1>Date</Label1>
       <DatePicker
         value={date}
         onChange={({ date }) => setDate(Array.isArray(date) ? date : [date])}
       />
       <Label1>Time</Label1>
-      <TimePicker value={time} onChange={(date) => setTime(date)} />
+      <TimePicker value={time} step={1800} onChange={(date) => setTime(date)} />
       <Label1>Guests</Label1>
       <Slider
         value={people}
         onChange={({ value }) => value && setPeople(value)}
-        onFinalChange={({ value }) => console.log(value)}
         min={1}
         max={20}
       />
@@ -88,6 +92,7 @@ const Enquiry: React.FC<EnquiryProps> = ({
         options={Array.from(durations.keys())}
         mapOptionToString={(option) => option}
       />
+      <br />
       <Button onClick={handleClick}>Next</Button>
     </div>
   );
