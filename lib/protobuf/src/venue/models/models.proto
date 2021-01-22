@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package venue.models;
 
-option go_package = "github.com/booking-platform/libs/protobuf/autogen/lang/go/venue/VenueModels";
+option go_package = "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/src/venue/models";
 
 message Venue {
   string id = 1;
