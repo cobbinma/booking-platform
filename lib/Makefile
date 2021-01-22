@@ -6,8 +6,8 @@ test:
 
 .PHONY: build
 build:
-	docker build . -t ${TAG}
+	echo "nothing to build"
 
 .PHONY: deploy
 deploy:
-	docker push ${TAG}
+	echo "nothing to deploy"

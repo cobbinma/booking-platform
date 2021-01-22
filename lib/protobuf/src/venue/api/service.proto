@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package venue.api;
+
+option go_package = "github.com/booking-platform/libs/protobuf/autogen/lang/go/venue/VenueAPI";
+
+import "src/venue/models/models.proto";
+
+service VenueService {
+  rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
+}
+
+message GetVenueRequest {
+  string id = 1;
+}

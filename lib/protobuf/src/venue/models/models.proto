@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package venue.models;
+
+option go_package = "github.com/booking-platform/libs/protobuf/autogen/lang/go/venue/VenueModels";
+
+message Venue {
+  string id = 1;
+  string name = 2;
+  repeated OpeningHoursSpecification openingHours = 3;
+  repeated OpeningHoursSpecification specialOpeningHours = 4;
+}
+
+message OpeningHoursSpecification {
+  uint32 dayOfWeek = 1;
+  string opens = 2;
+  string closes = 3;
+  string validFrom = 4;
+  string validThrough = 5;
+}
