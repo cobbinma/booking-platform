@@ -9,12 +9,10 @@ import (
 	"net/http"
 )
 
-func JwtMiddleware(apiIdentifier string, domain string) *jwtmiddleware.JWTMiddleware {
-	fmt.Printf("hello!")
+func IsAuthenticated(apiIdentifier string, domain string) *jwtmiddleware.JWTMiddleware {
 	return jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			aud := token.Claims.(jwt.MapClaims)["aud"].([]interface{})
-
 			s := make([]string, len(aud))
 			for i, v := range aud {
 				s[i] = fmt.Sprint(v)

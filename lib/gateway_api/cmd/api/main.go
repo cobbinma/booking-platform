@@ -44,7 +44,7 @@ func main() {
 	}
 
 	e.GET("/", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")))
-	e.POST("/query", echo.WrapHandler(srv), echo.WrapMiddleware(mw.JwtMiddleware(apiId, domain).Handler))
+	e.POST("/query", mw.AddUserToContext(domain, echo.WrapHandler(srv)), echo.WrapMiddleware(mw.IsAuthenticated(apiId, domain).Handler))
 	e.OPTIONS("/query", PreflightCors())
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
