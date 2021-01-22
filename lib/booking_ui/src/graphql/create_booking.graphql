@@ -1,0 +1,13 @@
+mutation CreateBooking($slot: BookingInput!) {
+    createBooking(input: $slot) {
+        id
+        venueId
+        customerId
+        people
+        date
+        startsAt
+        endsAt
+        duration
+        tableId
+    }
+}
