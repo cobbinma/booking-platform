@@ -5,7 +5,6 @@ import reportWebVitals from "./reportWebVitals";
 import { Client as Styletron } from "styletron-engine-atomic";
 import { Provider as StyletronProvider } from "styletron-react";
 import { LightTheme, BaseProvider, styled } from "baseui";
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 
 const engine = new Styletron();
 
@@ -16,21 +15,14 @@ const Theme = styled("div", {
   height: "100%",
 });
 
-const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  uri: "http://localhost:9999/query",
-});
-
 ReactDOM.render(
-  <ApolloProvider client={client}>
-    <StyletronProvider value={engine}>
-      <BaseProvider theme={LightTheme}>
-        <Theme>
-          <App />
-        </Theme>
-      </BaseProvider>
-    </StyletronProvider>
-  </ApolloProvider>,
+  <StyletronProvider value={engine}>
+    <BaseProvider theme={LightTheme}>
+      <Theme>
+        <App />
+      </Theme>
+    </BaseProvider>
+  </StyletronProvider>,
   document.getElementById("root")
 );
 

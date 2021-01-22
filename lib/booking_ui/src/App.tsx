@@ -23,8 +23,10 @@ const App = () => {
       <header className="App-header">
         <Auth0Provider
           domain={process.env.REACT_APP_DOMAIN ?? ""}
-          clientId={process.env.REACT_APP_CLIENT_ID! ?? ""}
+          clientId={process.env.REACT_APP_CLIENT_ID ?? ""}
           redirectUri={window.location.origin}
+          audience={process.env.REACT_APP_AUDIENCE ?? ""}
+          issuer={process.env.REACT_APP_ISSUER ?? ""}
           onRedirectCallback={onRedirectCallback}
         >
           <Router>

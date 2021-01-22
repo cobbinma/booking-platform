@@ -3,30 +3,41 @@ package middleware
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/form3tech-oss/jwt-go"
 	"net/http"
 )
 
 func JwtMiddleware(apiIdentifier string, domain string) *jwtmiddleware.JWTMiddleware {
+	fmt.Printf("hello!")
 	return jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			// Verify 'aud' claim
+			aud := token.Claims.(jwt.MapClaims)["aud"].([]interface{})
+
+			s := make([]string, len(aud))
+			for i, v := range aud {
+				s[i] = fmt.Sprint(v)
+			}
+			token.Claims.(jwt.MapClaims)["aud"] = s
+
 			checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(apiIdentifier, false)
 			if !checkAud {
 				return token, errors.New("invalid audience")
 			}
+
+			iss := token.Claims.(jwt.MapClaims)["iss"].(interface{})
+			token.Claims.(jwt.MapClaims)["iss"] = fmt.Sprint(iss)
 
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(domain, false)
 			if !checkIss {
 				return token, errors.New("invalid issuer")
 			}
 
-			cert, err := getPemCert(token)
+			cert, err := getPemCert(token, domain)
 			if err != nil {
-				panic(err.Error())
+				panic("could not get cert")
 			}
-
 			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 			return result, nil
 		},
@@ -34,9 +45,9 @@ func JwtMiddleware(apiIdentifier string, domain string) *jwtmiddleware.JWTMiddle
 	})
 }
 
-func getPemCert(token *jwt.Token) (string, error) {
+func getPemCert(token *jwt.Token, domain string) (string, error) {
 	cert := ""
-	resp, err := http.Get("https://YOUR_DOMAIN/.well-known/jwks.json")
+	resp, err := http.Get(fmt.Sprintf("%s.well-known/jwks.json", domain))
 
 	if err != nil {
 		return cert, err
