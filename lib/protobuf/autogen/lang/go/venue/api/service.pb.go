@@ -7,8 +7,12 @@
 package api
 
 import (
-	models "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/src/venue/models"
+	context "context"
+	models "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -87,13 +91,12 @@ var file_src_venue_api_service_proto_rawDesc = []byte{
 	0x74, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61,
 	0x70, 0x69, 0x2e, 0x47, 0x65, 0x74, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x1a, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x73, 0x2e, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x42, 0x51, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x73, 0x2e, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x42, 0x4d, 0x5a, 0x4b, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x62, 0x62, 0x69, 0x6e, 0x6d, 0x61, 0x2f, 0x62,
 	0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x2d, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x2f,
 	0x6c, 0x69, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x61, 0x75, 0x74,
-	0x6f, 0x67, 0x65, 0x6e, 0x2f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67, 0x6f, 0x2f, 0x73, 0x72, 0x63,
-	0x2f, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x6f, 0x67, 0x65, 0x6e, 0x2f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x65, 0x6e,
+	0x75, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -160,4 +163,84 @@ func file_src_venue_api_service_proto_init() {
 	file_src_venue_api_service_proto_rawDesc = nil
 	file_src_venue_api_service_proto_goTypes = nil
 	file_src_venue_api_service_proto_depIdxs = nil
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// VenueServiceClient is the client API for VenueService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type VenueServiceClient interface {
+	GetVenue(ctx context.Context, in *GetVenueRequest, opts ...grpc.CallOption) (*models.Venue, error)
+}
+
+type venueServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewVenueServiceClient(cc grpc.ClientConnInterface) VenueServiceClient {
+	return &venueServiceClient{cc}
+}
+
+func (c *venueServiceClient) GetVenue(ctx context.Context, in *GetVenueRequest, opts ...grpc.CallOption) (*models.Venue, error) {
+	out := new(models.Venue)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueService/GetVenue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// VenueServiceServer is the server API for VenueService service.
+type VenueServiceServer interface {
+	GetVenue(context.Context, *GetVenueRequest) (*models.Venue, error)
+}
+
+// UnimplementedVenueServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedVenueServiceServer struct {
+}
+
+func (*UnimplementedVenueServiceServer) GetVenue(context.Context, *GetVenueRequest) (*models.Venue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVenue not implemented")
+}
+
+func RegisterVenueServiceServer(s *grpc.Server, srv VenueServiceServer) {
+	s.RegisterService(&_VenueService_serviceDesc, srv)
+}
+
+func _VenueService_GetVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVenueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueServiceServer).GetVenue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueService/GetVenue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueServiceServer).GetVenue(ctx, req.(*GetVenueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _VenueService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "venue.api.VenueService",
+	HandlerType: (*VenueServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetVenue",
+			Handler:    _VenueService_GetVenue_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "src/venue/api/service.proto",
 }
