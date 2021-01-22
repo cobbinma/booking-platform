@@ -77,7 +77,7 @@ const Enquiry: React.FC<EnquiryProps> = ({
         onChange={({ date }) => setDate(Array.isArray(date) ? date : [date])}
       />
       <Label1>Time</Label1>
-      <TimePicker value={time} onChange={(date) => setTime(date)} />
+      <TimePicker value={time} step={1800} onChange={(date) => setTime(date)} />
       <Label1>Guests</Label1>
       <Slider
         value={people}
