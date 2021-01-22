@@ -30,6 +30,11 @@ func (r *mutationResolver) CreateSlot(ctx context.Context, input models.SlotInpu
 }
 
 func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
+	_, err := models.UserFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user from context : %w", err)
+	}
+
 	starts, err := input.StartsAt.Time()
 	if err != nil {
 		return nil, fmt.Errorf("could not parse start time : %w", err)

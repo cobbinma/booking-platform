@@ -27,7 +27,10 @@ const Venue: React.FC<{ venueId: string }> = ({ venueId }) => {
         <Spinner />
       </div>
     );
-  if (error) return <p>error</p>;
+  if (error) {
+    console.log(error);
+    return <p>error</p>;
+  }
 
   const opening: React.ReactNode[][] | undefined = data?.getVenue?.openingHours
     .slice()
