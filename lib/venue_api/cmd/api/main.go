@@ -66,12 +66,12 @@ func (s Service) GetVenue(ctx context.Context, request *api.GetVenueRequest) (*m
 		{
 			DayOfWeek: 6,
 			Opens:     "10:00",
-			Closes:    "19:00",
+			Closes:    "23:00",
 		},
 		{
 			DayOfWeek: 7,
 			Opens:     "10:00",
-			Closes:    "19:00",
+			Closes:    "20:00",
 		},
 	}
 	return &models.Venue{
