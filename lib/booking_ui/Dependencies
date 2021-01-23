@@ -1,2 +1,2 @@
 lib/gateway_api
-!protobuf
+!lib/protobuf
