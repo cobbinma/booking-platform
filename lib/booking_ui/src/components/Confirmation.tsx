@@ -3,7 +3,7 @@ import { Booking } from "../graph";
 import { BookingStage } from "./Booking";
 import { Button } from "baseui/button";
 import { H2 } from "baseui/typography";
-import { Table } from "baseui/table";
+import SlotDisplay from "./SlotDisplay";
 
 interface ConfirmationProps {
   booking: Booking | null;
@@ -36,12 +36,7 @@ const Confirmation: React.FC<ConfirmationProps> = ({
   return (
     <div>
       <H2>confirmed!</H2>
-      <Table
-        columns={["Guests", "Date", "Starts", "Ends"]}
-        data={[
-          [booking.people, booking.date, booking.startsAt, booking.endsAt],
-        ]}
-      />
+      <SlotDisplay {...booking} />
       <br />
       <a href={decodeURIComponent(returnURL)}>
         <Button type="button">Continue</Button>

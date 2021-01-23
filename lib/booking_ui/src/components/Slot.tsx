@@ -4,6 +4,7 @@ import { Booking, Slot as SlotType, useCreateBookingMutation } from "../graph";
 import { Button } from "baseui/button";
 import { H2 } from "baseui/typography";
 import { Table } from "baseui/table";
+import SlotDisplay from "./SlotDisplay";
 
 interface SlotProps {
   slot: SlotType | null;
@@ -16,9 +17,8 @@ const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
     variables: {
       slot: {
         venueId: slot?.venueId!,
-        customerId: slot?.customerId!,
+        email: slot?.email!,
         people: slot?.people!,
-        date: slot?.date!,
         startsAt: slot?.startsAt!,
         duration: slot?.duration!,
       },
@@ -58,10 +58,7 @@ const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
   return (
     <div>
       <H2>we found a slot!</H2>
-      <Table
-        columns={["Guests", "Date", "Starts", "Ends"]}
-        data={[[slot.people, slot.date, slot.startsAt, slot.endsAt]]}
-      />
+      <SlotDisplay {...slot} />
       <br />
       <Button
         onClick={(e) => {

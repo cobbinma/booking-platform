@@ -1,9 +1,8 @@
 mutation CreateSlot($slot: SlotInput!) {
     createSlot(input: $slot) {
         venueId
-        customerId
+        email
         people
-        date
         startsAt
         endsAt
         duration

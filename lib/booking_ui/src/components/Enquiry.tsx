@@ -36,16 +36,15 @@ const Enquiry: React.FC<EnquiryProps> = ({
   const [duration, setDuration] = React.useState<string>("1 hour");
   const enquiry: SlotInput = {
     venueId: venueId,
-    customerId: email,
+    email: email,
     people: people[0],
-    date: `${("0" + date[0].getDate()).slice(-2)}-${(
-      "0" +
-      date[0].getMonth() +
-      1
-    ).slice(-2)}-${date[0].getFullYear()}`,
-    startsAt: `${("0" + time.getHours()).slice(-2)}:${(
-      "0" + time.getMinutes()
-    ).slice(-2)}`,
+    startsAt: new Date(
+      date[0].getFullYear(),
+      date[0].getMonth(),
+      date[0].getDate(),
+      time.getHours(),
+      time.getMinutes()
+    ),
     duration: durations.get(duration) || 60,
   };
 
