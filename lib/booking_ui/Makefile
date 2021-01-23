@@ -6,8 +6,7 @@ test: deps
 
 .PHONY: build
 build: deps
-	#docker build . -t ${TAG}
-	echo "skip this for a bit"
+	docker build . -t ${TAG}
 
 .PHONY: deploy
 deploy:
