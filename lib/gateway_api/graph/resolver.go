@@ -15,5 +15,5 @@ type Resolver struct {
 }
 
 func NewResolver(userService models.UserService, venueService api.VenueAPIClient) *Resolver {
-	return &Resolver{userService: userService}
+	return &Resolver{userService: userService, venueService: venueService}
 }
