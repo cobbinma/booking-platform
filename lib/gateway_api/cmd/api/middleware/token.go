@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/cobbinma/booking-platform/lib/gateway_api/auth0"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
 	"github.com/labstack/echo/v4"
 )
 

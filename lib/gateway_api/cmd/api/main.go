@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/cobbinma/booking-platform/lib/gateway_api/auth0"
 	mw "github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
