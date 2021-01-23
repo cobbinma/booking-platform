@@ -17,3 +17,7 @@ deps:
 	rm -r -f .gateway_api
 	mkdir -p .gateway_api
 	cp ./../gateway_api/graph/schema.graphqls .gateway_api/schema.graphqls
+
+.PHONY: dev
+dev: deps
+	yarn start

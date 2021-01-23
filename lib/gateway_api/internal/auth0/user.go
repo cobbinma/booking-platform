@@ -21,6 +21,9 @@ type userService struct {
 }
 
 func NewUserService(baseURL string) *userService {
+	if len(baseURL) > 0 && baseURL[len(baseURL)-1] != '/' {
+		baseURL = baseURL + "/"
+	}
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}

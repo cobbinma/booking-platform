@@ -11,9 +11,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /** Date (dd-mm-yyyy) */
-  Date: any;
-  /** Time (hh:mm) */
+  /** Time (YYYY-MM-DDThh:mm:ssZ) */
+  Time: any;
+  /** Time Of Day (hh:mm) */
   TimeOfDay: any;
   /** Day of Week (Monday = 1, Sunday = 7) */
   DayOfWeek: any;
@@ -26,14 +26,12 @@ export type Scalars = {
 export type SlotInput = {
   /** unique identifier of the venue */
   venueId: Scalars['ID'];
-  /** unique identifier of the customer */
-  customerId: Scalars['ID'];
+  /** email of the customer */
+  email: Scalars['String'];
   /** amount of people attending the booking */
   people: Scalars['Int'];
-  /** desired date of the booking (dd-mm-yyyy) */
-  date: Scalars['Date'];
-  /** desired start time of the booking (hh:mm) */
-  startsAt: Scalars['TimeOfDay'];
+  /** desired start time of the booking (YYYY-MM-DDThh:mm:ssZ) */
+  startsAt: Scalars['Time'];
   /** desired duration of the booking in minutes */
   duration: Scalars['Int'];
 };
@@ -43,16 +41,14 @@ export type Slot = {
   __typename?: 'Slot';
   /** unique identifier of the venue */
   venueId: Scalars['ID'];
-  /** unique identifier of the customer */
-  customerId: Scalars['ID'];
+  /** email of the customer */
+  email: Scalars['String'];
   /** amount of people attending the booking */
   people: Scalars['Int'];
-  /** potential date of the booking (dd-mm-yyyy) */
-  date: Scalars['Date'];
-  /** potential start time of the booking (hh:mm) */
-  startsAt: Scalars['TimeOfDay'];
-  /** potential ending time of the booking (hh:mm) */
-  endsAt: Scalars['TimeOfDay'];
+  /** desired start time of the booking (YYYY-MM-DDThh:mm:ssZ) */
+  startsAt: Scalars['Time'];
+  /** potential ending time of the booking (YYYY-MM-DDThh:mm:ssZ) */
+  endsAt: Scalars['Time'];
   /** potential duration of the booking in minutes */
   duration: Scalars['Int'];
 };
@@ -61,14 +57,12 @@ export type Slot = {
 export type BookingInput = {
   /** unique identifier of the venue */
   venueId: Scalars['ID'];
-  /** unique identifier of the customer */
-  customerId: Scalars['ID'];
+  /** email of the customer */
+  email: Scalars['String'];
   /** amount of people attending the booking */
   people: Scalars['Int'];
-  /** date of the booking (dd-mm-yyyy) */
-  date: Scalars['Date'];
-  /** start time of the booking (hh:mm) */
-  startsAt: Scalars['TimeOfDay'];
+  /** start time of the booking (YYYY-MM-DDThh:mm:ssZ) */
+  startsAt: Scalars['Time'];
   /** duration of the booking in minutes */
   duration: Scalars['Int'];
 };
@@ -80,16 +74,14 @@ export type Booking = {
   id: Scalars['ID'];
   /** unique identifier of the venue */
   venueId: Scalars['ID'];
-  /** unique identifier of the customer */
-  customerId: Scalars['ID'];
+  /** email of the customer */
+  email: Scalars['String'];
   /** amount of people attending the booking */
   people: Scalars['Int'];
-  /** date of the booking (dd-mm-yyyy) */
-  date: Scalars['Date'];
   /** start time of the booking (hh:mm) */
-  startsAt: Scalars['TimeOfDay'];
+  startsAt: Scalars['Time'];
   /** end time of the booking (hh:mm) */
-  endsAt: Scalars['TimeOfDay'];
+  endsAt: Scalars['Time'];
   /** duration of the booking in minutes */
   duration: Scalars['Int'];
   /** unique identifier of the booking table */
@@ -119,9 +111,9 @@ export type OpeningHoursSpecification = {
   /** the closing time of the place or service on the given day(s) of the week */
   closes: Scalars['TimeOfDay'];
   /** date the special opening hours starts at. only valid for special opening hours */
-  validFrom?: Maybe<Scalars['Date']>;
+  validFrom?: Maybe<Scalars['Time']>;
   /** date the special opening hours ends at. only valid for special opening hours */
-  validThrough?: Maybe<Scalars['Date']>;
+  validThrough?: Maybe<Scalars['Time']>;
 };
 
 /** Booking queries. */
@@ -167,7 +159,7 @@ export type CreateBookingMutation = (
   { __typename?: 'Mutation' }
   & { createBooking: (
     { __typename?: 'Booking' }
-    & Pick<Booking, 'id' | 'venueId' | 'customerId' | 'people' | 'date' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
+    & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
   ) }
 );
 
@@ -180,7 +172,7 @@ export type CreateSlotMutation = (
   { __typename?: 'Mutation' }
   & { createSlot: (
     { __typename?: 'Slot' }
-    & Pick<Slot, 'venueId' | 'customerId' | 'people' | 'date' | 'startsAt' | 'endsAt' | 'duration'>
+    & Pick<Slot, 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration'>
   ) }
 );
 
@@ -210,9 +202,8 @@ export const CreateBookingDocument = gql`
   createBooking(input: $slot) {
     id
     venueId
-    customerId
+    email
     people
-    date
     startsAt
     endsAt
     duration
@@ -249,9 +240,8 @@ export const CreateSlotDocument = gql`
     mutation CreateSlot($slot: SlotInput!) {
   createSlot(input: $slot) {
     venueId
-    customerId
+    email
     people
-    date
     startsAt
     endsAt
     duration

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -44,15 +45,14 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Booking struct {
-		CustomerID func(childComplexity int) int
-		Date       func(childComplexity int) int
-		Duration   func(childComplexity int) int
-		EndsAt     func(childComplexity int) int
-		ID         func(childComplexity int) int
-		People     func(childComplexity int) int
-		StartsAt   func(childComplexity int) int
-		TableID    func(childComplexity int) int
-		VenueID    func(childComplexity int) int
+		Duration func(childComplexity int) int
+		Email    func(childComplexity int) int
+		EndsAt   func(childComplexity int) int
+		ID       func(childComplexity int) int
+		People   func(childComplexity int) int
+		StartsAt func(childComplexity int) int
+		TableID  func(childComplexity int) int
+		VenueID  func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -73,13 +73,12 @@ type ComplexityRoot struct {
 	}
 
 	Slot struct {
-		CustomerID func(childComplexity int) int
-		Date       func(childComplexity int) int
-		Duration   func(childComplexity int) int
-		EndsAt     func(childComplexity int) int
-		People     func(childComplexity int) int
-		StartsAt   func(childComplexity int) int
-		VenueID    func(childComplexity int) int
+		Duration func(childComplexity int) int
+		Email    func(childComplexity int) int
+		EndsAt   func(childComplexity int) int
+		People   func(childComplexity int) int
+		StartsAt func(childComplexity int) int
+		VenueID  func(childComplexity int) int
 	}
 
 	Venue struct {
@@ -113,26 +112,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Booking.customerId":
-		if e.complexity.Booking.CustomerID == nil {
-			break
-		}
-
-		return e.complexity.Booking.CustomerID(childComplexity), true
-
-	case "Booking.date":
-		if e.complexity.Booking.Date == nil {
-			break
-		}
-
-		return e.complexity.Booking.Date(childComplexity), true
-
 	case "Booking.duration":
 		if e.complexity.Booking.Duration == nil {
 			break
 		}
 
 		return e.complexity.Booking.Duration(childComplexity), true
+
+	case "Booking.email":
+		if e.complexity.Booking.Email == nil {
+			break
+		}
+
+		return e.complexity.Booking.Email(childComplexity), true
 
 	case "Booking.endsAt":
 		if e.complexity.Booking.EndsAt == nil {
@@ -247,26 +239,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetVenue(childComplexity, args["id"].(string)), true
 
-	case "Slot.customerId":
-		if e.complexity.Slot.CustomerID == nil {
-			break
-		}
-
-		return e.complexity.Slot.CustomerID(childComplexity), true
-
-	case "Slot.date":
-		if e.complexity.Slot.Date == nil {
-			break
-		}
-
-		return e.complexity.Slot.Date(childComplexity), true
-
 	case "Slot.duration":
 		if e.complexity.Slot.Duration == nil {
 			break
 		}
 
 		return e.complexity.Slot.Duration(childComplexity), true
+
+	case "Slot.email":
+		if e.complexity.Slot.Email == nil {
+			break
+		}
+
+		return e.complexity.Slot.Email(childComplexity), true
 
 	case "Slot.endsAt":
 		if e.complexity.Slot.EndsAt == nil {
@@ -389,12 +374,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `"""
-Date (dd-mm-yyyy)
+Time (YYYY-MM-DDThh:mm:ssZ)
 """
-scalar Date
+scalar Time
 
 """
-Time (hh:mm)
+Time Of Day (hh:mm)
 """
 scalar TimeOfDay
 
@@ -409,14 +394,12 @@ Slot Input is a booking enquiry.
 input SlotInput {
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "desired date of the booking (dd-mm-yyyy)"
-  date: Date!,
-  "desired start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
+  "desired start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  startsAt: Time!,
   "desired duration of the booking in minutes"
   duration: Int!,
 }
@@ -427,16 +410,14 @@ Slot is a possible booking that has yet to be confirmed.
 type Slot {
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "potential date of the booking (dd-mm-yyyy)"
-  date: Date!,
-  "potential start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
-  "potential ending time of the booking (hh:mm)"
-  endsAt: TimeOfDay!,
+  "desired start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  startsAt: Time!,
+  "potential ending time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  endsAt: Time!,
   "potential duration of the booking in minutes"
   duration: Int!,
 }
@@ -447,14 +428,12 @@ Slot is a possible booking that has yet to be confirmed.
 input BookingInput {
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "date of the booking (dd-mm-yyyy)"
-  date: Date!,
-  "start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
+  "start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  startsAt: Time!,
   "duration of the booking in minutes"
   duration: Int!,
 }
@@ -467,16 +446,14 @@ type Booking {
   id: ID!
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "date of the booking (dd-mm-yyyy)"
-  date: Date!,
   "start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
+  startsAt: Time!,
   "end time of the booking (hh:mm)"
-  endsAt: TimeOfDay!,
+  endsAt: Time!,
   "duration of the booking in minutes"
   duration: Int!,
   "unique identifier of the booking table"
@@ -508,9 +485,9 @@ type OpeningHoursSpecification {
   "the closing time of the place or service on the given day(s) of the week"
   closes: TimeOfDay!,
   "date the special opening hours starts at. only valid for special opening hours"
-  validFrom: Date,
+  validFrom: Time,
   "date the special opening hours ends at. only valid for special opening hours"
-  validThrough: Date,
+  validThrough: Time,
 }
 
 """
@@ -705,7 +682,7 @@ func (ec *executionContext) _Booking_venueId(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Booking_customerId(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
+func (ec *executionContext) _Booking_email(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -723,7 +700,7 @@ func (ec *executionContext) _Booking_customerId(ctx context.Context, field graph
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CustomerID, nil
+		return obj.Email, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -737,7 +714,7 @@ func (ec *executionContext) _Booking_customerId(ctx context.Context, field graph
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_people(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -775,41 +752,6 @@ func (ec *executionContext) _Booking_people(ctx context.Context, field graphql.C
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Booking_date(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Booking",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Date, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(models.Date)
-	fc.Result = res
-	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Booking_startsAt(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -840,9 +782,9 @@ func (ec *executionContext) _Booking_startsAt(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TimeOfDay)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_endsAt(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -875,9 +817,9 @@ func (ec *executionContext) _Booking_endsAt(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TimeOfDay)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_duration(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -1166,9 +1108,9 @@ func (ec *executionContext) _OpeningHoursSpecification_validFrom(ctx context.Con
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.Date)
+	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1198,9 +1140,9 @@ func (ec *executionContext) _OpeningHoursSpecification_validThrough(ctx context.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.Date)
+	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1351,7 +1293,7 @@ func (ec *executionContext) _Slot_venueId(ctx context.Context, field graphql.Col
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Slot_customerId(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
+func (ec *executionContext) _Slot_email(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1369,7 +1311,7 @@ func (ec *executionContext) _Slot_customerId(ctx context.Context, field graphql.
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CustomerID, nil
+		return obj.Email, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1383,7 +1325,7 @@ func (ec *executionContext) _Slot_customerId(ctx context.Context, field graphql.
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_people(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -1421,41 +1363,6 @@ func (ec *executionContext) _Slot_people(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Slot_date(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Slot",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Date, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(models.Date)
-	fc.Result = res
-	return ec.marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Slot_startsAt(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1486,9 +1393,9 @@ func (ec *executionContext) _Slot_startsAt(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TimeOfDay)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_endsAt(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -1521,9 +1428,9 @@ func (ec *executionContext) _Slot_endsAt(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TimeOfDay)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slot_duration(ctx context.Context, field graphql.CollectedField, obj *models.Slot) (ret graphql.Marshaler) {
@@ -2802,11 +2709,11 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
-		case "customerId":
+		case "email":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerId"))
-			it.CustomerID, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2818,19 +2725,11 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
-		case "date":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "startsAt":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startsAt"))
-			it.StartsAt, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			it.StartsAt, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2862,11 +2761,11 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "customerId":
+		case "email":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerId"))
-			it.CustomerID, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2878,19 +2777,11 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "date":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "startsAt":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startsAt"))
-			it.StartsAt, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			it.StartsAt, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2937,18 +2828,13 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "customerId":
-			out.Values[i] = ec._Booking_customerId(ctx, field, obj)
+		case "email":
+			out.Values[i] = ec._Booking_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "people":
 			out.Values[i] = ec._Booking_people(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "date":
-			out.Values[i] = ec._Booking_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3120,18 +3006,13 @@ func (ec *executionContext) _Slot(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "customerId":
-			out.Values[i] = ec._Slot_customerId(ctx, field, obj)
+		case "email":
+			out.Values[i] = ec._Slot_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "people":
 			out.Values[i] = ec._Slot_people(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "date":
-			out.Values[i] = ec._Slot_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3482,16 +3363,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {
-	var res models.Date
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNDate2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
-	return v
-}
-
 func (ec *executionContext) unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, v interface{}) (models.DayOfWeek, error) {
 	var res models.DayOfWeek
 	err := res.UnmarshalGQL(v)
@@ -3605,6 +3476,21 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3890,22 +3776,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, v interface{}) (*models.Date, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(models.Date)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v *models.Date) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3928,6 +3798,21 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalTime(*v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
