@@ -6,11 +6,11 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"time"
 
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
+	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 )
 
 func (r *mutationResolver) CreateSlot(ctx context.Context, input models.SlotInput) (*models.Slot, error) {
