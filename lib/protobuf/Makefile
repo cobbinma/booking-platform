@@ -17,5 +17,5 @@ gen-lang-go:
 	rm -rf autogen/lang/go
 	mkdir -p autogen/lang/go
 	for PROTOFILE in ${SORTED_PROTO_FILES}; do \
-		protoc -I ./ --go_out=plugins=grpc:${GOPATH}/src $$PROTOFILE \
+		protoc $$PROTOFILE -I. --go_out=:${GOPATH}/src \
 	; done
