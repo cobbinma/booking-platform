@@ -14,19 +14,13 @@ import (
 )
 
 func (r *mutationResolver) CreateSlot(ctx context.Context, input models.SlotInput) (*models.Slot, error) {
-	starts, err := input.StartsAt.Time()
-	if err != nil {
-		return nil, fmt.Errorf("could not parse start time : %w", err)
-	}
-
 	return &models.Slot{
-		VenueID:    input.VenueID,
-		CustomerID: input.CustomerID,
-		People:     input.People,
-		Date:       input.Date,
-		StartsAt:   input.StartsAt,
-		EndsAt:     models.NewTimeOfDay(starts.Add(time.Minute * (time.Duration)(input.Duration))),
-		Duration:   input.Duration,
+		VenueID:  input.VenueID,
+		Email:    input.Email,
+		People:   input.People,
+		StartsAt: input.StartsAt,
+		EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
+		Duration: input.Duration,
 	}, nil
 }
 
@@ -36,25 +30,19 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 		return nil, fmt.Errorf("could not get user from context : %w", err)
 	}
 
-	if user.Email != input.CustomerID {
+	if user.Email != input.Email {
 		return nil, fmt.Errorf("context email does not match given")
 	}
 
-	starts, err := input.StartsAt.Time()
-	if err != nil {
-		return nil, fmt.Errorf("could not parse start time : %w", err)
-	}
-
 	return &models.Booking{
-		ID:         "5cbeadb9-b2b1-40ce-acbf-686f08f4e3af",
-		VenueID:    input.VenueID,
-		CustomerID: input.CustomerID,
-		People:     input.People,
-		Date:       input.Date,
-		StartsAt:   input.StartsAt,
-		EndsAt:     models.NewTimeOfDay(starts.Add(time.Minute * (time.Duration)(input.Duration))),
-		Duration:   input.Duration,
-		TableID:    "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		ID:       "5cbeadb9-b2b1-40ce-acbf-686f08f4e3af",
+		VenueID:  input.VenueID,
+		Email:    input.Email,
+		People:   input.People,
+		StartsAt: input.StartsAt,
+		EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
+		Duration: input.Duration,
+		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 	}, nil
 }
 

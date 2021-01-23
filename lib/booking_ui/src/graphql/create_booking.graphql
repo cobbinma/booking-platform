@@ -2,9 +2,8 @@ mutation CreateBooking($slot: BookingInput!) {
     createBooking(input: $slot) {
         id
         venueId
-        customerId
+        email
         people
-        date
         startsAt
         endsAt
         duration

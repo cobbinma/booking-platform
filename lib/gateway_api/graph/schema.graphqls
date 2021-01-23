@@ -1,10 +1,10 @@
 """
-Date (dd-mm-yyyy)
+Time (YYYY-MM-DDThh:mm:ssZ)
 """
-scalar Date
+scalar Time
 
 """
-Time (hh:mm)
+Time Of Day (hh:mm)
 """
 scalar TimeOfDay
 
@@ -19,14 +19,12 @@ Slot Input is a booking enquiry.
 input SlotInput {
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "desired date of the booking (dd-mm-yyyy)"
-  date: Date!,
-  "desired start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
+  "desired start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  startsAt: Time!,
   "desired duration of the booking in minutes"
   duration: Int!,
 }
@@ -37,16 +35,14 @@ Slot is a possible booking that has yet to be confirmed.
 type Slot {
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "potential date of the booking (dd-mm-yyyy)"
-  date: Date!,
-  "potential start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
-  "potential ending time of the booking (hh:mm)"
-  endsAt: TimeOfDay!,
+  "desired start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  startsAt: Time!,
+  "potential ending time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  endsAt: Time!,
   "potential duration of the booking in minutes"
   duration: Int!,
 }
@@ -57,14 +53,12 @@ Slot is a possible booking that has yet to be confirmed.
 input BookingInput {
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "date of the booking (dd-mm-yyyy)"
-  date: Date!,
-  "start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
+  "start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
+  startsAt: Time!,
   "duration of the booking in minutes"
   duration: Int!,
 }
@@ -77,16 +71,14 @@ type Booking {
   id: ID!
   "unique identifier of the venue"
   venueId: ID!
-  "unique identifier of the customer"
-  customerId: ID!,
+  "email of the customer"
+  email: String!,
   "amount of people attending the booking"
   people: Int!,
-  "date of the booking (dd-mm-yyyy)"
-  date: Date!,
   "start time of the booking (hh:mm)"
-  startsAt: TimeOfDay!,
+  startsAt: Time!,
   "end time of the booking (hh:mm)"
-  endsAt: TimeOfDay!,
+  endsAt: Time!,
   "duration of the booking in minutes"
   duration: Int!,
   "unique identifier of the booking table"
@@ -118,9 +110,9 @@ type OpeningHoursSpecification {
   "the closing time of the place or service on the given day(s) of the week"
   closes: TimeOfDay!,
   "date the special opening hours starts at. only valid for special opening hours"
-  validFrom: Date,
+  validFrom: Time,
   "date the special opening hours ends at. only valid for special opening hours"
-  validThrough: Date,
+  validThrough: Time,
 }
 
 """
