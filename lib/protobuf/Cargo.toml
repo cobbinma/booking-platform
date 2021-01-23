@@ -1,0 +1,12 @@
+[package]
+name = "protobuf"
+version = "0.1.0"
+authors = ["cobbinma <cobbinma@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+tonic = "0.4.0"
+prost = "0.7.0"
+
+[build-dependencies]
+grpc-build = "0.0.7"
