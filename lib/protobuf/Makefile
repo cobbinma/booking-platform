@@ -12,6 +12,9 @@ deploy:
 
 SORTED_PROTO_FILES=$(shell find src -name '*.proto' | sort)
 
+.PHONY: generate
+generate: gen-lang-go gen-lang-rust
+
 gen-lang-go:
 	go mod download
 	go install github.com/golang/protobuf/protoc-gen-go
@@ -20,3 +23,6 @@ gen-lang-go:
 	for PROTOFILE in ${SORTED_PROTO_FILES}; do \
 		protoc $$PROTOFILE -I. --go_out=plugins=grpc:${GOPATH}/src \
 	; done
+
+gen-lang-rust:
+	cargo build
