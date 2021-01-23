@@ -3,7 +3,8 @@ test:
 	echo "nothing to test"
 
 .PHONY: build
-build: gen-lang-go
+build:
+	echo "nothing to build"
 
 .PHONY: deploy
 deploy:
@@ -17,5 +18,5 @@ gen-lang-go:
 	rm -rf autogen/lang/go
 	mkdir -p autogen/lang/go
 	for PROTOFILE in ${SORTED_PROTO_FILES}; do \
-		protoc $$PROTOFILE -I. --go_out=:${GOPATH}/src \
+		protoc $$PROTOFILE -I. --go_out=plugins=grpc:${GOPATH}/src \
 	; done
