@@ -3,7 +3,6 @@ import { BookingStage } from "./Booking";
 import { Booking, Slot as SlotType, useCreateBookingMutation } from "../graph";
 import { Button } from "baseui/button";
 import { H2 } from "baseui/typography";
-import { Table } from "baseui/table";
 import SlotDisplay from "./SlotDisplay";
 
 interface SlotProps {

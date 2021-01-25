@@ -36,8 +36,12 @@ func main() {
 	if !present {
 		panic("AUTH0_API_IDENTIFIER environment variable not set")
 	}
+	venueURL, present := os.LookupEnv("VENUE_API_ROOT")
+	if !present {
+		panic("VENUE_API_ROOT environment variable not set")
+	}
 
-	conn, err := grpc.Dial("localhost:8888", grpc.WithInsecure())
+	conn, err := grpc.Dial(venueURL, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("could not connect : %s", err)
 	}
