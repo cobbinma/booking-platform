@@ -2,16 +2,25 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
-	log "github.com/sirupsen/logrus"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"net"
 	"os"
 )
 
 func main() {
-	log.SetFormatter(&log.JSONFormatter{})
+	logger, err := zap.NewProduction()
+	if err != nil {
+		fmt.Printf("could not start logger : %s", err)
+		os.Exit(-1)
+	}
+	defer logger.Sync()
+	log := logger.Sugar()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -23,7 +32,8 @@ func main() {
 		log.Fatalf("could not listen : %s", err)
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc_middleware.WithUnaryServerChain(
+		grpc_zap.UnaryServerInterceptor(logger)))
 	api.RegisterVenueAPIServer(s, &Service{})
 
 	log.Infof("starting gRPC listener on port %s", port)
