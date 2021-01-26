@@ -6,6 +6,8 @@ WORKDIR /src
 
 COPY . .
 
+RUN ls -la
+
 RUN go mod download
 
 RUN go test ./... \
