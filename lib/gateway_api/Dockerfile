@@ -4,11 +4,14 @@ FROM golang:1.15-buster AS builder
 ENV GO111MODULE=on
 WORKDIR /src
 
-COPY . .
+COPY .protobuf ./.protobuf
 
-RUN ls -la
+COPY go.mod .
+COPY go.sum .
 
 RUN go mod download
+
+COPY . .
 
 RUN go test ./... \
   && CGO_ENABLED=0 go build -a -o /main cmd/api/*.go
@@ -23,6 +26,6 @@ RUN apk add --update \
 
 COPY --from=builder /main /
 
-EXPOSE 9999
+EXPOSE 8888
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/main"]
