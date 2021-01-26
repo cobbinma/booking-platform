@@ -8,11 +8,14 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
+	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
+	venue "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
+	"google.golang.org/grpc"
 	"testing"
 )
 
 func Test_GetVenue(t *testing.T) {
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, &mockVenueService{})})))
 
 	var resp struct {
 		GetVenue struct {
@@ -34,13 +37,13 @@ func Test_GetVenue(t *testing.T) {
 			} `json:"specialOpeningHours"`
 		} `json:"getVenue"`
 	}
-	c.MustPost(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,validFrom,validThrough},specialOpeningHours{dayOfWeek,validFrom,validThrough}}}`, &resp)
+	c.MustPost(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough}}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 }
 
 func Test_CreateSlot(t *testing.T) {
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, &mockVenueService{})})))
 
 	var resp struct {
 		CreateSlot struct {
@@ -58,7 +61,7 @@ func Test_CreateSlot(t *testing.T) {
 }
 
 func Test_CreateBooking(t *testing.T) {
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{})})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, &mockVenueService{})})))
 
 	var resp struct {
 		CreateBooking struct {
@@ -84,5 +87,32 @@ func (m mockUserService) GetUser(ctx context.Context) (*models.User, error) {
 	return &models.User{
 		Name:  "Test Test",
 		Email: "test@test.com",
+	}, nil
+}
+
+var _ api.VenueAPIClient = (*mockVenueService)(nil)
+
+type mockVenueService struct{}
+
+func (m mockVenueService) GetVenue(ctx context.Context, in *api.GetVenueRequest, opts ...grpc.CallOption) (*venue.Venue, error) {
+	monday := &venue.OpeningHoursSpecification{
+		DayOfWeek:    1,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    "",
+		ValidThrough: "",
+	}
+	tuesday := &venue.OpeningHoursSpecification{
+		DayOfWeek:    2,
+		Opens:        "11:00",
+		Closes:       "20:00",
+		ValidFrom:    "",
+		ValidThrough: "",
+	}
+	return &venue.Venue{
+		Id:                  in.Id,
+		Name:                "hop and vine",
+		OpeningHours:        []*venue.OpeningHoursSpecification{monday, tuesday},
+		SpecialOpeningHours: nil,
 	}, nil
 }

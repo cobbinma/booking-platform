@@ -20,4 +20,5 @@ deps:
 
 .PHONY: dev
 dev: deps
+	yarn
 	yarn start

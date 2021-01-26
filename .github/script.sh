@@ -32,20 +32,20 @@ if [ ! -f "$FILE" ]; then
 fi
 done
 
-# test
-for dep in $dependencies
-do
-  echo testing "$dep"
-  dep=$(echo "$dep" | sed 's/\://g')
-  make -C "$dep" test
-done
-
 # build docker images
 for dep in $dependencies
 do
   echo building "$dep"
   dep=$(echo "$dep" | sed 's/\://g')
   make -C "$dep" TAG="$(get_docker_tag "$dep")" build
+done
+
+# test
+for dep in $dependencies
+do
+  echo testing "$dep"
+  dep=$(echo "$dep" | sed 's/\://g')
+  make -C "$dep" test
 done
 
 # push docker images

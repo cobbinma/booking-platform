@@ -3,9 +3,11 @@ package main
 import (
 	mw "github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
+	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"google.golang.org/grpc"
 	"log"
 	"net/http"
 	"os"
@@ -34,9 +36,19 @@ func main() {
 	if !present {
 		panic("AUTH0_API_IDENTIFIER environment variable not set")
 	}
+	venueURL, present := os.LookupEnv("VENUE_API_ROOT")
+	if !present {
+		panic("VENUE_API_ROOT environment variable not set")
+	}
+
+	conn, err := grpc.Dial(venueURL, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect : %s", err)
+	}
+	defer conn.Close()
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
-		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(domain))}))
+		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(domain), api.NewVenueAPIClient(conn))}))
 	e := echo.New()
 	e.Use(middleware.Logger())
 
