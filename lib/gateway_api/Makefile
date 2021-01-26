@@ -2,8 +2,8 @@
 test:
 	go test -tags integration ./...
 
-.PHONY: deps build
-build:
+.PHONY: build
+build: deps
 	docker build . -t ${TAG}
 
 .PHONY: deploy
