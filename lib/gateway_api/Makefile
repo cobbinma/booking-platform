@@ -25,4 +25,4 @@ deps:
 	rm -rf .protobuf
 	mkdir -p .protobuf
 	cp -r ./../protobuf/ .protobuf
-	ls -la
+	ls .protobuf
