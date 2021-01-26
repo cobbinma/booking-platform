@@ -4,6 +4,8 @@ FROM golang:1.15-buster AS builder
 ENV GO111MODULE=on
 WORKDIR /src
 
+COPY .protobuf ./.protobuf
+
 COPY go.mod .
 COPY go.sum .
 
