@@ -55,9 +55,13 @@ type ComplexityRoot struct {
 		VenueID  func(childComplexity int) int
 	}
 
+	GetSlotResponse struct {
+		Match               func(childComplexity int) int
+		OtherAvailableSlots func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateBooking func(childComplexity int, input models.BookingInput) int
-		CreateSlot    func(childComplexity int, input models.SlotInput) int
 	}
 
 	OpeningHoursSpecification struct {
@@ -69,6 +73,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		GetSlot  func(childComplexity int, input models.SlotInput) int
 		GetVenue func(childComplexity int, id string) int
 	}
 
@@ -90,11 +95,11 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateSlot(ctx context.Context, input models.SlotInput) (*models.Slot, error)
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
 }
 type QueryResolver interface {
 	GetVenue(ctx context.Context, id string) (*models.Venue, error)
+	GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error)
 }
 
 type executableSchema struct {
@@ -168,6 +173,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Booking.VenueID(childComplexity), true
 
+	case "GetSlotResponse.match":
+		if e.complexity.GetSlotResponse.Match == nil {
+			break
+		}
+
+		return e.complexity.GetSlotResponse.Match(childComplexity), true
+
+	case "GetSlotResponse.otherAvailableSlots":
+		if e.complexity.GetSlotResponse.OtherAvailableSlots == nil {
+			break
+		}
+
+		return e.complexity.GetSlotResponse.OtherAvailableSlots(childComplexity), true
+
 	case "Mutation.createBooking":
 		if e.complexity.Mutation.CreateBooking == nil {
 			break
@@ -179,18 +198,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateBooking(childComplexity, args["input"].(models.BookingInput)), true
-
-	case "Mutation.createSlot":
-		if e.complexity.Mutation.CreateSlot == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createSlot_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateSlot(childComplexity, args["input"].(models.SlotInput)), true
 
 	case "OpeningHoursSpecification.closes":
 		if e.complexity.OpeningHoursSpecification.Closes == nil {
@@ -226,6 +233,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OpeningHoursSpecification.ValidThrough(childComplexity), true
+
+	case "Query.getSlot":
+		if e.complexity.Query.GetSlot == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getSlot_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetSlot(childComplexity, args["input"].(models.SlotInput)), true
 
 	case "Query.getVenue":
 		if e.complexity.Query.GetVenue == nil {
@@ -491,19 +510,29 @@ type OpeningHoursSpecification {
 }
 
 """
+Booking Enquiry Response.
+"""
+type GetSlotResponse {
+  "slot matching the given enquiy"
+  match: Slot,
+  "slots have match the enquiry but have different starting times"
+  otherAvailableSlots: [Slot!]
+}
+
+"""
 Booking queries.
 """
 type Query {
   "get venue information from an venue identifier"
   getVenue(id: ID!): Venue!
+  "get slot is a booking enquiry"
+  getSlot(input: SlotInput!): GetSlotResponse!
 }
 
 """
 Booking mutations.
 """
 type Mutation {
-  "create slot is a booking enquiry"
-  createSlot(input: SlotInput!): Slot!
   "create booking is a confirming a booking slot"
   createBooking(input: BookingInput!): Booking!
 }`, BuiltIn: false},
@@ -529,21 +558,6 @@ func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Contex
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createSlot_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.SlotInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -556,6 +570,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getSlot_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.SlotInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -892,7 +921,7 @@ func (ec *executionContext) _Booking_tableId(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_createSlot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _GetSlotResponse_match(ctx context.Context, field graphql.CollectedField, obj *models.GetSlotResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -900,38 +929,60 @@ func (ec *executionContext) _Mutation_createSlot(ctx context.Context, field grap
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Mutation",
+		Object:     "GetSlotResponse",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_createSlot_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateSlot(rctx, args["input"].(models.SlotInput))
+		return obj.Match, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*models.Slot)
 	fc.Result = res
-	return ec.marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx, field.Selections, res)
+	return ec.marshalOSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GetSlotResponse_otherAvailableSlots(ctx context.Context, field graphql.CollectedField, obj *models.GetSlotResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GetSlotResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OtherAvailableSlots, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Slot)
+	fc.Result = res
+	return ec.marshalOSlot2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createBooking(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1185,6 +1236,48 @@ func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.C
 	res := resTmp.(*models.Venue)
 	fc.Result = res
 	return ec.marshalNVenue2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getSlot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getSlot_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetSlot(rctx, args["input"].(models.SlotInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.GetSlotResponse)
+	fc.Result = res
+	return ec.marshalNGetSlotResponse2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐGetSlotResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2869,6 +2962,32 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var getSlotResponseImplementors = []string{"GetSlotResponse"}
+
+func (ec *executionContext) _GetSlotResponse(ctx context.Context, sel ast.SelectionSet, obj *models.GetSlotResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, getSlotResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GetSlotResponse")
+		case "match":
+			out.Values[i] = ec._GetSlotResponse_match(ctx, field, obj)
+		case "otherAvailableSlots":
+			out.Values[i] = ec._GetSlotResponse_otherAvailableSlots(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2884,11 +3003,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "createSlot":
-			out.Values[i] = ec._Mutation_createSlot(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "createBooking":
 			out.Values[i] = ec._Mutation_createBooking(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -2970,6 +3084,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getVenue(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getSlot":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getSlot(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3373,6 +3501,20 @@ func (ec *executionContext) marshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbooking�
 	return v
 }
 
+func (ec *executionContext) marshalNGetSlotResponse2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐGetSlotResponse(ctx context.Context, sel ast.SelectionSet, v models.GetSlotResponse) graphql.Marshaler {
+	return ec._GetSlotResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGetSlotResponse2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐGetSlotResponse(ctx context.Context, sel ast.SelectionSet, v *models.GetSlotResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._GetSlotResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3448,10 +3590,6 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋ
 		return graphql.Null
 	}
 	return ec._OpeningHoursSpecification(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNSlot2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v models.Slot) graphql.Marshaler {
-	return ec._Slot(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v *models.Slot) graphql.Marshaler {
@@ -3774,6 +3912,53 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) marshalOSlot2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Slot) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v *models.Slot) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Slot(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

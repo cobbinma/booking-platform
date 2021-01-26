@@ -1,30 +1,50 @@
 import React from "react";
 import { BookingStage } from "./Booking";
-import { Booking, Slot as SlotType, useCreateBookingMutation } from "../graph";
+import {
+  Booking,
+  Slot as SlotType,
+  SlotInput,
+  useCreateBookingMutation,
+  useGetSlotQuery,
+} from "../graph";
 import { Button } from "baseui/button";
 import { H2 } from "baseui/typography";
 import SlotDisplay from "./SlotDisplay";
+import { Spinner } from "baseui/spinner";
 
 interface SlotProps {
-  slot: SlotType | null;
+  enquiry: SlotInput;
   setBookingStage: React.Dispatch<React.SetStateAction<BookingStage>>;
   setBooking: React.Dispatch<React.SetStateAction<Booking | null>>;
 }
 
-const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
-  const [createBookingMutation] = useCreateBookingMutation({
+const Slot: React.FC<SlotProps> = ({
+  enquiry,
+  setBooking,
+  setBookingStage,
+}) => {
+  const { data, loading, error } = useGetSlotQuery({
     variables: {
-      slot: {
-        venueId: slot?.venueId!,
-        email: slot?.email!,
-        people: slot?.people!,
-        startsAt: slot?.startsAt!,
-        duration: slot?.duration!,
-      },
+      slot: enquiry,
     },
   });
 
-  if (slot == null) {
+  if (loading)
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
+
+  if (error) {
+    console.log(error);
+    setBooking(null);
+    setBookingStage(BookingStage.Confirmation);
+  }
+
+  const match = data?.getSlot.match;
+
+  if (match == null) {
     return (
       <div>
         <H2>sorry we could not find a slot</H2>
@@ -41,24 +61,50 @@ const Slot: React.FC<SlotProps> = ({ slot, setBooking, setBookingStage }) => {
     );
   }
 
-  const handleClick = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    createBookingMutation()
-      .then((b) => {
-        setBooking(b?.data?.createBooking || null);
-      })
-      .catch((e) => {
-        console.log(e);
-        setBooking(null);
-      });
-    setBookingStage(BookingStage.Confirmation);
-  };
-
   return (
     <div>
       <H2>we found a slot!</H2>
-      <SlotDisplay {...slot} />
+      <SlotDisplay {...match} />
       <br />
+      <CreateBookingButton
+        match={match}
+        setBookingStage={setBookingStage}
+        setBooking={setBooking}
+      />
+    </div>
+  );
+};
+
+const CreateBookingButton: React.FC<{
+  match: SlotType;
+  setBookingStage: React.Dispatch<React.SetStateAction<BookingStage>>;
+  setBooking: React.Dispatch<React.SetStateAction<Booking | null>>;
+}> = ({ match, setBooking, setBookingStage }) => {
+  const [createBookingMutation] = useCreateBookingMutation({
+    variables: {
+      slot: {
+        venueId: match.venueId,
+        email: match.email,
+        people: match.people,
+        startsAt: match.startsAt,
+        duration: match.duration,
+      },
+    },
+  });
+  const handleClick = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    createBookingMutation()
+      .then((r) => {
+        setBooking(r?.data?.createBooking!);
+        setBookingStage(BookingStage.Confirmation);
+      })
+      .catch((e) => {
+        console.log(e);
+        setBookingStage(BookingStage.Error);
+      });
+  };
+  return (
+    <div>
       <Button
         onClick={(e) => {
           e.preventDefault();

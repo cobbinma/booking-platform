@@ -1,6 +1,6 @@
 import React from "react";
 import { DatePicker } from "baseui/datepicker";
-import { Slot, SlotInput, useCreateSlotMutation } from "../graph";
+import { SlotInput } from "../graph";
 import { BookingStage } from "./Booking";
 import { TimePicker } from "baseui/timepicker";
 import { Slider } from "baseui/slider";
@@ -19,7 +19,7 @@ let durations = new Map<string, number>([
 
 interface EnquiryProps {
   setBookingStage: React.Dispatch<React.SetStateAction<BookingStage>>;
-  setSlot: React.Dispatch<React.SetStateAction<Slot | null>>;
+  setEnquiry: React.Dispatch<React.SetStateAction<SlotInput | null>>;
   venueId: string;
   email: string;
 }
@@ -27,7 +27,7 @@ interface EnquiryProps {
 const Enquiry: React.FC<EnquiryProps> = ({
   venueId,
   email,
-  setSlot,
+  setEnquiry,
   setBookingStage,
 }) => {
   const [date, setDate] = React.useState([new Date(Date.now())]);
@@ -48,22 +48,11 @@ const Enquiry: React.FC<EnquiryProps> = ({
     duration: durations.get(duration) || 60,
   };
 
-  const [createSlotMutation] = useCreateSlotMutation({
-    variables: {
-      slot: enquiry,
-    },
-  });
-
   const handleClick = (e: any) => {
     e.preventDefault();
-    createSlotMutation()
-      .then((r) => {
-        setSlot(r?.data?.createSlot || null);
-      })
-      .catch((e) => {
-        setSlot(null);
-        console.log(e);
-      });
+    if (enquiry) {
+      setEnquiry(enquiry);
+    }
     setBookingStage(BookingStage.Slot);
   };
 

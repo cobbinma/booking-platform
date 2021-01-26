@@ -116,11 +116,22 @@ export type OpeningHoursSpecification = {
   validThrough?: Maybe<Scalars['Time']>;
 };
 
+/** Booking Enquiry Response. */
+export type GetSlotResponse = {
+  __typename?: 'GetSlotResponse';
+  /** slot matching the given enquiy */
+  match?: Maybe<Slot>;
+  /** slots have match the enquiry but have different starting times */
+  otherAvailableSlots?: Maybe<Array<Slot>>;
+};
+
 /** Booking queries. */
 export type Query = {
   __typename?: 'Query';
   /** get venue information from an venue identifier */
   getVenue: Venue;
+  /** get slot is a booking enquiry */
+  getSlot: GetSlotResponse;
 };
 
 
@@ -129,19 +140,17 @@ export type QueryGetVenueArgs = {
   id: Scalars['ID'];
 };
 
+
+/** Booking queries. */
+export type QueryGetSlotArgs = {
+  input: SlotInput;
+};
+
 /** Booking mutations. */
 export type Mutation = {
   __typename?: 'Mutation';
-  /** create slot is a booking enquiry */
-  createSlot: Slot;
   /** create booking is a confirming a booking slot */
   createBooking: Booking;
-};
-
-
-/** Booking mutations. */
-export type MutationCreateSlotArgs = {
-  input: SlotInput;
 };
 
 
@@ -163,16 +172,22 @@ export type CreateBookingMutation = (
   ) }
 );
 
-export type CreateSlotMutationVariables = Exact<{
+export type GetSlotQueryVariables = Exact<{
   slot: SlotInput;
 }>;
 
 
-export type CreateSlotMutation = (
-  { __typename?: 'Mutation' }
-  & { createSlot: (
-    { __typename?: 'Slot' }
-    & Pick<Slot, 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration'>
+export type GetSlotQuery = (
+  { __typename?: 'Query' }
+  & { getSlot: (
+    { __typename?: 'GetSlotResponse' }
+    & { match?: Maybe<(
+      { __typename?: 'Slot' }
+      & Pick<Slot, 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration'>
+    )>, otherAvailableSlots?: Maybe<Array<(
+      { __typename?: 'Slot' }
+      & Pick<Slot, 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration'>
+    )>> }
   ) }
 );
 
@@ -236,43 +251,54 @@ export function useCreateBookingMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateBookingMutationHookResult = ReturnType<typeof useCreateBookingMutation>;
 export type CreateBookingMutationResult = Apollo.MutationResult<CreateBookingMutation>;
 export type CreateBookingMutationOptions = Apollo.BaseMutationOptions<CreateBookingMutation, CreateBookingMutationVariables>;
-export const CreateSlotDocument = gql`
-    mutation CreateSlot($slot: SlotInput!) {
-  createSlot(input: $slot) {
-    venueId
-    email
-    people
-    startsAt
-    endsAt
-    duration
+export const GetSlotDocument = gql`
+    query GetSlot($slot: SlotInput!) {
+  getSlot(input: $slot) {
+    match {
+      venueId
+      email
+      people
+      startsAt
+      endsAt
+      duration
+    }
+    otherAvailableSlots {
+      venueId
+      email
+      people
+      startsAt
+      endsAt
+      duration
+    }
   }
 }
     `;
-export type CreateSlotMutationFn = Apollo.MutationFunction<CreateSlotMutation, CreateSlotMutationVariables>;
 
 /**
- * __useCreateSlotMutation__
+ * __useGetSlotQuery__
  *
- * To run a mutation, you first call `useCreateSlotMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateSlotMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
+ * To run a query within a React component, call `useGetSlotQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSlotQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
  *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const [createSlotMutation, { data, loading, error }] = useCreateSlotMutation({
+ * const { data, loading, error } = useGetSlotQuery({
  *   variables: {
  *      slot: // value for 'slot'
  *   },
  * });
  */
-export function useCreateSlotMutation(baseOptions?: Apollo.MutationHookOptions<CreateSlotMutation, CreateSlotMutationVariables>) {
-        return Apollo.useMutation<CreateSlotMutation, CreateSlotMutationVariables>(CreateSlotDocument, baseOptions);
+export function useGetSlotQuery(baseOptions: Apollo.QueryHookOptions<GetSlotQuery, GetSlotQueryVariables>) {
+        return Apollo.useQuery<GetSlotQuery, GetSlotQueryVariables>(GetSlotDocument, baseOptions);
       }
-export type CreateSlotMutationHookResult = ReturnType<typeof useCreateSlotMutation>;
-export type CreateSlotMutationResult = Apollo.MutationResult<CreateSlotMutation>;
-export type CreateSlotMutationOptions = Apollo.BaseMutationOptions<CreateSlotMutation, CreateSlotMutationVariables>;
+export function useGetSlotLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSlotQuery, GetSlotQueryVariables>) {
+          return Apollo.useLazyQuery<GetSlotQuery, GetSlotQueryVariables>(GetSlotDocument, baseOptions);
+        }
+export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
+export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
+export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
     query GetVenue($venueID: ID!) {
   getVenue(id: $venueID) {

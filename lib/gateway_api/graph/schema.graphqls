@@ -116,19 +116,29 @@ type OpeningHoursSpecification {
 }
 
 """
+Booking Enquiry Response.
+"""
+type GetSlotResponse {
+  "slot matching the given enquiy"
+  match: Slot,
+  "slots have match the enquiry but have different starting times"
+  otherAvailableSlots: [Slot!]
+}
+
+"""
 Booking queries.
 """
 type Query {
   "get venue information from an venue identifier"
   getVenue(id: ID!): Venue!
+  "get slot is a booking enquiry"
+  getSlot(input: SlotInput!): GetSlotResponse!
 }
 
 """
 Booking mutations.
 """
 type Mutation {
-  "create slot is a booking enquiry"
-  createSlot(input: SlotInput!): Slot!
   "create booking is a confirming a booking slot"
   createBooking(input: BookingInput!): Booking!
 }

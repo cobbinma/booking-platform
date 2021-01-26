@@ -13,17 +13,6 @@ import (
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 )
 
-func (r *mutationResolver) CreateSlot(ctx context.Context, input models.SlotInput) (*models.Slot, error) {
-	return &models.Slot{
-		VenueID:  input.VenueID,
-		Email:    input.Email,
-		People:   input.People,
-		StartsAt: input.StartsAt,
-		EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
-		Duration: input.Duration,
-	}, nil
-}
-
 func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
 	user, err := r.userService.GetUser(ctx)
 	if err != nil {
@@ -87,6 +76,20 @@ func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue,
 		Name:                venue.Name,
 		OpeningHours:        openingHours,
 		SpecialOpeningHours: specialHours,
+	}, nil
+}
+
+func (r *queryResolver) GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error) {
+	return &models.GetSlotResponse{
+		Match: &models.Slot{
+			VenueID:  input.VenueID,
+			Email:    input.Email,
+			People:   input.People,
+			StartsAt: input.StartsAt,
+			EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
+			Duration: input.Duration,
+		},
+		OtherAvailableSlots: nil,
 	}, nil
 }
 
