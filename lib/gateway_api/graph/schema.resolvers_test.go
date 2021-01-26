@@ -42,20 +42,22 @@ func Test_GetVenue(t *testing.T) {
 	cupaloy.SnapshotT(t, resp)
 }
 
-func Test_CreateSlot(t *testing.T) {
+func Test_GetSlot(t *testing.T) {
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, &mockVenueService{})})))
 
 	var resp struct {
-		CreateSlot struct {
-			VenueID  string `json:"venueId"`
-			Email    string `json:"email"`
-			People   int    `json:"people"`
-			StartsAt string `json:"startsAt"`
-			EndsAt   string `json:"endsAt"`
-			Duration int    `json:"duration"`
-		} `json:"createSlot"`
+		GetSlot struct {
+			Match struct {
+				VenueID  string `json:"venueId"`
+				Email    string `json:"email"`
+				People   int    `json:"people"`
+				StartsAt string `json:"startsAt"`
+				EndsAt   string `json:"endsAt"`
+				Duration int    `json:"duration"`
+			} `json:"match"`
+		} `json:"getSlot"`
 	}
-	c.MustPost(`mutation{createSlot(input:{venueId:"8a18e89b-339b-4e51-ab53-825aae59a070",email:"test@test.com",people:5,startsAt:"3000-06-20T12:41:45Z",duration:60,}) {venueId,email,people,startsAt,endsAt,duration}}`, &resp)
+	c.MustPost(`{getSlot(input:{venueId:"8a18e89b-339b-4e51-ab53-825aae59a070",email:"test@test.com",people:5,startsAt:"3000-06-20T12:41:45Z",duration:60,}) {match{venueId,email,people,startsAt,endsAt,duration}}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 }

@@ -1,0 +1,12 @@
+(struct { GetSlot struct { Match struct { VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\"" } "json:\"match\"" } "json:\"getSlot\"" }) {
+  GetSlot: (struct { Match struct { VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\"" } "json:\"match\"" }) {
+    Match: (struct { VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\"" }) {
+      VenueID: (string) (len=36) "8a18e89b-339b-4e51-ab53-825aae59a070",
+      Email: (string) (len=13) "test@test.com",
+      People: (int) 5,
+      StartsAt: (string) (len=20) "3000-06-20T12:41:45Z",
+      EndsAt: (string) (len=20) "3000-06-20T13:41:45Z",
+      Duration: (int) 60
+    }
+  }
+}
