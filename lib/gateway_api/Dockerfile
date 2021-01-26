@@ -9,6 +9,9 @@ COPY .protobuf ./.protobuf
 COPY go.mod .
 COPY go.sum .
 
+RUN ls
+RUN ./.protobuf
+
 RUN go mod download
 
 COPY . .
