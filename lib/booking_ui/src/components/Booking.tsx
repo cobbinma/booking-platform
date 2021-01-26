@@ -5,13 +5,15 @@ import Venue from "./Venue";
 import Enquiry from "./Enquiry";
 import Slot from "./Slot";
 import Confirmation from "./Confirmation";
-import { Booking as BookingType, Slot as SlotType } from "../graph";
+import { Booking as BookingType, SlotInput } from "../graph";
 import { Button } from "baseui/button";
+import Error from "./Error";
 
 export enum BookingStage {
   Enquiry = 1,
   Slot,
   Confirmation,
+  Error,
 }
 
 interface BookingProps {
@@ -21,7 +23,7 @@ interface BookingProps {
 
 const Booking: React.FC<BookingProps> = ({ params, email }) => {
   const [stage, setStage] = useState<BookingStage>(BookingStage.Enquiry);
-  const [slot, setSlot] = useState<SlotType | null>(null);
+  const [enquiry, setEnquiry] = useState<SlotInput | null>(null);
   const [booking, setBooking] = useState<BookingType | null>(null);
   const { venueId, returnURL } = params;
 
@@ -31,15 +33,16 @@ const Booking: React.FC<BookingProps> = ({ params, email }) => {
         return (
           <Enquiry
             setBookingStage={setStage}
-            setSlot={setSlot}
+            setEnquiry={setEnquiry}
             venueId={venueId}
             email={email}
           />
         );
       case BookingStage.Slot:
+        if (enquiry == null) return <Error setBookingStage={setStage} />;
         return (
           <Slot
-            slot={slot}
+            enquiry={enquiry}
             setBooking={setBooking}
             setBookingStage={setStage}
           />
@@ -52,6 +55,8 @@ const Booking: React.FC<BookingProps> = ({ params, email }) => {
             returnURL={returnURL}
           />
         );
+      case BookingStage.Error:
+        return <Error setBookingStage={setStage} />;
       default:
         return <div>error: unknown stage</div>;
     }

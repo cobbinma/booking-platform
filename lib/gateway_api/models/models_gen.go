@@ -40,6 +40,14 @@ type BookingInput struct {
 	Duration int `json:"duration"`
 }
 
+// Booking Enquiry Response.
+type GetSlotResponse struct {
+	// slot matching the given enquiy
+	Match *Slot `json:"match"`
+	// slots have match the enquiry but have different starting times
+	OtherAvailableSlots []*Slot `json:"otherAvailableSlots"`
+}
+
 // Day specific operating hours.
 type OpeningHoursSpecification struct {
 	// the day of the week for which these opening hours are valid
