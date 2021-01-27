@@ -55,7 +55,7 @@ func main() {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
 		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(domain), venueClient)}))
 	e := echo.New()
-	e.Use(middleware.Logger())
+	e.Use(mw.ZapLogger(logger))
 
 	_, present = os.LookupEnv("ALLOW_CORS_URL")
 	if present {

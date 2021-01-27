@@ -7,6 +7,8 @@ import (
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"github.com/cobbinma/booking-platform/lib/venue_api/cmd/api/middleware"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -52,7 +54,7 @@ func main() {
 
 	opts := []grpc.ServerOption{
 		grpc.Creds(credentials.NewServerTLSFromCert(&cert)),
-		grpc.UnaryInterceptor(ensureValidToken),
+		grpc_middleware.WithUnaryServerChain(grpc_zap.UnaryServerInterceptor(logger), ensureValidToken),
 	}
 
 	s := grpc.NewServer(opts...)
