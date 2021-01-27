@@ -1,8 +1,8 @@
 package graph
 
 import (
+	"context"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
-	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 )
 
 // This file will not be regenerated automatically.
@@ -10,10 +10,14 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	venueService api.VenueAPIClient
+	venueService VenueService
 	userService  models.UserService
 }
 
-func NewResolver(userService models.UserService, venueService api.VenueAPIClient) *Resolver {
+func NewResolver(userService models.UserService, venueService VenueService) *Resolver {
 	return &Resolver{userService: userService, venueService: venueService}
+}
+
+type VenueService interface {
+	GetVenue(ctx context.Context, id string) (*models.Venue, error)
 }

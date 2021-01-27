@@ -26,7 +26,7 @@ func Test_userService_GetUser(t *testing.T) {
 		_, _ = w.Write([]byte(fmt.Sprintf(`{"email":"%s","name":"%s"}`, email, name)))
 	}))
 	defer authServer.Close()
-	ctx := context.WithValue(context.Background(), auth0.TokenCtxKey, token)
+	ctx := auth0.AddTokenToCtx(context.Background(), token)
 	us := auth0.NewUserService(authServer.URL)
 	got, err := us.GetUser(ctx)
 	if err != nil {

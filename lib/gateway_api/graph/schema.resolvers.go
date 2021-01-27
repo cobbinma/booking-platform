@@ -10,7 +10,6 @@ import (
 
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
-	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 )
 
 func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
@@ -36,47 +35,7 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 }
 
 func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
-	venue, err := r.venueService.GetVenue(ctx, &api.GetVenueRequest{Id: id})
-	if err != nil {
-		return nil, fmt.Errorf("could not get venue from venue service : %w", err)
-	}
-
-	openingHours := []*models.OpeningHoursSpecification{}
-	for _, hours := range venue.OpeningHours {
-		openingHours = append(openingHours, &models.OpeningHoursSpecification{
-			DayOfWeek:    (models.DayOfWeek)(hours.DayOfWeek),
-			Opens:        (models.TimeOfDay)(hours.Opens),
-			Closes:       (models.TimeOfDay)(hours.Closes),
-			ValidFrom:    nil,
-			ValidThrough: nil,
-		})
-	}
-
-	specialHours := []*models.OpeningHoursSpecification{}
-	for _, hours := range venue.SpecialOpeningHours {
-		from, err := time.Parse(time.RFC3339, hours.ValidFrom)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse valid from '%s'", err)
-		}
-		through, err := time.Parse(time.RFC3339, hours.ValidThrough)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse valid through '%s'", err)
-		}
-		openingHours = append(specialHours, &models.OpeningHoursSpecification{
-			DayOfWeek:    (models.DayOfWeek)(hours.DayOfWeek),
-			Opens:        (models.TimeOfDay)(hours.Opens),
-			Closes:       (models.TimeOfDay)(hours.Closes),
-			ValidFrom:    &from,
-			ValidThrough: &through,
-		})
-	}
-
-	return &models.Venue{
-		ID:                  venue.Id,
-		Name:                venue.Name,
-		OpeningHours:        openingHours,
-		SpecialOpeningHours: specialHours,
-	}, nil
+	return r.venueService.GetVenue(ctx, id)
 }
 
 func (r *queryResolver) GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error) {

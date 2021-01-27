@@ -8,9 +8,6 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
-	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
-	venue "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
-	"google.golang.org/grpc"
 	"testing"
 )
 
@@ -92,29 +89,30 @@ func (m mockUserService) GetUser(ctx context.Context) (*models.User, error) {
 	}, nil
 }
 
-var _ api.VenueAPIClient = (*mockVenueService)(nil)
+var _ graph.VenueService = (*mockVenueService)(nil)
 
 type mockVenueService struct{}
 
-func (m mockVenueService) GetVenue(ctx context.Context, in *api.GetVenueRequest, opts ...grpc.CallOption) (*venue.Venue, error) {
-	monday := &venue.OpeningHoursSpecification{
-		DayOfWeek:    1,
+func (m mockVenueService) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
+	monday := &models.OpeningHoursSpecification{
+		DayOfWeek:    models.Monday,
 		Opens:        "10:00",
 		Closes:       "19:00",
-		ValidFrom:    "",
-		ValidThrough: "",
+		ValidFrom:    nil,
+		ValidThrough: nil,
 	}
-	tuesday := &venue.OpeningHoursSpecification{
+	tuesday := &models.OpeningHoursSpecification{
 		DayOfWeek:    2,
 		Opens:        "11:00",
 		Closes:       "20:00",
-		ValidFrom:    "",
-		ValidThrough: "",
+		ValidFrom:    nil,
+		ValidThrough: nil,
 	}
-	return &venue.Venue{
-		Id:                  in.Id,
+
+	return &models.Venue{
+		ID:                  id,
 		Name:                "hop and vine",
-		OpeningHours:        []*venue.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
 		SpecialOpeningHours: nil,
 	}, nil
 }
