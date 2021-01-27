@@ -32,7 +32,7 @@ type userService struct {
 	client  *http.Client
 }
 
-func NewUserService(baseURL string) *userService {
+func NewUserService(baseURL string) models.UserService {
 	if len(baseURL) > 0 && baseURL[len(baseURL)-1] != '/' {
 		baseURL = baseURL + "/"
 	}

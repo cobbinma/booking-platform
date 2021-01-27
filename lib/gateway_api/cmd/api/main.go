@@ -3,12 +3,11 @@ package main
 import (
 	mw "github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
-	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/venue"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"google.golang.org/grpc"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 
@@ -22,6 +21,12 @@ const defaultPort = "9999"
 
 func main() {
 	_ = godotenv.Load()
+
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic("could not start logger" + err.Error())
+	}
+	log := logger.Sugar()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -41,14 +46,14 @@ func main() {
 		panic("VENUE_API_ROOT environment variable not set")
 	}
 
-	conn, err := grpc.Dial(venueURL, grpc.WithInsecure())
+	venueClient, closeVenueClient, err := venue.NewVenueClient(venueURL, log)
 	if err != nil {
-		log.Fatalf("could not connect : %s", err)
+		log.Fatalf("could not create venue client : %s", err)
 	}
-	defer conn.Close()
+	defer closeVenueClient(log)
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
-		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(domain), api.NewVenueAPIClient(conn))}))
+		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(domain), venueClient)}))
 	e := echo.New()
 	e.Use(middleware.Logger())
 
@@ -61,7 +66,7 @@ func main() {
 	e.POST("/query", echo.WrapHandler(srv), mw.Auth(domain, apiId))
 	e.OPTIONS("/query", PreflightCors())
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	log.Infof("connect to http://localhost:%s/ for GraphQL playground", port)
 	e.Logger.Fatal(e.Start(":" + port))
 }
 
