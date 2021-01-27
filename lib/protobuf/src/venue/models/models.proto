@@ -18,3 +18,9 @@ message OpeningHoursSpecification {
   string validFrom = 4;
   string validThrough = 5;
 }
+
+message Table {
+  string id = 1;
+  string name = 2;
+  uint32 capacity = 3;
+}

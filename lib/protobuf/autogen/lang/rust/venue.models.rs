@@ -22,3 +22,12 @@ pub struct OpeningHoursSpecification {
     #[prost(string, tag = "5")]
     pub valid_through: ::prost::alloc::string::String,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Table {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(uint32, tag = "3")]
+    pub capacity: u32,
+}
