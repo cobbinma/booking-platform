@@ -1,91 +1,33 @@
 package middleware
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/auth0-community/go-auth0"
+	auth "github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
+	"github.com/labstack/echo/v4"
+	"gopkg.in/square/go-jose.v2"
 	"net/http"
 )
 
-func IsAuthenticated(apiIdentifier string, domain string) *jwtmiddleware.JWTMiddleware {
-	return jwtmiddleware.New(jwtmiddleware.Options{
-		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			aud := token.Claims.(jwt.MapClaims)["aud"].([]interface{})
-			s := make([]string, len(aud))
-			for i, v := range aud {
-				s[i] = fmt.Sprint(v)
-			}
-			token.Claims.(jwt.MapClaims)["aud"] = s
+func Auth(domain string, apiIdentifier string) echo.MiddlewareFunc {
+	client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: fmt.Sprintf("%s.well-known/jwks.json", domain)}, nil)
+	validator := auth0.NewValidator(auth0.NewConfiguration(client, []string{apiIdentifier}, domain, jose.RS256), nil)
 
-			checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(apiIdentifier, false)
-			if !checkAud {
-				return token, errors.New("invalid audience")
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			headers := c.Request().Header
+			token := headers.Get(echo.HeaderAuthorization)
+			if token == "" {
+				return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "token not given"}`))
 			}
 
-			iss := token.Claims.(jwt.MapClaims)["iss"].(interface{})
-			token.Claims.(jwt.MapClaims)["iss"] = fmt.Sprint(iss)
-
-			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(domain, false)
-			if !checkIss {
-				return token, errors.New("invalid issuer")
-			}
-
-			cert, err := getPemCert(token, domain)
+			_, err := validator.ValidateRequest(c.Request())
 			if err != nil {
-				panic("could not get cert")
+				return c.JSONBlob(http.StatusUnauthorized, []byte(`{"error": "invalid token"}`))
 			}
-			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-			return result, nil
-		},
-		SigningMethod: jwt.SigningMethodRS256,
-	})
-}
 
-func getPemCert(token *jwt.Token, domain string) (string, error) {
-	cert := ""
-	resp, err := http.Get(fmt.Sprintf("%s.well-known/jwks.json", domain))
-
-	if err != nil {
-		return cert, err
-	}
-	defer resp.Body.Close()
-
-	var jwks = Jwks{}
-	err = json.NewDecoder(resp.Body).Decode(&jwks)
-
-	if err != nil {
-		return cert, err
-	}
-
-	for k := range jwks.Keys {
-		if token.Header["kid"] == jwks.Keys[k].Kid {
-			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
+			c.SetRequest(c.Request().WithContext(auth.AddTokenToCtx(c.Request().Context(), token)))
+			return next(c)
 		}
 	}
-
-	if cert == "" {
-		err := errors.New("unable to find appropriate key")
-		return cert, err
-	}
-
-	return cert, nil
-}
-
-type Response struct {
-	Message string `json:"message"`
-}
-
-type Jwks struct {
-	Keys []JSONWebKeys `json:"keys"`
-}
-
-type JSONWebKeys struct {
-	Kty string   `json:"kty"`
-	Kid string   `json:"kid"`
-	Use string   `json:"use"`
-	N   string   `json:"n"`
-	E   string   `json:"e"`
-	X5c []string `json:"x5c"`
 }

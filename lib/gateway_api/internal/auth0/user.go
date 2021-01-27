@@ -13,7 +13,19 @@ import (
 
 type ctxKey string
 
-const TokenCtxKey ctxKey = "token-ctx-key"
+const tokenCtxKey ctxKey = "token-ctx-key"
+
+func GetTokenFromCtx(ctx context.Context) (string, error) {
+	if token, ok := ctx.Value(tokenCtxKey).(string); ok {
+		return token, nil
+	}
+
+	return "", fmt.Errorf("could not get token from context")
+}
+
+func AddTokenToCtx(ctx context.Context, token string) context.Context {
+	return context.WithValue(ctx, tokenCtxKey, token)
+}
 
 type userService struct {
 	baseURL string
@@ -31,8 +43,8 @@ func NewUserService(baseURL string) *userService {
 }
 
 func (us *userService) GetUser(ctx context.Context) (*models.User, error) {
-	token, ok := ctx.Value(TokenCtxKey).(string)
-	if !ok {
+	token, err := GetTokenFromCtx(ctx)
+	if err != nil {
 		return nil, fmt.Errorf("token not in context")
 	}
 
