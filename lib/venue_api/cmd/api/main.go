@@ -23,7 +23,11 @@ func main() {
 		fmt.Printf("could not start logger : %s", err)
 		os.Exit(-1)
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			logger.Error("could not sync logger")
+		}
+	}()
 	log := logger.Sugar()
 
 	port := os.Getenv("PORT")
