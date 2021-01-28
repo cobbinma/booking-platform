@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS tables (
-    id  SERIAL UNIQUE PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    capacity INTEGER NOT NULL
-);
