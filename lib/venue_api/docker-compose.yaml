@@ -9,8 +9,8 @@ services:
     volumes:
       - .:/go/src
     environment:
-      - AUTH0_DOMAIN={AUTH0_DOMAIN}
-      - AUTH0_API_IDENTIFIER={AUTH0_API_IDENTIFIER}
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN}
+      - AUTH0_API_IDENTIFIER=${AUTH0_API_IDENTIFIER}
       - DATABASE_URL=postgres://user:password@venue-api-db/venue-api-db?sslmode=disable
     depends_on:
       - venue-api-db
