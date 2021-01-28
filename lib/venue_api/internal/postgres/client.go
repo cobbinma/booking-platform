@@ -12,8 +12,12 @@ import (
 	"os"
 )
 
-var _ api.VenueAPIServer = (*client)(nil)
-var _ api.TableAPIServer = (*client)(nil)
+var _ Repository = (*client)(nil)
+
+type Repository interface {
+	api.TableAPIServer
+	api.VenueAPIServer
+}
 
 type client struct {
 	db               *sqlx.DB
@@ -22,7 +26,7 @@ type client struct {
 	migrationsSource string
 }
 
-func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (*client, func(log *zap.SugaredLogger), error) {
+func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (Repository, func(log *zap.SugaredLogger), error) {
 	c := &client{log: log}
 	for i := range options {
 		options[i](c)

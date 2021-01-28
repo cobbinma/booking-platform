@@ -17,11 +17,6 @@ import (
 	"time"
 )
 
-type Repository interface {
-	api.TableAPIServer
-	api.VenueAPIServer
-}
-
 func Test_Repository(t *testing.T) {
 	pgURL := &url.URL{
 		Scheme: "postgres",
@@ -80,7 +75,7 @@ func Test_Repository(t *testing.T) {
 		}
 	}(log)
 
-	var repository Repository
+	var repository postgres.Repository
 	var closeDB func(*zap.SugaredLogger)
 
 	pool.MaxWait = 10 * time.Second
@@ -111,7 +106,7 @@ type test struct {
 	test func(t *testing.T)
 }
 
-func suite(repository Repository) []test {
+func suite(repository postgres.Repository) []test {
 	return []test{
 		{
 			name: "add venue successfully",
