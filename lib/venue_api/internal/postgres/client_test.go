@@ -157,7 +157,7 @@ func suite(repository postgres.Repository) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				table, err := repository.AddTable(ctx, &api.AddTableRequest{
-					VenueId: "1e182275-00e4-4334-b765-5cca09d5e548",
+					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
 					Table: &models.Table{
 						Id:       "66d499a2-75e2-400c-a9aa-43f6d08c5d2b",
 						Name:     "test table",
@@ -176,7 +176,7 @@ func suite(repository postgres.Repository) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				table, err := repository.GetTables(ctx, &api.GetTablesRequest{
-					VenueId: "1e182275-00e4-4334-b765-5cca09d5e548"})
+					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86"})
 				if err != nil {
 					t.Fatalf("did not expect error, got '%s'", err)
 				}

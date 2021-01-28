@@ -87,14 +87,14 @@ func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (Repository, 
 func (c client) GetTables(ctx context.Context, req *api.GetTablesRequest) (*api.GetTablesResponse, error) {
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "name", "capacity").
-		Columns(TablesTable).Where(sq.Eq{"id": req.VenueId}).ToSql()
+		From(TablesTable).Where(sq.Eq{"venue_id": req.VenueId}).ToSql()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not build tables sql : %s", err)
 	}
 
 	tables := []*models.Table{}
 	rows, err := c.db.Query(sql, args...)
-	if err != nil && errors.Is(err, sql2.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql2.ErrNoRows) {
 		return nil, status.Errorf(codes.Internal, "could not query tables : %s", err)
 	}
 	if rows != nil {
