@@ -25,7 +25,7 @@ RUN apk add --update \
   ;
 
 COPY --from=builder /main /
-COPY --from=builder /internal/postgres/migrations ./internal/postgres/migrations
+COPY --from=builder /src/internal/postgres/migrations ./internal/postgres/migrations
 
 EXPOSE 8888
 ENTRYPOINT ["/sbin/tini", "--"]
