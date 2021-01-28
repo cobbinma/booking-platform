@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go test ./... \
+RUN go test -tags=unit ./... \
   && CGO_ENABLED=0 go build -a -o /main cmd/api/*.go
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

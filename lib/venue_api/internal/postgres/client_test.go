@@ -82,7 +82,8 @@ func Test_Repository(t *testing.T) {
 	err = pool.Retry(func() error {
 		p, c, err := postgres.
 			NewPostgres(log, postgres.WithDatabaseURL(pgURL),
-				postgres.WithMigrationsSourceURL("file://migrations"))
+				postgres.WithMigrationsSourceURL("file://migrations"),
+				postgres.WithStaticUUIDGenerator("b31a9f99-3f64-4ee9-af27-45b2acd36d86"))
 		if err != nil {
 			return err
 		}
@@ -143,7 +144,7 @@ func suite(repository postgres.Repository) []test {
 			name: "get venue successfully",
 			test: func(t *testing.T) {
 				ctx := context.Background()
-				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: "1e182275-00e4-4334-b765-5cca09d5e548"})
+				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: "b31a9f99-3f64-4ee9-af27-45b2acd36d86"})
 				if err != nil {
 					t.Fatalf("did not expect error, got '%s'", err)
 				}
