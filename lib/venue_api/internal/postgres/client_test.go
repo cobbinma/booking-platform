@@ -81,7 +81,8 @@ func Test_Repository(t *testing.T) {
 	pool.MaxWait = 10 * time.Second
 	err = pool.Retry(func() error {
 		p, c, err := postgres.
-			NewPostgres(log, postgres.WithDatabaseURL(pgURL))
+			NewPostgres(log, postgres.WithDatabaseURL(pgURL),
+				postgres.WithMigrationsSourceURL("file://migrations"))
 		if err != nil {
 			return err
 		}

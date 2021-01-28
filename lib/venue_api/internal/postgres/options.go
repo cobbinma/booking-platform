@@ -7,3 +7,9 @@ func WithDatabaseURL(pgURL *url.URL) func(*client) {
 		c.pgURL = pgURL
 	}
 }
+
+func WithMigrationsSourceURL(url string) func(*client) {
+	return func(c *client) {
+		c.migrationsSource = url
+	}
+}

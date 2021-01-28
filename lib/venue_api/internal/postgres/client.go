@@ -48,7 +48,7 @@ func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (Repository, 
 	}
 
 	if c.migrationsSource == "" {
-		c.migrationsSource = "file://migrations"
+		c.migrationsSource = "file://internal/postgres/migrations"
 	}
 
 	db, err := sqlx.Connect("postgres", c.pgURL.String())
@@ -91,13 +91,16 @@ func (c *client) migrate() error {
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		c.migrationsSource,
 		"postgres", driver)
 	if err != nil {
 		return fmt.Errorf("error instantiating migrate : %w", err)
 	}
 
-	version, dirty, _ := m.Version()
+	version, dirty, err := m.Version()
+	if err != nil {
+		return fmt.Errorf("could not get migration version : %w", err)
+	}
 	c.log.Infof("database version %d, dirty %t", version, dirty)
 
 	c.log.Infof("starting migration")
