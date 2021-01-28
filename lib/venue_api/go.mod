@@ -8,6 +8,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/joho/godotenv v1.3.0
+	github.com/lib/pq v1.2.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	google.golang.org/grpc v1.35.0

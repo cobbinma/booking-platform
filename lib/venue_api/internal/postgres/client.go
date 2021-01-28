@@ -2,18 +2,24 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
+	"net/url"
+	"os"
 )
 
 var _ api.VenueAPIServer = (*client)(nil)
 var _ api.TableAPIServer = (*client)(nil)
 
 type client struct {
-	db  *sqlx.DB
-	log *zap.SugaredLogger
+	db               *sqlx.DB
+	log              *zap.SugaredLogger
+	pgURL            *url.URL
+	migrationsSource string
 }
 
 func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (*client, func(log *zap.SugaredLogger), error) {
@@ -22,7 +28,33 @@ func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (*client, fun
 		options[i](c)
 	}
 
-	return c, nil, nil
+	if c.pgURL == nil {
+		u := os.Getenv("DATABASE_URL")
+		if u == "" {
+			return nil, nil, fmt.Errorf("environment variable 'DATABASE_URL' is not set")
+		}
+		p, err := url.Parse(u)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not parse 'DATABASE_URL'")
+		}
+		c.pgURL = p
+	}
+
+	if c.migrationsSource == "" {
+		c.migrationsSource = "file://migrations"
+	}
+
+	db, err := sqlx.Connect("postgres", c.pgURL.String())
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not connect to database : %w", err)
+	}
+	c.db = db
+
+	return c, func(log *zap.SugaredLogger) {
+		if err := c.db.Close(); err != nil {
+			c.log.Errorf("could not close database connection : %s", err)
+		}
+	}, nil
 }
 
 func (c client) GetTables(ctx context.Context, request *api.GetTablesRequest) (*api.GetTablesResponse, error) {
