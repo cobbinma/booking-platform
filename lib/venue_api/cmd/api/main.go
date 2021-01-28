@@ -58,7 +58,8 @@ func main() {
 	}
 
 	s := grpc.NewServer(opts...)
-	api.RegisterVenueAPIServer(s, &Service{})
+	api.RegisterVenueAPIServer(s, &VenueService{})
+	api.RegisterTableAPIServer(s, &TableService{})
 
 	log.Infof("starting gRPC listener on port %s", port)
 	if err := s.Serve(lis); err != nil {
@@ -66,11 +67,11 @@ func main() {
 	}
 }
 
-var _ api.VenueAPIServer = (*Service)(nil)
+var _ api.VenueAPIServer = (*VenueService)(nil)
 
-type Service struct{}
+type VenueService struct{}
 
-func (s Service) GetVenue(ctx context.Context, request *api.GetVenueRequest) (*models.Venue, error) {
+func (s VenueService) GetVenue(ctx context.Context, request *api.GetVenueRequest) (*models.Venue, error) {
 	hours := []*models.OpeningHoursSpecification{
 		{
 			DayOfWeek: 1,
@@ -114,4 +115,16 @@ func (s Service) GetVenue(ctx context.Context, request *api.GetVenueRequest) (*m
 		OpeningHours:        hours,
 		SpecialOpeningHours: nil,
 	}, nil
+}
+
+var _ api.TableAPIServer = (*TableService)(nil)
+
+type TableService struct{}
+
+func (t TableService) GetTables(ctx context.Context, request *api.GetTablesRequest) (*api.GetTablesResponse, error) {
+	panic("implement me")
+}
+
+func (t TableService) AddTable(ctx context.Context, request *api.AddTableRequest) (*models.Table, error) {
+	panic("implement me")
 }

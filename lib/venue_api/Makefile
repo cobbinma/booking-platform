@@ -20,3 +20,7 @@ deps:
 	rm -rf .protobuf
 	mkdir -p .protobuf
 	cp -R ./../protobuf/* .protobuf
+
+.PHONY: grpcui
+grpcui:
+	grpcui -cert localhost.crt -key localhost.key -insecure -import-path .protobuf/ -proto .protobuf/src/venue/api/service.proto localhost:8888
