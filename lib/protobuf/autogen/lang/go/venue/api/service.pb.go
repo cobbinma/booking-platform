@@ -77,6 +77,210 @@ func (x *GetVenueRequest) GetId() string {
 	return ""
 }
 
+type CreateVenueRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name         string                              `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	OpeningHours []*models.OpeningHoursSpecification `protobuf:"bytes,2,rep,name=openingHours,proto3" json:"openingHours,omitempty"`
+}
+
+func (x *CreateVenueRequest) Reset() {
+	*x = CreateVenueRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateVenueRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateVenueRequest) ProtoMessage() {}
+
+func (x *CreateVenueRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateVenueRequest.ProtoReflect.Descriptor instead.
+func (*CreateVenueRequest) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreateVenueRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateVenueRequest) GetOpeningHours() []*models.OpeningHoursSpecification {
+	if x != nil {
+		return x.OpeningHours
+	}
+	return nil
+}
+
+type GetTablesRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	VenueId string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+}
+
+func (x *GetTablesRequest) Reset() {
+	*x = GetTablesRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetTablesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTablesRequest) ProtoMessage() {}
+
+func (x *GetTablesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTablesRequest.ProtoReflect.Descriptor instead.
+func (*GetTablesRequest) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetTablesRequest) GetVenueId() string {
+	if x != nil {
+		return x.VenueId
+	}
+	return ""
+}
+
+type GetTablesResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Tables []*models.Table `protobuf:"bytes,1,rep,name=tables,proto3" json:"tables,omitempty"`
+}
+
+func (x *GetTablesResponse) Reset() {
+	*x = GetTablesResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetTablesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTablesResponse) ProtoMessage() {}
+
+func (x *GetTablesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTablesResponse.ProtoReflect.Descriptor instead.
+func (*GetTablesResponse) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetTablesResponse) GetTables() []*models.Table {
+	if x != nil {
+		return x.Tables
+	}
+	return nil
+}
+
+type AddTableRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	VenueId string        `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Table   *models.Table `protobuf:"bytes,2,opt,name=table,proto3" json:"table,omitempty"`
+}
+
+func (x *AddTableRequest) Reset() {
+	*x = AddTableRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddTableRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddTableRequest) ProtoMessage() {}
+
+func (x *AddTableRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddTableRequest.ProtoReflect.Descriptor instead.
+func (*AddTableRequest) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AddTableRequest) GetVenueId() string {
+	if x != nil {
+		return x.VenueId
+	}
+	return ""
+}
+
+func (x *AddTableRequest) GetTable() *models.Table {
+	if x != nil {
+		return x.Table
+	}
+	return nil
+}
+
 var File_src_venue_api_service_proto protoreflect.FileDescriptor
 
 var file_src_venue_api_service_proto_rawDesc = []byte{
@@ -86,17 +290,50 @@ var file_src_venue_api_service_proto_rawDesc = []byte{
 	0x6e, 0x75, 0x65, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x21, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x56, 0x65,
 	0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x32, 0x47, 0x0a, 0x08, 0x56, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x75, 0x0a, 0x12, 0x43, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x4b, 0x0a, 0x0c, 0x6f, 0x70, 0x65, 0x6e, 0x69, 0x6e, 0x67, 0x48,
+	0x6f, 0x75, 0x72, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x76, 0x65, 0x6e,
+	0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x4f, 0x70, 0x65, 0x6e, 0x69, 0x6e,
+	0x67, 0x48, 0x6f, 0x75, 0x72, 0x73, 0x53, 0x70, 0x65, 0x63, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x52, 0x0c, 0x6f, 0x70, 0x65, 0x6e, 0x69, 0x6e, 0x67, 0x48, 0x6f, 0x75, 0x72,
+	0x73, 0x22, 0x2c, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x22,
+	0x40, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64,
+	0x65, 0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x06, 0x74, 0x61, 0x62, 0x6c, 0x65,
+	0x73, 0x22, 0x56, 0x0a, 0x0f, 0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x29,
+	0x0a, 0x05, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e,
+	0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62,
+	0x6c, 0x65, 0x52, 0x05, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x32, 0x8a, 0x01, 0x0a, 0x08, 0x56, 0x65,
 	0x6e, 0x75, 0x65, 0x41, 0x50, 0x49, 0x12, 0x3b, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x56, 0x65, 0x6e,
 	0x75, 0x65, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47,
 	0x65, 0x74, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13,
 	0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x56, 0x65,
-	0x6e, 0x75, 0x65, 0x42, 0x4d, 0x5a, 0x4b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x63, 0x6f, 0x62, 0x62, 0x69, 0x6e, 0x6d, 0x61, 0x2f, 0x62, 0x6f, 0x6f, 0x6b, 0x69,
-	0x6e, 0x67, 0x2d, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x2f, 0x6c, 0x69, 0x62, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x61, 0x75, 0x74, 0x6f, 0x67, 0x65, 0x6e,
-	0x2f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2f, 0x61,
-	0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6e, 0x75, 0x65, 0x12, 0x41, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x56, 0x65, 0x6e,
+	0x75, 0x65, 0x12, 0x1d, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73,
+	0x2e, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x32, 0x8f, 0x01, 0x0a, 0x08, 0x54, 0x61, 0x62, 0x6c, 0x65,
+	0x41, 0x50, 0x49, 0x12, 0x46, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73,
+	0x12, 0x1b, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65, 0x74,
+	0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e,
+	0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62,
+	0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x08, 0x41,
+	0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e,
+	0x61, 0x70, 0x69, 0x2e, 0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x42, 0x4d, 0x5a, 0x4b, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x62, 0x62, 0x69, 0x6e, 0x6d, 0x61, 0x2f,
+	0x62, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x2d, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d,
+	0x2f, 0x6c, 0x69, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x61, 0x75,
+	0x74, 0x6f, 0x67, 0x65, 0x6e, 0x2f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x65,
+	0x6e, 0x75, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -111,19 +348,34 @@ func file_src_venue_api_service_proto_rawDescGZIP() []byte {
 	return file_src_venue_api_service_proto_rawDescData
 }
 
-var file_src_venue_api_service_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_src_venue_api_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_src_venue_api_service_proto_goTypes = []interface{}{
-	(*GetVenueRequest)(nil), // 0: venue.api.GetVenueRequest
-	(*models.Venue)(nil),    // 1: venue.models.Venue
+	(*GetVenueRequest)(nil),                  // 0: venue.api.GetVenueRequest
+	(*CreateVenueRequest)(nil),               // 1: venue.api.CreateVenueRequest
+	(*GetTablesRequest)(nil),                 // 2: venue.api.GetTablesRequest
+	(*GetTablesResponse)(nil),                // 3: venue.api.GetTablesResponse
+	(*AddTableRequest)(nil),                  // 4: venue.api.AddTableRequest
+	(*models.OpeningHoursSpecification)(nil), // 5: venue.models.OpeningHoursSpecification
+	(*models.Table)(nil),                     // 6: venue.models.Table
+	(*models.Venue)(nil),                     // 7: venue.models.Venue
 }
 var file_src_venue_api_service_proto_depIdxs = []int32{
-	0, // 0: venue.api.VenueAPI.GetVenue:input_type -> venue.api.GetVenueRequest
-	1, // 1: venue.api.VenueAPI.GetVenue:output_type -> venue.models.Venue
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	5, // 0: venue.api.CreateVenueRequest.openingHours:type_name -> venue.models.OpeningHoursSpecification
+	6, // 1: venue.api.GetTablesResponse.tables:type_name -> venue.models.Table
+	6, // 2: venue.api.AddTableRequest.table:type_name -> venue.models.Table
+	0, // 3: venue.api.VenueAPI.GetVenue:input_type -> venue.api.GetVenueRequest
+	1, // 4: venue.api.VenueAPI.CreateVenue:input_type -> venue.api.CreateVenueRequest
+	2, // 5: venue.api.TableAPI.GetTables:input_type -> venue.api.GetTablesRequest
+	4, // 6: venue.api.TableAPI.AddTable:input_type -> venue.api.AddTableRequest
+	7, // 7: venue.api.VenueAPI.GetVenue:output_type -> venue.models.Venue
+	7, // 8: venue.api.VenueAPI.CreateVenue:output_type -> venue.models.Venue
+	3, // 9: venue.api.TableAPI.GetTables:output_type -> venue.api.GetTablesResponse
+	6, // 10: venue.api.TableAPI.AddTable:output_type -> venue.models.Table
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_src_venue_api_service_proto_init() }
@@ -144,6 +396,54 @@ func file_src_venue_api_service_proto_init() {
 				return nil
 			}
 		}
+		file_src_venue_api_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateVenueRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetTablesRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetTablesResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddTableRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -151,9 +451,9 @@ func file_src_venue_api_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_src_venue_api_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   5,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_src_venue_api_service_proto_goTypes,
 		DependencyIndexes: file_src_venue_api_service_proto_depIdxs,
@@ -178,6 +478,7 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type VenueAPIClient interface {
 	GetVenue(ctx context.Context, in *GetVenueRequest, opts ...grpc.CallOption) (*models.Venue, error)
+	CreateVenue(ctx context.Context, in *CreateVenueRequest, opts ...grpc.CallOption) (*models.Venue, error)
 }
 
 type venueAPIClient struct {
@@ -197,9 +498,19 @@ func (c *venueAPIClient) GetVenue(ctx context.Context, in *GetVenueRequest, opts
 	return out, nil
 }
 
+func (c *venueAPIClient) CreateVenue(ctx context.Context, in *CreateVenueRequest, opts ...grpc.CallOption) (*models.Venue, error) {
+	out := new(models.Venue)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueAPI/CreateVenue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VenueAPIServer is the server API for VenueAPI service.
 type VenueAPIServer interface {
 	GetVenue(context.Context, *GetVenueRequest) (*models.Venue, error)
+	CreateVenue(context.Context, *CreateVenueRequest) (*models.Venue, error)
 }
 
 // UnimplementedVenueAPIServer can be embedded to have forward compatible implementations.
@@ -208,6 +519,9 @@ type UnimplementedVenueAPIServer struct {
 
 func (*UnimplementedVenueAPIServer) GetVenue(context.Context, *GetVenueRequest) (*models.Venue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVenue not implemented")
+}
+func (*UnimplementedVenueAPIServer) CreateVenue(context.Context, *CreateVenueRequest) (*models.Venue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVenue not implemented")
 }
 
 func RegisterVenueAPIServer(s *grpc.Server, srv VenueAPIServer) {
@@ -232,6 +546,24 @@ func _VenueAPI_GetVenue_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VenueAPI_CreateVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateVenueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueAPIServer).CreateVenue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueAPI/CreateVenue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueAPIServer).CreateVenue(ctx, req.(*CreateVenueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _VenueAPI_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "venue.api.VenueAPI",
 	HandlerType: (*VenueAPIServer)(nil),
@@ -239,6 +571,118 @@ var _VenueAPI_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetVenue",
 			Handler:    _VenueAPI_GetVenue_Handler,
+		},
+		{
+			MethodName: "CreateVenue",
+			Handler:    _VenueAPI_CreateVenue_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "src/venue/api/service.proto",
+}
+
+// TableAPIClient is the client API for TableAPI service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type TableAPIClient interface {
+	GetTables(ctx context.Context, in *GetTablesRequest, opts ...grpc.CallOption) (*GetTablesResponse, error)
+	AddTable(ctx context.Context, in *AddTableRequest, opts ...grpc.CallOption) (*models.Table, error)
+}
+
+type tableAPIClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTableAPIClient(cc grpc.ClientConnInterface) TableAPIClient {
+	return &tableAPIClient{cc}
+}
+
+func (c *tableAPIClient) GetTables(ctx context.Context, in *GetTablesRequest, opts ...grpc.CallOption) (*GetTablesResponse, error) {
+	out := new(GetTablesResponse)
+	err := c.cc.Invoke(ctx, "/venue.api.TableAPI/GetTables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tableAPIClient) AddTable(ctx context.Context, in *AddTableRequest, opts ...grpc.CallOption) (*models.Table, error) {
+	out := new(models.Table)
+	err := c.cc.Invoke(ctx, "/venue.api.TableAPI/AddTable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TableAPIServer is the server API for TableAPI service.
+type TableAPIServer interface {
+	GetTables(context.Context, *GetTablesRequest) (*GetTablesResponse, error)
+	AddTable(context.Context, *AddTableRequest) (*models.Table, error)
+}
+
+// UnimplementedTableAPIServer can be embedded to have forward compatible implementations.
+type UnimplementedTableAPIServer struct {
+}
+
+func (*UnimplementedTableAPIServer) GetTables(context.Context, *GetTablesRequest) (*GetTablesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTables not implemented")
+}
+func (*UnimplementedTableAPIServer) AddTable(context.Context, *AddTableRequest) (*models.Table, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTable not implemented")
+}
+
+func RegisterTableAPIServer(s *grpc.Server, srv TableAPIServer) {
+	s.RegisterService(&_TableAPI_serviceDesc, srv)
+}
+
+func _TableAPI_GetTables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TableAPIServer).GetTables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.TableAPI/GetTables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TableAPIServer).GetTables(ctx, req.(*GetTablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TableAPI_AddTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TableAPIServer).AddTable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.TableAPI/AddTable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TableAPIServer).AddTable(ctx, req.(*AddTableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _TableAPI_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "venue.api.TableAPI",
+	HandlerType: (*TableAPIServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetTables",
+			Handler:    _TableAPI_GetTables_Handler,
+		},
+		{
+			MethodName: "AddTable",
+			Handler:    _TableAPI_AddTable_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

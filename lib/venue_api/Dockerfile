@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go test ./... \
+RUN go test -tags=unit ./... \
   && CGO_ENABLED=0 go build -a -o /main cmd/api/*.go
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,6 +25,7 @@ RUN apk add --update \
   ;
 
 COPY --from=builder /main /
+COPY --from=builder /src/internal/postgres/migrations ./internal/postgres/migrations
 
 EXPOSE 8888
 ENTRYPOINT ["/sbin/tini", "--"]

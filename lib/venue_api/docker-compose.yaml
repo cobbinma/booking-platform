@@ -1,0 +1,37 @@
+version: '3'
+services:
+  venue-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/go/src
+    environment:
+      - AUTH0_DOMAIN={AUTH0_DOMAIN}
+      - AUTH0_API_IDENTIFIER={AUTH0_API_IDENTIFIER}
+      - DATABASE_URL=postgres://user:password@venue-api-db/venue-api-db?sslmode=disable
+    depends_on:
+      - venue-api-db
+    networks:
+      main:
+        aliases:
+          - venue-api
+  venue-api-db:
+    image: "postgres"
+    container_name: "venue-api-db"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=venue-api-db
+      - POSTGRES_USER=user
+    volumes:
+      - venue-api-db-data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - venue-api-db
+volumes:
+  venue-api-db-data:
+networks:
+  main:

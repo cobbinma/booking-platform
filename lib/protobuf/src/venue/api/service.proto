@@ -8,8 +8,33 @@ import "src/venue/models/models.proto";
 
 service VenueAPI {
   rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
+  rpc CreateVenue(CreateVenueRequest) returns (venue.models.Venue);
 }
 
 message GetVenueRequest {
   string id = 1;
 }
+
+message CreateVenueRequest {
+  string name = 1;
+  repeated venue.models.OpeningHoursSpecification openingHours = 2;
+}
+
+service TableAPI {
+  rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
+  rpc AddTable(AddTableRequest) returns (venue.models.Table);
+}
+
+message GetTablesRequest {
+  string venueId = 1;
+}
+
+message GetTablesResponse {
+  repeated venue.models.Table tables = 1;
+}
+
+message AddTableRequest {
+  string venueId = 1;
+  venue.models.Table table = 2;
+}
+
