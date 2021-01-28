@@ -8,10 +8,16 @@ import "src/venue/models/models.proto";
 
 service VenueAPI {
   rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
+  rpc CreateVenue(CreateVenueRequest) returns (venue.models.Venue);
 }
 
 message GetVenueRequest {
   string id = 1;
+}
+
+message CreateVenueRequest {
+  string name = 1;
+  repeated venue.models.OpeningHoursSpecification openingHours = 2;
 }
 
 service TableAPI {

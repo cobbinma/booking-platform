@@ -1,12 +1,11 @@
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
-	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"github.com/cobbinma/booking-platform/lib/venue_api/cmd/api/middleware"
+	"github.com/cobbinma/booking-platform/lib/venue_api/internal/postgres"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/joho/godotenv"
@@ -25,17 +24,23 @@ func main() {
 		fmt.Printf("could not start logger : %s", err)
 		os.Exit(-1)
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			logger.Error("could not sync logger")
+	defer func(log *zap.Logger) {
+		if err := log.Sync(); err != nil {
+			log.Error("could not sync logger", zap.Error(err))
 		}
-	}()
+	}(logger)
 	log := logger.Sugar()
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8888"
 	}
+
+	db, closeDB, err := postgres.NewPostgres(log)
+	if err != nil {
+		log.Fatalf("could not construct postgres : %s", err)
+	}
+	defer closeDB(log)
 
 	ensureValidToken, err := middleware.EnsureValidToken()
 	if err != nil {
@@ -58,73 +63,11 @@ func main() {
 	}
 
 	s := grpc.NewServer(opts...)
-	api.RegisterVenueAPIServer(s, &VenueService{})
-	api.RegisterTableAPIServer(s, &TableService{})
+	api.RegisterVenueAPIServer(s, db)
+	api.RegisterTableAPIServer(s, db)
 
 	log.Infof("starting gRPC listener on port %s", port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve : %s", err)
 	}
-}
-
-var _ api.VenueAPIServer = (*VenueService)(nil)
-
-type VenueService struct{}
-
-func (s VenueService) GetVenue(ctx context.Context, request *api.GetVenueRequest) (*models.Venue, error) {
-	hours := []*models.OpeningHoursSpecification{
-		{
-			DayOfWeek: 1,
-			Opens:     "10:00",
-			Closes:    "19:00",
-		},
-		{
-			DayOfWeek: 2,
-			Opens:     "10:00",
-			Closes:    "19:00",
-		},
-		{
-			DayOfWeek: 3,
-			Opens:     "10:00",
-			Closes:    "19:00",
-		},
-		{
-			DayOfWeek: 4,
-			Opens:     "10:00",
-			Closes:    "19:00",
-		},
-		{
-			DayOfWeek: 5,
-			Opens:     "10:00",
-			Closes:    "19:00",
-		},
-		{
-			DayOfWeek: 6,
-			Opens:     "10:00",
-			Closes:    "23:00",
-		},
-		{
-			DayOfWeek: 7,
-			Opens:     "10:00",
-			Closes:    "20:00",
-		},
-	}
-	return &models.Venue{
-		Id:                  request.Id,
-		Name:                "Hop and Vine",
-		OpeningHours:        hours,
-		SpecialOpeningHours: nil,
-	}, nil
-}
-
-var _ api.TableAPIServer = (*TableService)(nil)
-
-type TableService struct{}
-
-func (t TableService) GetTables(ctx context.Context, request *api.GetTablesRequest) (*api.GetTablesResponse, error) {
-	panic("implement me")
-}
-
-func (t TableService) AddTable(ctx context.Context, request *api.AddTableRequest) (*models.Table, error) {
-	panic("implement me")
 }
