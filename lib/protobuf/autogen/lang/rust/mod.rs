@@ -6,3 +6,11 @@ pub mod venue {
         include!("venue.api.rs");
     }
 }
+pub mod booking {
+    pub mod api {
+        include!("booking.api.rs");
+    }
+    pub mod models {
+        include!("booking.models.rs");
+    }
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package booking.api;
+
+option go_package = "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api";
+
+import "src/booking/models/models.proto";
+
+service BookingAPI {
+  rpc GetSlot(booking.models.SlotInput) returns (GetSlotResponse);
+  rpc CreateBooking(booking.models.SlotInput) returns (booking.models.Booking);
+}
+
+message GetSlotResponse {
+  booking.models.Slot match = 1;
+  repeated booking.models.Slot otherAvailableSlots = 2;
+}
+
