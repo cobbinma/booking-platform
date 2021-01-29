@@ -65,6 +65,8 @@ impl BookingApi for BookingService {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     femme::with_level(femme::LevelFilter::Info);
 
+    dotenv::dotenv().ok();
+
     let cert = tokio::fs::read("localhost.crt").await?;
     let key = tokio::fs::read("localhost.key").await?;
 

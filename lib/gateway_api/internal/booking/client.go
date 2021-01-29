@@ -6,6 +6,7 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api"
+	booking "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/models"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
@@ -45,28 +46,75 @@ type bookingClient struct {
 }
 
 func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
+	resp, err := b.client.GetSlot(ctx, &booking.SlotInput{
+		VenueId:  slot.VenueID,
+		Email:    slot.Email,
+		People:   (uint32)(slot.People),
+		StartsAt: slot.StartsAt.Format(time.RFC3339),
+		Duration: (uint32)(slot.Duration),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not get slot from booking api : %w", err)
+	}
+
+	var match *models.Slot
+	if resp.Match != nil {
+		startsAt, err := time.Parse(time.RFC3339, resp.Match.StartsAt)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse start time : %w", err)
+		}
+
+		endsAt, err := time.Parse(time.RFC3339, resp.Match.EndsAt)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse end time : %w", err)
+		}
+
+		match = &models.Slot{
+			VenueID:  resp.Match.VenueId,
+			Email:    resp.Match.Email,
+			People:   (int)(resp.Match.People),
+			StartsAt: startsAt,
+			EndsAt:   endsAt,
+			Duration: (int)(resp.Match.Duration),
+		}
+	}
+
 	return &models.GetSlotResponse{
-		Match: &models.Slot{
-			VenueID:  slot.VenueID,
-			Email:    slot.Email,
-			People:   slot.People,
-			StartsAt: slot.StartsAt,
-			EndsAt:   slot.StartsAt.Add(time.Duration(slot.Duration) * time.Minute),
-			Duration: slot.Duration,
-		},
+		Match:               match,
 		OtherAvailableSlots: nil,
 	}, nil
 }
 
-func (b bookingClient) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
+func (b bookingClient) CreateBooking(ctx context.Context, slot models.BookingInput) (*models.Booking, error) {
+	resp, err := b.client.CreateBooking(ctx, &booking.SlotInput{
+		VenueId:  slot.VenueID,
+		Email:    slot.Email,
+		People:   (uint32)(slot.People),
+		StartsAt: slot.StartsAt.Format(time.RFC3339),
+		Duration: (uint32)(slot.Duration),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not create booking in booking api : %w", err)
+	}
+
+	startsAt, err := time.Parse(time.RFC3339, resp.StartsAt)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse start time : %w", err)
+	}
+
+	endsAt, err := time.Parse(time.RFC3339, resp.EndsAt)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse end time : %w", err)
+	}
+
 	return &models.Booking{
-		ID:       "5cbeadb9-b2b1-40ce-acbf-686f08f4e3af",
-		VenueID:  input.VenueID,
-		Email:    input.Email,
-		People:   input.People,
-		StartsAt: input.StartsAt,
-		EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
-		Duration: input.Duration,
-		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		ID:       resp.Id,
+		VenueID:  resp.VenueId,
+		Email:    resp.Email,
+		People:   (int)(resp.People),
+		StartsAt: startsAt,
+		EndsAt:   endsAt,
+		Duration: (int)(resp.Duration),
+		TableID:  resp.TableId,
 	}, nil
 }
