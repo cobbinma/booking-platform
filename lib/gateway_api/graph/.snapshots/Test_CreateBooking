@@ -1,5 +1,6 @@
-(struct { CreateBooking struct { VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\"" } "json:\"createBooking\"" }) {
-  CreateBooking: (struct { VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\"" }) {
+(struct { CreateBooking struct { ID string "json:\"id\""; VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\"" } "json:\"createBooking\"" }) {
+  CreateBooking: (struct { ID string "json:\"id\""; VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\"" }) {
+    ID: (string) (len=36) "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
     VenueID: (string) (len=36) "8a18e89b-339b-4e51-ab53-825aae59a070",
     Email: (string) (len=13) "test@test.com",
     People: (int) 5,

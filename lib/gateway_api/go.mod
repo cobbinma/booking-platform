@@ -7,6 +7,7 @@ require (
 	github.com/auth0-community/go-auth0 v1.0.0
 	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
 	github.com/cobbinma/booking-platform/lib/protobuf v0.0.0
+	github.com/golang/mock v1.4.4
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.1.17
