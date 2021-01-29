@@ -11,3 +11,5 @@ protobuf = { path = "./.protobuf" }
 tonic = { version = "0.4.0", features = ["tls"]}
 tokio = { version = "1.1.0", features = ["rt-multi-thread", "time", "fs", "macros", "net"] }
 async-trait = "0.1.42"
+chrono = "0.4"
+uuid = { version = "0.8", features = ["serde", "v4"] }
