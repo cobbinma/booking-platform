@@ -1,4 +1,4 @@
-package venue
+package auth0
 
 import (
 	"encoding/json"
@@ -11,20 +11,17 @@ import (
 	"strings"
 )
 
-type tokenClient struct {
+type TokenClient struct {
 	baseURL  string
 	clientID string
 	secret   string
 	log      *zap.SugaredLogger
+	token    *oauth2.Token
 }
 
-func token(log *zap.SugaredLogger) (*oauth2.Token, error) {
-	baseURL := os.Getenv("AUTH0_DOMAIN")
-	if baseURL == "" {
-		return nil, fmt.Errorf("auth0 domain url missing")
-	}
-	if len(baseURL) > 0 && baseURL[len(baseURL)-1] != '/' {
-		baseURL = baseURL + "/"
+func NewTokenClient(log *zap.SugaredLogger, domain string) (*TokenClient, error) {
+	if len(domain) > 0 && domain[len(domain)-1] != '/' {
+		domain = domain + "/"
 	}
 	clientID := os.Getenv("AUTH0_CLIENT_ID")
 	if clientID == "" {
@@ -35,28 +32,23 @@ func token(log *zap.SugaredLogger) (*oauth2.Token, error) {
 		return nil, fmt.Errorf("auth0 secret missing")
 	}
 
-	tk := &tokenClient{
-		baseURL:  baseURL,
+	return &TokenClient{
+		baseURL:  domain,
 		clientID: clientID,
 		secret:   secret,
 		log:      log,
-	}
-
-	return tk.getToken()
+	}, nil
 }
 
-func (tc *tokenClient) getToken() (*oauth2.Token, error) {
-	url := fmt.Sprintf("%soauth/token", tc.baseURL)
-
-	payload := strings.NewReader(fmt.Sprintf(`{"client_id":"%s","client_secret":"%s","audience":"http://venue","grant_type":"client_credentials"}`, tc.clientID, tc.secret))
-
-	req, err := http.NewRequest("POST", url, payload)
+func (tc *TokenClient) GetToken(log *zap.SugaredLogger, audience string) (*oauth2.Token, error) {
+	req, err := http.NewRequest("POST", fmt.Sprintf("%soauth/token", tc.baseURL),
+		strings.NewReader(fmt.Sprintf(
+			`{"client_id":"%s","client_secret":"%s","audience":"%s","grant_type":"client_credentials"}`, tc.clientID, tc.secret, audience)))
 	if err != nil {
 		return nil, fmt.Errorf("could not create request : %w", err)
 	}
 
 	req.Header.Add("content-type", "application/json")
-
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("could not do request : %w", err)
@@ -65,7 +57,7 @@ func (tc *tokenClient) getToken() (*oauth2.Token, error) {
 		if err := res.Body.Close(); err != nil {
 			log.Errorf("could not close token request body : %s", err)
 		}
-	}(tc.log)
+	}(log)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -73,12 +65,11 @@ func (tc *tokenClient) getToken() (*oauth2.Token, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		tc.log.Errorw("unexpected status code", "status code", res.StatusCode, "body", string(body))
+		log.Errorw("unexpected status code", "status code", res.StatusCode, "body", string(body))
 		return nil, fmt.Errorf("unexpected status code '%v'", res.StatusCode)
 	}
 
 	resp := &oauth2.Token{}
-
 	if err := json.Unmarshal(body, resp); err != nil {
 		return nil, fmt.Errorf("could not unmarshall : %w", err)
 	}

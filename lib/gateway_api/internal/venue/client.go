@@ -7,17 +7,14 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"go.uber.org/zap"
+	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/oauth"
 	"time"
 )
 
-func NewVenueClient(url string, log *zap.SugaredLogger) (graph.VenueService, func(log *zap.SugaredLogger), error) {
-	token, err := token(log)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not create grpc inceptor : %w", err)
-	}
+func NewVenueClient(url string, log *zap.SugaredLogger, token *oauth2.Token) (graph.VenueService, func(log *zap.SugaredLogger), error) {
 	creds, err := credentials.NewClientTLSFromFile("localhost.crt", "localhost")
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to load credentials : %w", err)

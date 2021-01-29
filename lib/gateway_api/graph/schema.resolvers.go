@@ -6,8 +6,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 )
@@ -22,16 +20,7 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 		return nil, fmt.Errorf("context email does not match given")
 	}
 
-	return &models.Booking{
-		ID:       "5cbeadb9-b2b1-40ce-acbf-686f08f4e3af",
-		VenueID:  input.VenueID,
-		Email:    input.Email,
-		People:   input.People,
-		StartsAt: input.StartsAt,
-		EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
-		Duration: input.Duration,
-		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
-	}, nil
+	return r.bookingService.CreateBooking(ctx, input)
 }
 
 func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
@@ -39,17 +28,7 @@ func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue,
 }
 
 func (r *queryResolver) GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error) {
-	return &models.GetSlotResponse{
-		Match: &models.Slot{
-			VenueID:  input.VenueID,
-			Email:    input.Email,
-			People:   input.People,
-			StartsAt: input.StartsAt,
-			EndsAt:   input.StartsAt.Add(time.Duration(input.Duration) * time.Minute),
-			Duration: input.Duration,
-		},
-		OtherAvailableSlots: nil,
-	}, nil
+	return r.bookingService.GetSlot(ctx, input)
 }
 
 // Mutation returns generated.MutationResolver implementation.
