@@ -35,6 +35,7 @@ const Secure: React.FC<{ params: Params }> = ({ params }) => {
     const token = await getAccessTokenSilently().catch((e) => {
       console.log(e);
     });
+    console.log(token);
     // return the headers to the context so httpLink can read them
     return {
       headers: {

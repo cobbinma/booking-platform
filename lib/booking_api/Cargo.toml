@@ -16,5 +16,5 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 femme = "2.1.1"
 log = "0.4.14"
 alcoholic_jwt = "1.0.0"
-reqwest = { version = "0.11.0", features = ["blocking", "json"] }
+reqwest = "0.9.22"
 dotenv = "0.15.0"
