@@ -19,6 +19,7 @@ func NewResolver(userService models.UserService, venueService VenueService, book
 	return &Resolver{userService: userService, venueService: venueService, bookingService: bookingService}
 }
 
+//go:generate mockgen -package=mock_resolver -destination=./mock/graph.go -source=resolver.go
 type VenueService interface {
 	GetVenue(ctx context.Context, id string) (*models.Venue, error)
 }
