@@ -26,24 +26,27 @@ impl Postgres {
 
     pub fn get_bookings(&self, slot: &SlotInput) -> Result<Vec<Booking>, Status> {
         use crate::schema::bookings::dsl::*;
-        let s = DateTime::parse_from_rfc3339(&slot.starts_at)
-            .map_err(|_| Status::internal("could not parse date"))?;
+        let s = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
+            log::error!("could not parse date : {}", e);
+            Status::internal("could not parse date")
+        })?;
+
         let day = NaiveDate::from_ymd(s.year(), s.month(), s.day());
-        log::info!("date: {}", day);
 
         let results: Vec<Booking> = bookings
-            .filter(
-                venue_id.eq(Uuid::parse_str(&slot.venue_id)
-                    .map_err(|_| Status::internal("could not parse uuid"))?),
-            )
+            .filter(venue_id.eq(Uuid::parse_str(&slot.venue_id).map_err(|e| {
+                log::error!("could not parse uuid : {}", e);
+                Status::internal("could not parse uuid")
+            })?))
             .filter(date.eq(day))
-            .get_results(
-                &self
-                    .pool
-                    .get()
-                    .map_err(|_| Status::internal("could not get database connection"))?,
-            )
-            .map_err(|_| Status::internal("could not get get bookings"))?;
+            .get_results(&self.pool.get().map_err(|e| {
+                log::error!("could not get database connection : {}", e);
+                Status::internal("could not get database connection")
+            })?)
+            .map_err(|e| {
+                log::error!("could not get get bookings from database : {}", e);
+                Status::internal("could not get get bookings from database")
+            })?;
 
         Ok(results)
     }
@@ -52,12 +55,10 @@ impl Postgres {
         use crate::schema::bookings;
         diesel::insert_into(bookings::table)
             .values(new_booking)
-            .execute(
-                &self
-                    .pool
-                    .get()
-                    .map_err(|_| Status::internal("could not get database connection"))?,
-            )
+            .execute(&self.pool.get().map_err(|e| {
+                log::error!("{}", e);
+                Status::internal("could not get database connection")
+            })?)
             .map_err(|e| {
                 log::error!("{}", e);
                 Status::internal("could not create booking in database")
