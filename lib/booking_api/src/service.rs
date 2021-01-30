@@ -77,26 +77,25 @@ impl BookingApi for BookingService {
             .next()
             .ok_or_else(|| Status::invalid_argument("venue not open on given date"))?;
 
-        let o = NaiveTime::parse_from_str(&opening_hours_specification.opens, "%H:%M").map_err(
-            |e| {
+        let opens = NaiveTime::parse_from_str(&opening_hours_specification.opens, "%H:%M")
+            .map_err(|e| {
                 log::error!("could not parse opens time : {}", e);
                 Status::internal("could not parse opens time")
-            },
-        )?;
-        let c = NaiveTime::parse_from_str(&opening_hours_specification.closes, "%H:%M").map_err(
-            |e| {
+            })
+            .map(|o| {
+                Utc.ymd(starts.year(), starts.month(), starts.day())
+                    .and_hms(o.hour(), o.minute(), o.second())
+            })?;
+
+        let closes = NaiveTime::parse_from_str(&opening_hours_specification.closes, "%H:%M")
+            .map_err(|e| {
                 log::error!("could not parse closes time : {}", e);
                 Status::internal("could not parse closes time")
-            },
-        )?;
-
-        let opens = Utc
-            .ymd(starts.year(), starts.month(), starts.day())
-            .and_hms(o.hour(), o.minute(), o.second());
-
-        let closes = Utc
-            .ymd(starts.year(), starts.month(), starts.day())
-            .and_hms(c.hour(), c.minute(), c.second());
+            })
+            .map(|c| {
+                Utc.ymd(starts.year(), starts.month(), starts.day())
+                    .and_hms(c.hour(), c.minute(), c.second())
+            })?;
 
         let tables_with_capacity: Vec<String> = self
             .table_client
@@ -135,7 +134,9 @@ impl BookingApi for BookingService {
                     bookings
                         .iter()
                         .filter(|booking| booking.table_id.to_string() == **table_id)
-                        .all(|b| t < b.ends_at && b.starts_at < t + Duration::minutes(slot_length))
+                        .all(|b| {
+                            !(t < b.ends_at && b.starts_at < t + Duration::minutes(slot_length))
+                        })
                 })
                 .next();
 
@@ -143,7 +144,7 @@ impl BookingApi for BookingService {
                 free_time_slots.insert(t, id);
             }
 
-            t + Duration::minutes(30);
+            t = t + Duration::minutes(30);
         }
 
         let other_available_slots: Vec<Slot> = free_time_slots
