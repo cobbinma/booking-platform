@@ -1,9 +1,17 @@
+#[macro_use]
+extern crate diesel;
+
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
 use protobuf::booking::api::booking_api_server::BookingApiServer;
 use tonic::transport::{Identity, Server, ServerTlsConfig};
 use tonic::{Request, Status};
 
+mod postgres;
 mod service;
+
+pub mod models;
+pub mod schema;
+
 use service::BookingService;
 
 #[tokio::main]

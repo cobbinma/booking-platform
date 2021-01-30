@@ -12,9 +12,11 @@ tonic = { version = "0.4.0", features = ["tls"]}
 tokio = { version = "1.1.0", features = ["rt-multi-thread", "time", "fs", "macros", "net"] }
 async-trait = "0.1.42"
 chrono = "0.4"
-uuid = { version = "0.8", features = ["serde", "v4"] }
+uuid = { version = "0.7.4", features = ["serde", "v4"] }
 femme = "2.1.1"
 log = "0.4.14"
 alcoholic_jwt = "1.0.0"
 reqwest = "0.9.22"
 dotenv = "0.15.0"
+diesel = { version = "1.4.4", features = ["postgres", "chrono", "uuidv07"] }
+diesel_migrations = "1.4.0"
