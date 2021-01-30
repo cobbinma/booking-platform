@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let identity = Identity::from_pem(cert, key);
 
     let addr = "[::1]:6969".parse()?;
-    let service = BookingService::default();
+    let service = BookingService::new()?;
 
     log::info!("listening on port {}", &addr);
 

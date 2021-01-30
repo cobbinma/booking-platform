@@ -1,7 +1,9 @@
+use super::schema::bookings;
 use chrono::{DateTime, NaiveDate, Utc};
 use uuid::Uuid;
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug, Insertable)]
+#[table_name = "bookings"]
 pub struct Booking {
     pub id: Uuid,
     pub customer_email: String,
