@@ -12,7 +12,11 @@ mod service;
 pub mod models;
 pub mod schema;
 
+use crate::postgres::Postgres;
+use protobuf::venue::api::table_api_client::TableApiClient;
+use protobuf::venue::api::venue_api_client::VenueApiClient;
 use service::BookingService;
+use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,7 +30,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let identity = Identity::from_pem(cert, key);
 
     let addr = "[::1]:6969".parse()?;
-    let service = BookingService::new()?;
+
+    let venue_client = VenueApiClient::connect("http://[::1]:8888").await?;
+    let table_client = TableApiClient::connect("http://[::1]:8888").await?;
+
+    let service = BookingService::new(
+        Box::new(Postgres::new()?),
+        Box::new(venue_client),
+        Box::new(table_client),
+    )?;
 
     log::info!("listening on port {}", &addr);
 

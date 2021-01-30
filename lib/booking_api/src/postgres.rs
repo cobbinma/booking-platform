@@ -3,6 +3,7 @@ use crate::diesel::RunQueryDsl;
 
 use crate::models::Booking;
 use crate::schema::bookings::dsl::bookings;
+use crate::service::Repository;
 use chrono::{DateTime, Datelike, Duration, NaiveDate};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{ExpressionMethods, PgConnection, QueryDsl};
@@ -23,22 +24,15 @@ impl Postgres {
 
         Ok(Postgres { pool })
     }
+}
 
-    pub fn get_bookings(&self, slot: &SlotInput) -> Result<Vec<Booking>, Status> {
+impl Repository for Postgres {
+    fn get_bookings_by_date(&self, venue: &Uuid, day: &NaiveDate) -> Result<Vec<Booking>, Status> {
         use crate::schema::bookings::dsl::*;
-        let s = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
-            log::error!("could not parse date : {}", e);
-            Status::internal("could not parse date")
-        })?;
-
-        let day = NaiveDate::from_ymd(s.year(), s.month(), s.day());
 
         let results: Vec<Booking> = bookings
-            .filter(venue_id.eq(Uuid::parse_str(&slot.venue_id).map_err(|e| {
-                log::error!("could not parse uuid : {}", e);
-                Status::internal("could not parse uuid")
-            })?))
-            .filter(date.eq(day))
+            .filter(venue_id.eq(&venue))
+            .filter(date.eq(&day))
             .get_results(&self.pool.get().map_err(|e| {
                 log::error!("could not get database connection : {}", e);
                 Status::internal("could not get database connection")
@@ -51,7 +45,7 @@ impl Postgres {
         Ok(results)
     }
 
-    pub fn create_booking(&self, new_booking: &Booking) -> Result<(), Status> {
+    fn create_booking(&self, new_booking: &Booking) -> Result<(), Status> {
         use crate::schema::bookings;
         diesel::insert_into(bookings::table)
             .values(new_booking)
