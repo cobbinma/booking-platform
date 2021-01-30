@@ -146,6 +146,18 @@ impl BookingApi for BookingService {
             t + Duration::minutes(30);
         }
 
+        let other_available_slots: Vec<Slot> = free_time_slots
+            .iter()
+            .map(|(time, table_id)| Slot {
+                venue_id: slot.venue_id.clone(),
+                email: slot.email.clone(),
+                people: slot.people,
+                starts_at: time.to_rfc3339(),
+                ends_at: (*time + Duration::minutes(slot_length)).to_rfc3339(),
+                duration: slot.duration,
+            })
+            .collect();
+
         Ok(Response::new(GetSlotResponse {
             r#match: free_time_slots
                 .get(&starts.with_timezone(&Utc))
@@ -154,10 +166,10 @@ impl BookingApi for BookingService {
                     email: slot.email,
                     people: slot.people,
                     starts_at: slot.starts_at,
-                    ends_at: (starts + Duration::minutes(slot.duration as i64)).to_rfc3339(),
+                    ends_at: (starts + Duration::minutes(slot_length)).to_rfc3339(),
                     duration: slot.duration,
                 }),
-            other_available_slots: vec![],
+            other_available_slots,
         }))
     }
 
