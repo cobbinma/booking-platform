@@ -22,8 +22,6 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    femme::with_level(femme::LevelFilter::Info);
-
     dotenv::dotenv().ok();
 
     let cert = tokio::fs::read("localhost.crt").await?;
@@ -101,10 +99,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Box::new(table_client),
     )?;
 
-    log::info!("listening on port {}", &addr);
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
+
+    tracing::info!(message = "Starting server.", %addr);
 
     Server::builder()
         .tls_config(ServerTlsConfig::new().identity(identity))?
+        .trace_fn(|_| tracing::info_span!("booking_api"))
         .add_service(BookingApiServer::with_interceptor(service, check_auth))
         .serve(addr)
         .await?;

@@ -97,7 +97,10 @@ impl BookingApi for BookingService {
                     .and_hms(c.hour(), c.minute(), c.second())
             })?;
 
-        log::info!("getting tables from table client");
+        if starts < opens || starts + Duration::minutes(slot_length) > closes {
+            return Err(Status::invalid_argument("venue is closed"));
+        }
+
         let tables_with_capacity: Vec<String> = self
             .table_client
             .clone()
@@ -228,6 +231,10 @@ impl BookingApi for BookingService {
                 Utc.ymd(starts.year(), starts.month(), starts.day())
                     .and_hms(c.hour(), c.minute(), c.second())
             })?;
+
+        if starts < opens || starts + Duration::minutes(slot_length) > closes {
+            return Err(Status::invalid_argument("venue is closed"));
+        }
 
         let tables_with_capacity: Vec<String> = self
             .table_client
