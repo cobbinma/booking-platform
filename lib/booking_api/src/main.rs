@@ -3,8 +3,9 @@ extern crate diesel;
 
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
 use protobuf::booking::api::booking_api_server::BookingApiServer;
-use tonic::transport::{Identity, Server, ServerTlsConfig};
-use tonic::{Request, Status};
+use serde::{Deserialize, Serialize};
+use tonic::transport::{Certificate, Channel, ClientTlsConfig, Identity, Server, ServerTlsConfig};
+use tonic::{metadata::MetadataValue, Request, Status};
 
 mod postgres;
 mod service;
@@ -16,6 +17,7 @@ use crate::postgres::Postgres;
 use protobuf::venue::api::table_api_client::TableApiClient;
 use protobuf::venue::api::venue_api_client::VenueApiClient;
 use service::BookingService;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -26,13 +28,72 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cert = tokio::fs::read("localhost.crt").await?;
     let key = tokio::fs::read("localhost.key").await?;
+    let server_root_ca_cert = Certificate::from_pem(&cert);
 
     let identity = Identity::from_pem(cert, key);
 
+    let tls = ClientTlsConfig::new()
+        .domain_name("localhost")
+        .ca_certificate(server_root_ca_cert)
+        .identity(identity.clone());
+
     let addr = "[::1]:6969".parse()?;
 
-    let venue_client = VenueApiClient::connect("http://[::1]:8888").await?;
-    let table_client = TableApiClient::connect("http://[::1]:8888").await?;
+    let mut map = HashMap::new();
+    map.insert(
+        "client_id",
+        std::env::var("AUTH0_CLIENT_ID").expect("client id not set"),
+    );
+    map.insert(
+        "client_secret",
+        std::env::var("AUTH0_CLIENT_SECRET").expect("client secret not set"),
+    );
+    map.insert(
+        "audience",
+        std::env::var("AUTH0_VENUE_API_IDENTIFIER").expect("venue api identifier not set"),
+    );
+    map.insert("grant_type", "client_credentials".to_string());
+    let client = reqwest::Client::new();
+    let mut resp = client
+        .post(
+            &format!(
+                "{}oauth/token",
+                std::env::var("AUTHORITY").expect("AUTHORITY must be set")
+            )
+            .to_string(),
+        )
+        .json(&map)
+        .send()?;
+    let venue_token = resp.json::<Token>().map(|t| t.access_token)?;
+    let table_token = venue_token.clone();
+
+    let venue_client = VenueApiClient::with_interceptor(
+        Channel::from_static("http://[::1]:8888")
+            .tls_config(tls.clone())?
+            .connect()
+            .await?,
+        move |mut req: Request<()>| {
+            req.metadata_mut().insert(
+                "authorization",
+                MetadataValue::from_str(&*format!("Bearer {}", venue_token)).unwrap(),
+            );
+            Ok(req)
+        },
+    );
+
+    let table_client = TableApiClient::with_interceptor(
+        Channel::from_static("http://[::1]:8888")
+            .tls_config(tls)?
+            .connect()
+            .await?,
+        move |mut req: Request<()>| {
+            req.metadata_mut().insert(
+                "authorization",
+                MetadataValue::from_str(&*format!("Bearer {}", table_token)).unwrap(),
+            );
+            Ok(req)
+        },
+    );
 
     let service = BookingService::new(
         Box::new(Postgres::new()?),
@@ -95,4 +156,13 @@ fn fetch_jwks(uri: &str) -> Result<JWKS, Status> {
         .map_err(|_| Status::internal("could not unmarshall jwks"))?;
 
     Ok(val)
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Token {
+    #[serde(rename = "access_token")]
+    pub access_token: String,
+    #[serde(rename = "token_type")]
+    pub token_type: String,
 }

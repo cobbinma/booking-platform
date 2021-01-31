@@ -35,3 +35,5 @@ volumes:
   venue-api-db-data:
 networks:
   main:
+
+#docker exec -it venue-api-db psql -U user -W venue-api-db venue-api-db

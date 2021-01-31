@@ -20,3 +20,4 @@ reqwest = "0.9.22"
 dotenv = "0.15.0"
 diesel = { version = "1.4.4", features = ["postgres", "chrono", "r2d2", "uuidv07"] }
 diesel_migrations = "1.4.0"
+serde = "1.0.123"

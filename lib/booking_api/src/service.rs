@@ -51,6 +51,7 @@ impl BookingService {
 #[async_trait]
 impl BookingApi for BookingService {
     async fn get_slot(&self, req: Request<SlotInput>) -> Result<Response<GetSlotResponse>, Status> {
+        log::info!("getting slot request");
         let slot = req.into_inner();
 
         let slot_length = slot.duration as i64;
@@ -61,6 +62,7 @@ impl BookingApi for BookingService {
         })?;
         let day = NaiveDate::from_ymd(starts.year(), starts.month(), starts.day());
 
+        log::info!("getting venue '{}' from venue client", &slot.venue_id);
         let venue = &self
             .venue_client
             .clone()
@@ -97,6 +99,7 @@ impl BookingApi for BookingService {
                     .and_hms(c.hour(), c.minute(), c.second())
             })?;
 
+        log::info!("getting tables from table client");
         let tables_with_capacity: Vec<String> = self
             .table_client
             .clone()
@@ -111,6 +114,13 @@ impl BookingApi for BookingService {
             .map(|table| table.id.clone())
             .collect();
 
+        if tables_with_capacity.is_empty() {
+            return Err(Status::invalid_argument(
+                "restaurant does not have tables that large",
+            ));
+        }
+
+        log::info!("getting bookings from database");
         let bookings: Vec<models::Booking> = self
             .repository
             .get_bookings_by_date(
