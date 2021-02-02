@@ -266,3 +266,81 @@ impl BookingService {
             .collect::<Vec<models::Booking>>())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::models::Booking;
+    use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+    use uuid::Uuid;
+
+    #[test]
+    fn test_get_free_table_no_bookings() {
+        let free_table = super::get_free_table(
+            60,
+            &vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
+            &vec![],
+            &DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc),
+        );
+
+        assert_eq!(
+            free_table,
+            Some("3a3789ca-7174-4127-ae50-a644d69f1d27".to_string())
+        )
+    }
+
+    #[test]
+    fn test_get_free_table_with_booking_conflict() {
+        let starts_at = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc);
+        let free_table = super::get_free_table(
+            60,
+            &vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
+            &vec![Booking {
+                id: Default::default(),
+                customer_email: "".to_string(),
+                venue_id: Default::default(),
+                table_id: Uuid::parse_str("3a3789ca-7174-4127-ae50-a644d69f1d27")
+                    .expect("could not parse uuid"),
+                people: 4,
+                date: starts_at.date().naive_utc(),
+                starts_at,
+                ends_at: starts_at + Duration::minutes(60),
+                duration: 60,
+            }],
+            &starts_at,
+        );
+
+        assert_eq!(free_table, None)
+    }
+
+    #[test]
+    fn test_get_free_table_with_partial_booking_conflict() {
+        let starts_at = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc);
+        let free_table = super::get_free_table(
+            60,
+            &vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
+            &vec![Booking {
+                id: Default::default(),
+                customer_email: "".to_string(),
+                venue_id: Default::default(),
+                table_id: Uuid::parse_str("3a3789ca-7174-4127-ae50-a644d69f1d27")
+                    .expect("could not parse uuid"),
+                people: 4,
+                date: starts_at.date().naive_utc(),
+                starts_at: starts_at + Duration::minutes(30),
+                ends_at: starts_at + Duration::minutes(90),
+                duration: 60,
+            }],
+            &starts_at,
+        );
+
+        assert_eq!(free_table, None)
+    }
+
+    #[test]
+    fn test_get_free_table_with_no_tables() {
+        let starts_at = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc);
+        let free_table = super::get_free_table(60, &vec![], &vec![], &starts_at);
+
+        assert_eq!(free_table, None)
+    }
+}
