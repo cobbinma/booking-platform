@@ -1,6 +1,7 @@
 use crate::models;
 use async_trait::async_trait;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
+use mockall::*;
 use protobuf::booking::api::booking_api_server::BookingApi;
 use protobuf::booking::api::GetSlotResponse;
 use protobuf::booking::models::{Booking, Slot, SlotInput};
@@ -10,11 +11,13 @@ use std::ops::Add;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
+#[automock]
 #[async_trait]
 pub trait VenueClient {
     async fn get_venue(&self, venue_id: String) -> Result<Venue, Status>;
 }
 
+#[automock]
 #[async_trait]
 pub trait TableClient {
     async fn get_tables_with_capacity(
@@ -24,6 +27,7 @@ pub trait TableClient {
     ) -> Result<Vec<String>, Status>;
 }
 
+#[automock]
 pub trait Repository {
     fn get_bookings_by_date(
         &self,
@@ -306,8 +310,10 @@ impl BookingService {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::models::Booking;
     use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+    use protobuf::venue::models::OpeningHoursSpecification;
     use uuid::Uuid;
 
     #[test]
@@ -379,5 +385,52 @@ mod tests {
         let free_table = super::get_free_table(60, &vec![], &vec![], &starts_at);
 
         assert_eq!(free_table, None)
+    }
+
+    #[tokio::test]
+    async fn test_get_opening_times() {
+        let date = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704678400, 0), Utc);
+        let mut mock = MockVenueClient::new();
+        mock.expect_get_venue()
+            .with(predicate::eq(
+                "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+            ))
+            .times(1)
+            .returning(|_| {
+                Ok(Venue {
+                    id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                    name: "".to_string(),
+                    opening_hours: vec![OpeningHoursSpecification {
+                        day_of_week: 5,
+                        opens: "10:00".to_string(),
+                        closes: "22:00".to_string(),
+                        valid_from: "".to_string(),
+                        valid_through: "".to_string(),
+                    }],
+                    special_opening_hours: vec![],
+                })
+            });
+        let service = BookingService::new(
+            Box::new(MockRepository::new()),
+            Box::new(mock),
+            Box::new(MockTableClient::new()),
+        )
+        .expect("could not construct booking service");
+
+        let result = service
+            .get_opening_times(
+                "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                date.naive_utc().date(),
+            )
+            .await
+            .expect("did not expect error");
+
+        assert_eq!(
+            result,
+            (
+                DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704714400, 0), Utc),
+                DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704757600, 0), Utc)
+            )
+        )
     }
 }
