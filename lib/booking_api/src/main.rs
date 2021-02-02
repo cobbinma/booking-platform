@@ -12,6 +12,8 @@ mod service;
 
 pub mod models;
 pub mod schema;
+mod table;
+mod venue;
 
 use crate::postgres::Postgres;
 use protobuf::venue::api::table_api_client::TableApiClient;
@@ -95,8 +97,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let service = BookingService::new(
         Box::new(Postgres::new()?),
-        Box::new(venue_client),
-        Box::new(table_client),
+        Box::new(venue::VenueClient::new(venue_client)),
+        Box::new(table::TableClient::new(table_client)),
     )?;
 
     tracing_subscriber::fmt()

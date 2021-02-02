@@ -1,5 +1,6 @@
 use crate::models;
 use crate::postgres::Postgres;
+use crate::schema::bookings::columns::venue_id;
 use async_trait::async_trait;
 use chrono::format::Numeric::Timestamp;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
@@ -12,11 +13,29 @@ use protobuf::venue::api::venue_api_client::VenueApiClient;
 use protobuf::venue::api::venue_api_server::VenueApi;
 use protobuf::venue::api::{GetTablesRequest, GetVenueRequest};
 use std::borrow::Borrow;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::{Add, Deref};
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
+
+#[async_trait]
+pub trait VenueClient {
+    async fn get_opening_times(
+        &self,
+        venue_id: String,
+        date: NaiveDate,
+    ) -> Result<(DateTime<Utc>, DateTime<Utc>), Status>;
+}
+
+#[async_trait]
+pub trait TableClient {
+    async fn get_tables_with_capacity(
+        &self,
+        venue_id: String,
+        capacity: u32,
+    ) -> Result<Vec<String>, Status>;
+}
 
 pub trait Repository {
     fn get_bookings_by_date(
@@ -30,15 +49,15 @@ pub trait Repository {
 
 pub struct BookingService {
     repository: Box<dyn Repository + Send + Sync + 'static>,
-    venue_client: Box<VenueApiClient<tonic::transport::Channel>>,
-    table_client: Box<TableApiClient<tonic::transport::Channel>>,
+    venue_client: Box<dyn VenueClient + Send + Sync + 'static>,
+    table_client: Box<dyn TableClient + Send + Sync + 'static>,
 }
 
 impl BookingService {
     pub fn new(
         repository: Box<dyn Repository + Send + Sync + 'static>,
-        venue_client: Box<VenueApiClient<tonic::transport::Channel>>,
-        table_client: Box<TableApiClient<tonic::transport::Channel>>,
+        venue_client: Box<dyn VenueClient + Send + Sync + 'static>,
+        table_client: Box<dyn TableClient + Send + Sync + 'static>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(BookingService {
             repository,
@@ -53,67 +72,31 @@ impl BookingApi for BookingService {
     async fn get_slot(&self, req: Request<SlotInput>) -> Result<Response<GetSlotResponse>, Status> {
         let slot = req.into_inner();
 
-        let slot_length = slot.duration as i64;
-
-        let starts = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
+        let slot_starts_at = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
             log::error!("could not parse date : {}", e);
             Status::internal("could not parse date")
         })?;
-        let day = NaiveDate::from_ymd(starts.year(), starts.month(), starts.day());
+        let slot_date = NaiveDate::from_ymd(
+            slot_starts_at.year(),
+            slot_starts_at.month(),
+            slot_starts_at.day(),
+        );
 
-        let venue = &self
+        let (opens, closes) = &self
             .venue_client
-            .clone()
-            .get_venue(GetVenueRequest {
-                id: slot.venue_id.clone(),
-            })
-            .await?
-            .into_inner();
+            .get_opening_times(slot.venue_id.clone(), slot_date)
+            .await?;
 
-        let opening_hours_specification = venue
-            .opening_hours
-            .iter()
-            .filter(|&hours| hours.day_of_week == day.weekday().number_from_monday())
-            .next()
-            .ok_or_else(|| Status::invalid_argument("venue not open on given date"))?;
-
-        let opens = NaiveTime::parse_from_str(&opening_hours_specification.opens, "%H:%M")
-            .map_err(|e| {
-                log::error!("could not parse opens time : {}", e);
-                Status::internal("could not parse opens time")
-            })
-            .map(|o| {
-                Utc.ymd(starts.year(), starts.month(), starts.day())
-                    .and_hms(o.hour(), o.minute(), o.second())
-            })?;
-
-        let closes = NaiveTime::parse_from_str(&opening_hours_specification.closes, "%H:%M")
-            .map_err(|e| {
-                log::error!("could not parse closes time : {}", e);
-                Status::internal("could not parse closes time")
-            })
-            .map(|c| {
-                Utc.ymd(starts.year(), starts.month(), starts.day())
-                    .and_hms(c.hour(), c.minute(), c.second())
-            })?;
-
-        if starts < opens || starts + Duration::minutes(slot_length) > closes {
+        if slot_starts_at < *opens
+            || slot_starts_at + Duration::minutes(slot.duration as i64) > *closes
+        {
             return Err(Status::invalid_argument("venue is closed"));
         }
 
-        let tables_with_capacity: Vec<String> = self
+        let tables_with_capacity = &self
             .table_client
-            .clone()
-            .get_tables(GetTablesRequest {
-                venue_id: slot.venue_id.clone(),
-            })
-            .await?
-            .into_inner()
-            .tables
-            .iter()
-            .filter(|table| table.capacity >= slot.people)
-            .map(|table| table.id.clone())
-            .collect();
+            .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
+            .await?;
 
         if tables_with_capacity.is_empty() {
             return Err(Status::invalid_argument(
@@ -121,38 +104,16 @@ impl BookingApi for BookingService {
             ));
         }
 
-        log::info!("getting bookings from database");
-        let bookings: Vec<models::Booking> = self
-            .repository
-            .get_bookings_by_date(
-                &Uuid::parse_str(&slot.venue_id).map_err(|e| {
-                    log::error!("could not parse uuid : {}", e);
-                    Status::internal("could not parse uuid")
-                })?,
-                &day,
-            )?
-            .iter()
-            .filter(|&booking| tables_with_capacity.contains(&booking.table_id.to_string()))
-            .map(|booking| booking.clone())
-            .collect();
+        let bookings = self.get_bookings_by_date(&slot, &slot_date)?;
 
-        let mut free_time_slots = HashMap::new();
-        let mut t = opens;
-        while t <= closes - Duration::minutes(slot_length) {
-            let free_table_id = tables_with_capacity
-                .iter()
-                .filter(|table_id| {
-                    bookings
-                        .iter()
-                        .filter(|booking| booking.table_id.to_string() == **table_id)
-                        .all(|b| {
-                            !(t < b.ends_at && b.starts_at < t + Duration::minutes(slot_length))
-                        })
-                })
-                .next();
+        let mut free_time_slots = HashSet::new();
+        let mut t = *opens;
+        while t <= *closes - Duration::minutes(slot.duration as i64) {
+            let free_table_id =
+                get_free_table(slot.duration as i64, tables_with_capacity, &bookings, &t);
 
-            if let Some(id) = free_table_id {
-                free_time_slots.insert(t, id);
+            if free_table_id.is_some() {
+                free_time_slots.insert(t);
             }
 
             t = t + Duration::minutes(30);
@@ -160,25 +121,26 @@ impl BookingApi for BookingService {
 
         let other_available_slots: Vec<Slot> = free_time_slots
             .iter()
-            .map(|(time, table_id)| Slot {
+            .map(|(time)| Slot {
                 venue_id: slot.venue_id.clone(),
                 email: slot.email.clone(),
                 people: slot.people,
                 starts_at: time.to_rfc3339(),
-                ends_at: (*time + Duration::minutes(slot_length)).to_rfc3339(),
+                ends_at: (*time + Duration::minutes(slot.duration as i64)).to_rfc3339(),
                 duration: slot.duration,
             })
             .collect();
 
         Ok(Response::new(GetSlotResponse {
             r#match: free_time_slots
-                .get(&starts.with_timezone(&Utc))
+                .get(&slot_starts_at.with_timezone(&Utc))
                 .map(|_| Slot {
                     venue_id: slot.venue_id,
                     email: slot.email,
                     people: slot.people,
                     starts_at: slot.starts_at,
-                    ends_at: (starts + Duration::minutes(slot_length)).to_rfc3339(),
+                    ends_at: (slot_starts_at + Duration::minutes(slot.duration as i64))
+                        .to_rfc3339(),
                     duration: slot.duration,
                 }),
             other_available_slots,
@@ -188,67 +150,31 @@ impl BookingApi for BookingService {
     async fn create_booking(&self, req: Request<SlotInput>) -> Result<Response<Booking>, Status> {
         let slot = req.into_inner();
 
-        let slot_length = slot.duration as i64;
-
-        let starts = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
+        let slot_starts_at = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
             log::error!("could not parse date : {}", e);
             Status::internal("could not parse date")
         })?;
-        let day = NaiveDate::from_ymd(starts.year(), starts.month(), starts.day());
+        let slot_date = NaiveDate::from_ymd(
+            slot_starts_at.year(),
+            slot_starts_at.month(),
+            slot_starts_at.day(),
+        );
 
-        let venue = &self
+        let (opens, closes) = &self
             .venue_client
-            .clone()
-            .get_venue(GetVenueRequest {
-                id: slot.venue_id.clone(),
-            })
-            .await?
-            .into_inner();
+            .get_opening_times(slot.venue_id.clone(), slot_date)
+            .await?;
 
-        let opening_hours_specification = venue
-            .opening_hours
-            .iter()
-            .filter(|&hours| hours.day_of_week == day.weekday().number_from_monday())
-            .next()
-            .ok_or_else(|| Status::invalid_argument("venue not open on given date"))?;
-
-        let opens = NaiveTime::parse_from_str(&opening_hours_specification.opens, "%H:%M")
-            .map_err(|e| {
-                log::error!("could not parse opens time : {}", e);
-                Status::internal("could not parse opens time")
-            })
-            .map(|o| {
-                Utc.ymd(starts.year(), starts.month(), starts.day())
-                    .and_hms(o.hour(), o.minute(), o.second())
-            })?;
-
-        let closes = NaiveTime::parse_from_str(&opening_hours_specification.closes, "%H:%M")
-            .map_err(|e| {
-                log::error!("could not parse closes time : {}", e);
-                Status::internal("could not parse closes time")
-            })
-            .map(|c| {
-                Utc.ymd(starts.year(), starts.month(), starts.day())
-                    .and_hms(c.hour(), c.minute(), c.second())
-            })?;
-
-        if starts < opens || starts + Duration::minutes(slot_length) > closes {
+        if slot_starts_at < *opens
+            || slot_starts_at + Duration::minutes(slot.duration as i64) > *closes
+        {
             return Err(Status::invalid_argument("venue is closed"));
         }
 
-        let tables_with_capacity: Vec<String> = self
+        let tables_with_capacity = &self
             .table_client
-            .clone()
-            .get_tables(GetTablesRequest {
-                venue_id: slot.venue_id.clone(),
-            })
-            .await?
-            .into_inner()
-            .tables
-            .iter()
-            .filter(|table| table.capacity >= slot.people)
-            .map(|table| table.id.clone())
-            .collect();
+            .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
+            .await?;
 
         if tables_with_capacity.is_empty() {
             return Err(Status::invalid_argument(
@@ -256,32 +182,14 @@ impl BookingApi for BookingService {
             ));
         }
 
-        let bookings: Vec<models::Booking> = self
-            .repository
-            .get_bookings_by_date(
-                &Uuid::parse_str(&slot.venue_id).map_err(|e| {
-                    log::error!("could not parse uuid : {}", e);
-                    Status::internal("could not parse uuid")
-                })?,
-                &day,
-            )?
-            .iter()
-            .filter(|&booking| tables_with_capacity.contains(&booking.table_id.to_string()))
-            .map(|booking| booking.clone())
-            .collect();
+        let bookings = self.get_bookings_by_date(&slot, &slot_date)?;
 
-        let free_table_id = tables_with_capacity
-            .iter()
-            .filter(|table_id| {
-                bookings
-                    .iter()
-                    .filter(|booking| booking.table_id.to_string() == **table_id)
-                    .all(|b| {
-                        !(starts < b.ends_at
-                            && b.starts_at < starts + Duration::minutes(slot_length))
-                    })
-            })
-            .next();
+        let free_table_id = get_free_table(
+            slot.duration as i64,
+            tables_with_capacity,
+            &bookings,
+            &slot_starts_at.with_timezone(&Utc),
+        );
 
         if let Some(table_id) = free_table_id {
             let id = uuid::Uuid::new_v4();
@@ -290,17 +198,17 @@ impl BookingApi for BookingService {
                 customer_email: slot.email.clone(),
                 venue_id: Uuid::parse_str(&slot.venue_id)
                     .map_err(|_| Status::invalid_argument("could not parse uuid"))?,
-                table_id: Uuid::parse_str(table_id)
+                table_id: Uuid::parse_str(&table_id)
                     .map_err(|_| Status::internal("could not parse table uuid"))?,
                 people: slot.people as i32,
-                date: day,
-                starts_at: starts.with_timezone(&Utc),
-                ends_at: starts
+                date: slot_date,
+                starts_at: slot_starts_at.with_timezone(&Utc),
+                ends_at: slot_starts_at
                     .with_timezone(&Utc)
-                    .add(Duration::minutes(slot_length)),
+                    .add(Duration::minutes(slot.duration as i64)),
                 duration: slot.duration as i32,
             };
-            log::info!("{:?}", new_booking);
+
             self.repository.create_booking(&new_booking)?;
 
             Ok(Response::new(Booking {
@@ -309,7 +217,7 @@ impl BookingApi for BookingService {
                 email: slot.email.clone(),
                 people: slot.people,
                 starts_at: slot.starts_at,
-                ends_at: (starts + Duration::minutes(slot_length)).to_rfc3339(),
+                ends_at: (slot_starts_at + Duration::minutes(slot.duration as i64)).to_rfc3339(),
                 duration: slot.duration,
                 table_id: table_id.to_string(),
             }))
@@ -319,8 +227,44 @@ impl BookingApi for BookingService {
     }
 }
 
-fn get_ends_at(starts_at: &str, duration: u32) -> Result<String, Status> {
-    DateTime::parse_from_rfc3339(starts_at)
-        .map(|dt| dt.add(Duration::minutes(duration as i64)).to_rfc3339())
-        .map_err(|e| Status::internal(e.to_string()))
+fn get_free_table(
+    duration: i64,
+    tables_with_capacity: &Vec<String>,
+    bookings: &Vec<models::Booking>,
+    starts_at: &DateTime<Utc>,
+) -> Option<String> {
+    tables_with_capacity
+        .iter()
+        .filter(|table_id| {
+            bookings
+                .iter()
+                .filter(|booking| booking.table_id.to_string() == **table_id)
+                .all(|b| {
+                    !(*starts_at < b.starts_at
+                        && b.starts_at < *starts_at + Duration::minutes(duration))
+                })
+        })
+        .map(|id| id.clone())
+        .next()
+}
+
+impl BookingService {
+    fn get_bookings_by_date(
+        &self,
+        slot: &SlotInput,
+        day: &NaiveDate,
+    ) -> Result<Vec<models::Booking>, Status> {
+        Ok(self
+            .repository
+            .get_bookings_by_date(
+                &Uuid::parse_str(&slot.venue_id).map_err(|e| {
+                    log::error!("could not parse uuid : {}", e);
+                    Status::internal("could not parse uuid")
+                })?,
+                &day,
+            )?
+            .iter()
+            .map(|booking| booking.clone())
+            .collect::<Vec<models::Booking>>())
+    }
 }
