@@ -23,6 +23,11 @@ impl Client for VenueClient {
         venue_id: String,
         date: NaiveDate,
     ) -> Result<(DateTime<Utc>, DateTime<Utc>), Status> {
+        tracing::debug!(
+            "getting opening times for venue {} on date {}",
+            &venue_id,
+            &date.to_string()
+        );
         let venue = &self
             .client
             .clone()

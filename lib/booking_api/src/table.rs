@@ -22,6 +22,12 @@ impl Client for TableClient {
         venue_id: String,
         capacity: u32,
     ) -> Result<Vec<String>, Status> {
+        tracing::debug!(
+            "getting tables for venue {} with capacity {}",
+            &venue_id,
+            capacity
+        );
+
         Ok(self
             .client
             .clone()

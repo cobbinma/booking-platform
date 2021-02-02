@@ -26,6 +26,11 @@ impl Postgres {
 
 impl Repository for Postgres {
     fn get_bookings_by_date(&self, venue: &Uuid, day: &NaiveDate) -> Result<Vec<Booking>, Status> {
+        tracing::debug!(
+            "get bookings by date from postgres for venue '{}' on date '{}'",
+            &venue.to_string(),
+            &day.to_string()
+        );
         use crate::schema::bookings::dsl::*;
 
         let results: Vec<Booking> = bookings
@@ -44,6 +49,15 @@ impl Repository for Postgres {
     }
 
     fn create_booking(&self, new_booking: &Booking) -> Result<(), Status> {
+        tracing::debug!(
+            "create booking '{}' in postgres for venue '{}' on date '{}', starting at '{}', for '{}' minutes, for '{}' people",
+            &new_booking.id.to_string(),
+            &new_booking.venue_id.to_string(),
+            &new_booking.date.to_string(),
+            &new_booking.starts_at.to_rfc3339(),
+            &new_booking.duration,
+            &new_booking.people,
+        );
         use crate::schema::bookings;
         diesel::insert_into(bookings::table)
             .values(new_booking)

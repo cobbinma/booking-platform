@@ -61,11 +61,13 @@ impl BookingService {
 impl BookingApi for BookingService {
     async fn get_slot(&self, req: Request<SlotInput>) -> Result<Response<GetSlotResponse>, Status> {
         let slot = req.into_inner();
+        tracing::info!("get slot call for venue '{}', starting at '{}', duration '{}' minutes, for '{} people'", &slot.venue_id, &slot.starts_at, slot.duration, slot.people);
 
         let slot_starts_at = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
-            log::error!("could not parse date : {}", e);
-            Status::internal("could not parse date")
+            log::error!("could not parse starting date time : {}", e);
+            Status::invalid_argument("could not parse starting date time")
         })?;
+
         let slot_date = NaiveDate::from_ymd(
             slot_starts_at.year(),
             slot_starts_at.month(),
@@ -80,7 +82,7 @@ impl BookingApi for BookingService {
         if slot_starts_at < *opens
             || slot_starts_at + Duration::minutes(slot.duration as i64) > *closes
         {
-            return Err(Status::invalid_argument("venue is closed"));
+            return Err(Status::invalid_argument("venue is closed at that time"));
         }
 
         let tables_with_capacity = &self
@@ -90,7 +92,7 @@ impl BookingApi for BookingService {
 
         if tables_with_capacity.is_empty() {
             return Err(Status::invalid_argument(
-                "restaurant does not have tables that large",
+                "venue does not have tables that large",
             ));
         }
 
@@ -144,6 +146,7 @@ impl BookingApi for BookingService {
 
     async fn create_booking(&self, req: Request<SlotInput>) -> Result<Response<Booking>, Status> {
         let slot = req.into_inner();
+        tracing::info!("create booking call for venue '{}', starting at '{}', duration '{}' minutes, for '{} people'", &slot.venue_id, &slot.starts_at, slot.duration, slot.people);
 
         let slot_starts_at = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
             log::error!("could not parse date : {}", e);
@@ -163,7 +166,7 @@ impl BookingApi for BookingService {
         if slot_starts_at < *opens
             || slot_starts_at + Duration::minutes(slot.duration as i64) > *closes
         {
-            return Err(Status::invalid_argument("venue is closed"));
+            return Err(Status::invalid_argument("venue is closed at that time"));
         }
 
         let tables_with_capacity = &self
@@ -173,7 +176,7 @@ impl BookingApi for BookingService {
 
         if tables_with_capacity.is_empty() {
             return Err(Status::invalid_argument(
-                "restaurant does not have tables that large",
+                "venue does not have tables that large",
             ));
         }
 
@@ -233,9 +236,9 @@ fn get_free_table(
         .filter(|table_id| {
             bookings
                 .iter()
-                .filter(|booking| booking.table_id.to_string() == **table_id)
+                .filter(|&booking| booking.table_id.to_string() == **table_id)
                 .all(|b| {
-                    !(*starts_at < b.starts_at
+                    !(*starts_at < b.ends_at
                         && b.starts_at < *starts_at + Duration::minutes(duration))
                 })
         })
