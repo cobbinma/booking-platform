@@ -1,21 +1,11 @@
 use crate::models;
-use crate::postgres::Postgres;
-use crate::schema::bookings::columns::venue_id;
 use async_trait::async_trait;
-use chrono::format::Numeric::Timestamp;
-use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 use protobuf::booking::api::booking_api_server::BookingApi;
 use protobuf::booking::api::GetSlotResponse;
 use protobuf::booking::models::{Booking, Slot, SlotInput};
-use protobuf::venue::api::table_api_client::TableApiClient;
-use protobuf::venue::api::table_api_server::TableApi;
-use protobuf::venue::api::venue_api_client::VenueApiClient;
-use protobuf::venue::api::venue_api_server::VenueApi;
-use protobuf::venue::api::{GetTablesRequest, GetVenueRequest};
-use std::borrow::Borrow;
-use std::collections::{HashMap, HashSet};
-use std::ops::{Add, Deref};
-use std::sync::Arc;
+use std::collections::HashSet;
+use std::ops::Add;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -104,19 +94,24 @@ impl BookingApi for BookingService {
             ));
         }
 
-        let bookings = self.get_bookings_by_date(&slot, &slot_date)?;
+        let bookings = self.get_bookings_by_date(&slot.venue_id.clone(), &slot_date)?;
 
         let mut free_time_slots = HashSet::new();
-        let mut t = *opens;
-        while t <= *closes - Duration::minutes(slot.duration as i64) {
-            let free_table_id =
-                get_free_table(slot.duration as i64, tables_with_capacity, &bookings, &t);
+        // Loop through all possible time slots for the desired date to see which slots have a table free
+        let mut slot_time = *opens;
+        while slot_time <= *closes - Duration::minutes(slot.duration as i64) {
+            let free_table_id = get_free_table(
+                slot.duration as i64,
+                tables_with_capacity,
+                &bookings,
+                &slot_time,
+            );
 
             if free_table_id.is_some() {
-                free_time_slots.insert(t);
+                free_time_slots.insert(slot_time);
             }
 
-            t = t + Duration::minutes(30);
+            slot_time = slot_time + Duration::minutes(30);
         }
 
         let other_available_slots: Vec<Slot> = free_time_slots
@@ -182,7 +177,7 @@ impl BookingApi for BookingService {
             ));
         }
 
-        let bookings = self.get_bookings_by_date(&slot, &slot_date)?;
+        let bookings = self.get_bookings_by_date(&slot.venue_id.clone(), &slot_date)?;
 
         let free_table_id = get_free_table(
             slot.duration as i64,
@@ -251,13 +246,13 @@ fn get_free_table(
 impl BookingService {
     fn get_bookings_by_date(
         &self,
-        slot: &SlotInput,
+        venue_id: &str,
         day: &NaiveDate,
     ) -> Result<Vec<models::Booking>, Status> {
         Ok(self
             .repository
             .get_bookings_by_date(
-                &Uuid::parse_str(&slot.venue_id).map_err(|e| {
+                &Uuid::parse_str(venue_id).map_err(|e| {
                     log::error!("could not parse uuid : {}", e);
                     Status::internal("could not parse uuid")
                 })?,

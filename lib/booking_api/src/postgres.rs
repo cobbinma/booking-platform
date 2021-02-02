@@ -2,12 +2,10 @@
 use crate::diesel::RunQueryDsl;
 
 use crate::models::Booking;
-use crate::schema::bookings::dsl::bookings;
 use crate::service::Repository;
-use chrono::{DateTime, Datelike, Duration, NaiveDate};
+use chrono::NaiveDate;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{ExpressionMethods, PgConnection, QueryDsl};
-use protobuf::booking::models::SlotInput;
 use std::env;
 use tonic::Status;
 use uuid::Uuid;

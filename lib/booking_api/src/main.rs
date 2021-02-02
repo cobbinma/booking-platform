@@ -20,7 +20,6 @@ use protobuf::venue::api::table_api_client::TableApiClient;
 use protobuf::venue::api::venue_api_client::VenueApiClient;
 use service::BookingService;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
