@@ -1,5 +1,7 @@
 # booking-api
 
+booking-api is used manage bookings on booking platform
+
 ## dev environment
 
 you will need rust installed to run booking api locally
