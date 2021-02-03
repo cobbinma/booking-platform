@@ -44,6 +44,7 @@ pub struct BookingService {
     repository: Box<dyn Repository + Send + Sync + 'static>,
     venue_client: Box<dyn VenueClient + Send + Sync + 'static>,
     table_client: Box<dyn TableClient + Send + Sync + 'static>,
+    uuid: Box<dyn UuidGetter + Send + Sync + 'static>,
 }
 
 impl BookingService {
@@ -51,11 +52,15 @@ impl BookingService {
         repository: Box<dyn Repository + Send + Sync + 'static>,
         venue_client: Box<dyn VenueClient + Send + Sync + 'static>,
         table_client: Box<dyn TableClient + Send + Sync + 'static>,
+        custom_uuid: Option<Box<dyn UuidGetter + Send + Sync + 'static>>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
+        let uuid = custom_uuid.unwrap_or_else(|| Box::new(GetUuid::default()));
+
         Ok(BookingService {
             repository,
             venue_client,
             table_client,
+            uuid,
         })
     }
 }
@@ -190,7 +195,7 @@ impl BookingApi for BookingService {
         );
 
         if let Some(table_id) = free_table_id {
-            let id = uuid::Uuid::new_v4();
+            let id = self.uuid.uuid();
             let new_booking = models::Booking {
                 id,
                 customer_email: slot.email.clone(),
@@ -305,6 +310,20 @@ impl BookingService {
     }
 }
 
+#[cfg_attr(test, automock)]
+pub trait UuidGetter {
+    fn uuid(&self) -> Uuid;
+}
+
+#[derive(Default)]
+struct GetUuid {}
+
+impl UuidGetter for GetUuid {
+    fn uuid(&self) -> Uuid {
+        Uuid::new_v4()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -312,6 +331,7 @@ mod tests {
     use chrono::{DateTime, Duration, NaiveDateTime, Utc};
     use mockall::predicate;
     use protobuf::venue::models::OpeningHoursSpecification;
+    use std::convert::TryInto;
     use uuid::Uuid;
 
     #[test]
@@ -412,6 +432,7 @@ mod tests {
             Box::new(MockRepository::new()),
             Box::new(mock),
             Box::new(MockTableClient::new()),
+            None,
         )
         .expect("could not construct booking service");
 
@@ -480,8 +501,9 @@ mod tests {
             .times(1)
             .returning(|_, _| Ok(vec![]));
 
-        let service = BookingService::new(Box::new(repository), Box::new(venue), Box::new(table))
-            .expect("could not construct booking service");
+        let service =
+            BookingService::new(Box::new(repository), Box::new(venue), Box::new(table), None)
+                .expect("could not construct booking service");
 
         let result = service
             .get_slot(Request::new(SlotInput {
@@ -534,5 +556,112 @@ mod tests {
                 ]
             }
         )
+    }
+
+    #[tokio::test]
+    async fn test_create_booking() {
+        let starts = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704732400, 0), Utc);
+
+        let venue_id = "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string();
+        let people = 4;
+        let duration = 60;
+
+        let mut venue = MockVenueClient::new();
+        let mut table = MockTableClient::new();
+        let mut repository = MockRepository::new();
+
+        venue
+            .expect_get_venue()
+            .with(predicate::eq(venue_id.clone()))
+            .times(1)
+            .returning(|_| {
+                Ok(Venue {
+                    id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                    name: "test venue".to_string(),
+                    opening_hours: vec![OpeningHoursSpecification {
+                        day_of_week: 5,
+                        opens: "14:00".to_string(),
+                        closes: "16:00".to_string(),
+                        valid_from: "".to_string(),
+                        valid_through: "".to_string(),
+                    }],
+                    special_opening_hours: vec![],
+                })
+            });
+
+        table
+            .expect_get_tables_with_capacity()
+            .with(predicate::eq(venue_id.clone()), predicate::eq(people))
+            .times(1)
+            .returning(|_, _| Ok(vec!["eb7a8544-1595-4b62-ab72-137dd03b538f".to_string()]));
+
+        repository
+            .expect_get_bookings_by_date()
+            .with(
+                predicate::eq(
+                    Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                ),
+                predicate::eq(starts.naive_utc().date()),
+            )
+            .times(1)
+            .returning(|_, _| Ok(vec![]));
+
+        repository
+            .expect_create_booking()
+            .with(predicate::eq(Booking {
+                id: Uuid::parse_str("5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d")
+                    .expect("could not parse mock uuid"),
+                customer_email: "test@test.com".to_string(),
+                venue_id: Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                table_id: Uuid::parse_str("eb7a8544-1595-4b62-ab72-137dd03b538f")
+                    .expect("could not parse table uuid"),
+                people: people.try_into().unwrap(),
+                date: starts.naive_utc().date(),
+                starts_at: starts,
+                ends_at: starts + Duration::minutes(duration),
+                duration: duration as i32,
+            }))
+            .times(1)
+            .returning(|_| Ok(()));
+
+        let mut get_uuid = MockUuidGetter::new();
+        get_uuid.expect_uuid().returning(|| {
+            Uuid::parse_str("5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d")
+                .expect("could not parse mock uuid")
+        });
+
+        let service = BookingService::new(
+            Box::new(repository),
+            Box::new(venue),
+            Box::new(table),
+            Some(Box::new(get_uuid)),
+        )
+        .expect("could not construct booking service");
+
+        let result = service
+            .create_booking(Request::new(SlotInput {
+                venue_id: venue_id.clone(),
+                email: "test@test.com".to_string(),
+                people,
+                starts_at: starts.to_rfc3339(),
+                duration: duration as u32,
+            }))
+            .await
+            .map(|r| r.into_inner())
+            .expect("did not expect error from create booking");
+
+        assert_eq!(
+            result,
+            protobuf::booking::models::Booking {
+                id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
+                venue_id,
+                email: "test@test.com".to_string(),
+                people,
+                starts_at: "1992-05-01T15:00:00+00:00".to_string(),
+                ends_at: "1992-05-01T16:00:00+00:00".to_string(),
+                duration: duration as u32,
+                table_id: "eb7a8544-1595-4b62-ab72-137dd03b538f".to_string()
+            }
+        );
     }
 }

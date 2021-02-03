@@ -95,6 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Box::new(Postgres::new()?),
         Box::new(venue::VenueClient::new(venue_client)),
         Box::new(table::TableClient::new(table_client)),
+        None,
     )?;
 
     tracing_subscriber::fmt()
