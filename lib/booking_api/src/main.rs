@@ -60,36 +60,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ))
         .json(&map)
         .send()?;
-    let venue_token = resp.json::<Token>().map(|t| t.access_token)?;
-    let table_token = venue_token.clone();
+    let token = resp.json::<Token>().map(|t| t.access_token)?;
+
+    let channel = Channel::from_static("http://[::1]:8888");
+
+    let interceptor = Box::new(move |mut req: Request<()>| {
+        req.metadata_mut().insert(
+            "authorization",
+            MetadataValue::from_str(&*format!("Bearer {}", token)).unwrap(),
+        );
+        Ok(req)
+    });
 
     let venue_client = VenueApiClient::with_interceptor(
-        Channel::from_static("http://[::1]:8888")
-            .tls_config(tls.clone())?
-            .connect()
-            .await?,
-        move |mut req: Request<()>| {
-            req.metadata_mut().insert(
-                "authorization",
-                MetadataValue::from_str(&*format!("Bearer {}", venue_token)).unwrap(),
-            );
-            Ok(req)
-        },
+        channel.clone().tls_config(tls.clone())?.connect().await?,
+        interceptor.clone(),
     );
 
-    let table_client = TableApiClient::with_interceptor(
-        Channel::from_static("http://[::1]:8888")
-            .tls_config(tls)?
-            .connect()
-            .await?,
-        move |mut req: Request<()>| {
-            req.metadata_mut().insert(
-                "authorization",
-                MetadataValue::from_str(&*format!("Bearer {}", table_token)).unwrap(),
-            );
-            Ok(req)
-        },
-    );
+    let table_client =
+        TableApiClient::with_interceptor(channel.tls_config(tls)?.connect().await?, interceptor);
 
     let service = BookingService::new(
         Box::new(Postgres::new()?),

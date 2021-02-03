@@ -23,3 +23,7 @@ deps:
 	rm -rf .protobuf
 	mkdir -p .protobuf
 	cp -R ./../protobuf/* .protobuf
+
+.PHONY: tests
+tests: deps
+	cargo test
