@@ -27,3 +27,7 @@ deps:
 .PHONY: tests
 tests: deps
 	cargo test
+
+.PHONY: postgres
+postgres:
+	docker-compose up

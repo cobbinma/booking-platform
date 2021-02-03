@@ -5,11 +5,12 @@ RUN rustup component add rustfmt
 WORKDIR ./booking_api
 COPY .protobuf ./.protobuf
 COPY ./Cargo.toml ./Cargo.toml
-RUN cargo test
 RUN cargo build --release
 RUN rm src/*.rs
 
 ADD . ./
+
+RUN cargo test
 
 RUN rm ./target/release/deps/booking_api*
 RUN cargo build --release

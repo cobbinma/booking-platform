@@ -1,37 +1,51 @@
-# Table Booking Platform Monorepo
+# table booking platform monorepo
 
-## Development Environment
+![](https://images.pexels.com/photos/1267708/pexels-photo-1267708.jpeg?cs=srgb&dl=four-women-sitting-on-benches-outside-building-1267708.jpg&fm=jpg)
 
-### Instructions
+## architecture
 
-#### APIs
+![](docs/platform-architecture.png)
 
-##### docker-compose
+## development environment
 
-1. Navigate to an API directory and ensure certificates are present (see certificate generation).
-1. Run `make dev` from an API directory to run an API using docker compose.
-This will also run any database using docker-compose if needed.
-   
----
+### apis
 
-##### local build
+#### venue api
 
-1. Navigate to an API directory and ensure certificates are present (see certificate generation).
-1. Run `make local` from an API directory to build and run an API without dependencies.
+1. Go to the `venue_api` lib directory.
+1. populate `.env` file from example
+1. ensure lib folder contains certs (see below)
+1. run `make dev` to run api and postgres instance in docker-compose
+
+#### booking api
+
+1. Go to the `venue_api` lib directory.
+1. populate `.env` file from example
+1. ensure lib folder contains certs (see below)
+1. run command `make postgres` to create an instance of the booking database in docker-compose
+1. run command `cargo run` to start api locally
+
+#### gateway api
+
+1. Go to the `gateway_api` lib directory.
+1. populate `.env` file from example
+1. ensure lib folder contains certs (see below)
+1. run command `make local` to start api locally
+
 
 ##### certificate generation
 
 APIs need a public and private key to communicate with each other. 
 Run the following command to generate certificates. Place them in the individual API folders.
 
-1. `openssl req -x509 -out localhost.crt -keyout localhost.key \
+`openssl req -x509 -out localhost.crt -keyout localhost.key \
    -newkey rsa:2048 -nodes -sha256 \
    -subj '/CN=localhost' -extensions EXT -config <( \
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")`
 
-#### User Interfaces
+### user interfaces
+
+#### booking ui
 
 1. Go to the `booking_ui` lib directory.
 1. Run `make dev` to install dependencies, generate graphql code and run user interface.
-
-![](https://images.pexels.com/photos/1267708/pexels-photo-1267708.jpeg?cs=srgb&dl=four-women-sitting-on-benches-outside-building-1267708.jpg&fm=jpg)
