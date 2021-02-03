@@ -115,14 +115,18 @@ impl BookingApi for BookingService {
             slot_time = slot_time + Duration::minutes(30);
         }
 
-        let other_available_slots: Vec<Slot> = free_time_slots
+        let mut other_available_times: Vec<&DateTime<Utc>> =
+            free_time_slots.iter().collect::<Vec<&DateTime<Utc>>>();
+        other_available_times.sort();
+
+        let other_available_slots: Vec<Slot> = other_available_times
             .iter()
-            .map(|(time)| Slot {
+            .map(|time| Slot {
                 venue_id: slot.venue_id.clone(),
                 email: slot.email.clone(),
                 people: slot.people,
                 starts_at: time.to_rfc3339(),
-                ends_at: (*time + Duration::minutes(slot.duration as i64)).to_rfc3339(),
+                ends_at: (**time + Duration::minutes(slot.duration as i64)).to_rfc3339(),
                 duration: slot.duration,
             })
             .collect();
@@ -151,6 +155,7 @@ impl BookingApi for BookingService {
             log::error!("could not parse date : {}", e);
             Status::internal("could not parse date")
         })?;
+
         let slot_date = NaiveDate::from_ymd(
             slot_starts_at.year(),
             slot_starts_at.month(),
@@ -228,7 +233,7 @@ fn get_free_table(
 ) -> Option<String> {
     tables_with_capacity
         .iter()
-        .filter(|table_id| {
+        .find(|table_id| {
             bookings
                 .iter()
                 .filter(|&booking| booking.table_id.to_string() == **table_id)
@@ -238,7 +243,6 @@ fn get_free_table(
                 })
         })
         .cloned()
-        .next()
 }
 
 impl BookingService {
@@ -425,6 +429,110 @@ mod tests {
                 DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704714400, 0), Utc),
                 DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704757600, 0), Utc)
             )
+        )
+    }
+
+    #[tokio::test]
+    async fn test_get_slot() {
+        let starts = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704732400, 0), Utc);
+
+        let venue_id = "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string();
+        let people = 4;
+        let duration = 60;
+
+        let mut venue = MockVenueClient::new();
+        let mut table = MockTableClient::new();
+        let mut repository = MockRepository::new();
+
+        venue
+            .expect_get_venue()
+            .with(predicate::eq(venue_id.clone()))
+            .times(1)
+            .returning(|_| {
+                Ok(Venue {
+                    id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                    name: "test venue".to_string(),
+                    opening_hours: vec![OpeningHoursSpecification {
+                        day_of_week: 5,
+                        opens: "14:00".to_string(),
+                        closes: "16:00".to_string(),
+                        valid_from: "".to_string(),
+                        valid_through: "".to_string(),
+                    }],
+                    special_opening_hours: vec![],
+                })
+            });
+
+        table
+            .expect_get_tables_with_capacity()
+            .with(predicate::eq(venue_id.clone()), predicate::eq(people))
+            .times(1)
+            .returning(|_, _| Ok(vec!["eb7a8544-1595-4b62-ab72-137dd03b538f".to_string()]));
+
+        repository
+            .expect_get_bookings_by_date()
+            .with(
+                predicate::eq(
+                    Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                ),
+                predicate::eq(starts.naive_utc().date()),
+            )
+            .times(1)
+            .returning(|_, _| Ok(vec![]));
+
+        let service = BookingService::new(Box::new(repository), Box::new(venue), Box::new(table))
+            .expect("could not construct booking service");
+
+        let result = service
+            .get_slot(Request::new(SlotInput {
+                venue_id,
+                email: "test@test.com".to_string(),
+                people,
+                starts_at: starts.to_rfc3339(),
+                duration,
+            }))
+            .await
+            .map(|r| r.into_inner())
+            .expect("did not expect error from get slot");
+
+        assert_eq!(
+            result,
+            GetSlotResponse {
+                r#match: Some(Slot {
+                    venue_id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                    email: "test@test.com".to_string(),
+                    people: 4,
+                    starts_at: "1992-05-01T15:00:00+00:00".to_string(),
+                    ends_at: "1992-05-01T16:00:00+00:00".to_string(),
+                    duration: 60
+                }),
+                other_available_slots: vec![
+                    Slot {
+                        venue_id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                        email: "test@test.com".to_string(),
+                        people: 4,
+                        starts_at: "1992-05-01T14:00:00+00:00".to_string(),
+                        ends_at: "1992-05-01T15:00:00+00:00".to_string(),
+                        duration: 60
+                    },
+                    Slot {
+                        venue_id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                        email: "test@test.com".to_string(),
+                        people: 4,
+                        starts_at: "1992-05-01T14:30:00+00:00".to_string(),
+                        ends_at: "1992-05-01T15:30:00+00:00".to_string(),
+                        duration: 60
+                    },
+                    Slot {
+                        venue_id: "3a3789ca-7174-4127-ae50-a644d69f1d27".to_string(),
+                        email: "test@test.com".to_string(),
+                        people: 4,
+                        starts_at: "1992-05-01T15:00:00+00:00".to_string(),
+                        ends_at: "1992-05-01T16:00:00+00:00".to_string(),
+                        duration: 60
+                    },
+                ]
+            }
         )
     }
 }
