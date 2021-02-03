@@ -1,7 +1,6 @@
 use crate::models;
 use async_trait::async_trait;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
-use mockall::*;
 use protobuf::booking::api::booking_api_server::BookingApi;
 use protobuf::booking::api::GetSlotResponse;
 use protobuf::booking::models::{Booking, Slot, SlotInput};
@@ -11,13 +10,16 @@ use std::ops::Add;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
-#[automock]
+#[cfg(test)]
+use mockall::automock;
+
+#[cfg_attr(test, automock)]
 #[async_trait]
 pub trait VenueClient {
     async fn get_venue(&self, venue_id: String) -> Result<Venue, Status>;
 }
 
-#[automock]
+#[cfg_attr(test, automock)]
 #[async_trait]
 pub trait TableClient {
     async fn get_tables_with_capacity(
@@ -27,7 +29,7 @@ pub trait TableClient {
     ) -> Result<Vec<String>, Status>;
 }
 
-#[automock]
+#[cfg_attr(test, automock)]
 pub trait Repository {
     fn get_bookings_by_date(
         &self,
@@ -75,20 +77,17 @@ impl BookingApi for BookingService {
             slot_starts_at.day(),
         );
 
-        let (opens, closes) = &self
-            .get_opening_times(slot.venue_id.clone(), slot_date)
-            .await?;
+        let ((opens, closes), tables_with_capacity) = tokio::try_join!(
+            self.get_opening_times(slot.venue_id.clone(), slot_date),
+            self.table_client
+                .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
+        )?;
 
-        if slot_starts_at < *opens
-            || slot_starts_at + Duration::minutes(slot.duration as i64) > *closes
+        if slot_starts_at < opens
+            || slot_starts_at + Duration::minutes(slot.duration as i64) > closes
         {
             return Err(Status::invalid_argument("venue is closed at that time"));
         }
-
-        let tables_with_capacity = &self
-            .table_client
-            .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
-            .await?;
 
         if tables_with_capacity.is_empty() {
             return Err(Status::invalid_argument(
@@ -100,11 +99,11 @@ impl BookingApi for BookingService {
 
         let mut free_time_slots = HashSet::new();
         // Loop through all possible time slots for the desired date to see which slots have a table free
-        let mut slot_time = *opens;
-        while slot_time <= *closes - Duration::minutes(slot.duration as i64) {
+        let mut slot_time = opens;
+        while slot_time <= closes - Duration::minutes(slot.duration as i64) {
             let free_table_id = get_free_table(
                 slot.duration as i64,
-                tables_with_capacity,
+                &tables_with_capacity,
                 &bookings,
                 &slot_time,
             );
@@ -158,20 +157,17 @@ impl BookingApi for BookingService {
             slot_starts_at.day(),
         );
 
-        let (opens, closes) = &self
-            .get_opening_times(slot.venue_id.clone(), slot_date)
-            .await?;
+        let ((opens, closes), tables_with_capacity) = tokio::try_join!(
+            self.get_opening_times(slot.venue_id.clone(), slot_date),
+            self.table_client
+                .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
+        )?;
 
-        if slot_starts_at < *opens
-            || slot_starts_at + Duration::minutes(slot.duration as i64) > *closes
+        if slot_starts_at < opens
+            || slot_starts_at + Duration::minutes(slot.duration as i64) > closes
         {
             return Err(Status::invalid_argument("venue is closed at that time"));
         }
-
-        let tables_with_capacity = &self
-            .table_client
-            .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
-            .await?;
 
         if tables_with_capacity.is_empty() {
             return Err(Status::invalid_argument(
@@ -183,7 +179,7 @@ impl BookingApi for BookingService {
 
         let free_table_id = get_free_table(
             slot.duration as i64,
-            tables_with_capacity,
+            &tables_with_capacity,
             &bookings,
             &slot_starts_at.with_timezone(&Utc),
         );
@@ -191,7 +187,7 @@ impl BookingApi for BookingService {
         if let Some(table_id) = free_table_id {
             let id = uuid::Uuid::new_v4();
             let new_booking = models::Booking {
-                id: id.clone(),
+                id,
                 customer_email: slot.email.clone(),
                 venue_id: Uuid::parse_str(&slot.venue_id)
                     .map_err(|_| Status::invalid_argument("could not parse uuid"))?,
@@ -216,7 +212,7 @@ impl BookingApi for BookingService {
                 starts_at: slot.starts_at,
                 ends_at: (slot_starts_at + Duration::minutes(slot.duration as i64)).to_rfc3339(),
                 duration: slot.duration,
-                table_id: table_id.to_string(),
+                table_id,
             }))
         } else {
             Err(Status::not_found("could not find a free slot"))
@@ -226,8 +222,8 @@ impl BookingApi for BookingService {
 
 fn get_free_table(
     duration: i64,
-    tables_with_capacity: &Vec<String>,
-    bookings: &Vec<models::Booking>,
+    tables_with_capacity: &[String],
+    bookings: &[models::Booking],
     starts_at: &DateTime<Utc>,
 ) -> Option<String> {
     tables_with_capacity
@@ -241,7 +237,7 @@ fn get_free_table(
                         && b.starts_at < *starts_at + Duration::minutes(duration))
                 })
         })
-        .map(|id| id.clone())
+        .cloned()
         .next()
 }
 
@@ -260,9 +256,7 @@ impl BookingService {
                 })?,
                 &day,
             )?
-            .iter()
-            .map(|booking| booking.clone())
-            .collect::<Vec<models::Booking>>())
+            .to_vec())
     }
 
     async fn get_opening_times(
@@ -281,8 +275,7 @@ impl BookingService {
         let opening_hours_specification = venue
             .opening_hours
             .iter()
-            .filter(|&hours| hours.day_of_week == date.weekday().number_from_monday())
-            .next()
+            .find(|&hours| hours.day_of_week == date.weekday().number_from_monday())
             .ok_or_else(|| Status::invalid_argument("venue not open on given date"))?;
 
         fn combine_date_and_time(date: NaiveDate, c: NaiveTime) -> DateTime<Utc> {
@@ -313,6 +306,7 @@ mod tests {
     use super::*;
     use crate::models::Booking;
     use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+    use mockall::predicate;
     use protobuf::venue::models::OpeningHoursSpecification;
     use uuid::Uuid;
 

@@ -54,13 +54,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     map.insert("grant_type", "client_credentials".to_string());
     let client = reqwest::Client::new();
     let mut resp = client
-        .post(
-            &format!(
-                "{}oauth/token",
-                std::env::var("AUTHORITY").expect("AUTHORITY must be set")
-            )
-            .to_string(),
-        )
+        .post(&format!(
+            "{}oauth/token",
+            std::env::var("AUTHORITY").expect("AUTHORITY must be set")
+        ))
         .json(&map)
         .send()?;
     let venue_token = resp.json::<Token>().map(|t| t.access_token)?;
