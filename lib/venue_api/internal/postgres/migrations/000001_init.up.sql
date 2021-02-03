@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS venues
 CREATE TABLE IF NOT EXISTS tables
 (
     id       UUID UNIQUE PRIMARY KEY NOT NULL,
-    venue_id UUID NOT NULL REFERENCES venues (id) ON DELETE CASCADE,
+    venue_id UUID NOT NULL,
     name     VARCHAR NOT NULL,
     capacity INTEGER NOT NULL
 );

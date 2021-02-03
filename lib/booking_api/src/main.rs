@@ -1,85 +1,101 @@
+#[macro_use]
+extern crate diesel;
+
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
-use async_trait::async_trait;
-use chrono::{DateTime, Duration};
-use protobuf::booking::api::booking_api_server::{BookingApi, BookingApiServer};
-use protobuf::booking::api::GetSlotResponse;
-use protobuf::booking::models::{Booking, Slot, SlotInput};
-use std::ops::Add;
-use tonic::transport::{Identity, Server, ServerTlsConfig};
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
+use protobuf::booking::api::booking_api_server::BookingApiServer;
+use serde::{Deserialize, Serialize};
+use tonic::transport::{Certificate, Channel, ClientTlsConfig, Identity, Server, ServerTlsConfig};
+use tonic::{metadata::MetadataValue, Request, Status};
 
-#[derive(Debug, Default)]
-pub struct BookingService {}
+mod postgres;
+mod service;
 
-fn get_ends_at(starts_at: &str, duration: u32) -> Result<String, Status> {
-    DateTime::parse_from_rfc3339(starts_at)
-        .map(|dt| dt.add(Duration::minutes(duration as i64)).to_rfc3339())
-        .map_err(|e| Status::internal(e.to_string()))
-}
+pub mod models;
+pub mod schema;
+mod table;
+mod venue;
 
-#[async_trait]
-impl BookingApi for BookingService {
-    async fn get_slot(&self, req: Request<SlotInput>) -> Result<Response<GetSlotResponse>, Status> {
-        let slot = req.into_inner();
-        let starts_at = slot.starts_at;
-        let duration = slot.duration;
-        let ends_at = get_ends_at(&starts_at, duration)?;
-        let venue_id = slot.venue_id;
-        let email = slot.email;
-        let people = slot.people;
-        Ok(Response::new(GetSlotResponse {
-            r#match: Some(Slot {
-                venue_id,
-                email,
-                people,
-                starts_at,
-                ends_at,
-                duration,
-            }),
-            other_available_slots: vec![],
-        }))
-    }
-
-    async fn create_booking(&self, req: Request<SlotInput>) -> Result<Response<Booking>, Status> {
-        let slot = req.into_inner();
-        let starts_at = slot.starts_at;
-        let duration = slot.duration;
-        let ends_at = get_ends_at(&starts_at, duration)?;
-        let venue_id = slot.venue_id;
-        let email = slot.email;
-        let people = slot.people;
-        Ok(Response::new(Booking {
-            id: Uuid::new_v4().to_string(),
-            venue_id,
-            email,
-            people,
-            starts_at,
-            ends_at,
-            duration,
-            table_id: Uuid::new_v4().to_string(),
-        }))
-    }
-}
+use crate::postgres::Postgres;
+use protobuf::venue::api::table_api_client::TableApiClient;
+use protobuf::venue::api::venue_api_client::VenueApiClient;
+use service::BookingService;
+use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    femme::with_level(femme::LevelFilter::Info);
-
     dotenv::dotenv().ok();
 
     let cert = tokio::fs::read("localhost.crt").await?;
     let key = tokio::fs::read("localhost.key").await?;
+    let server_root_ca_cert = Certificate::from_pem(&cert);
 
     let identity = Identity::from_pem(cert, key);
 
-    let addr = "[::1]:6969".parse()?;
-    let service = BookingService::default();
+    let tls = ClientTlsConfig::new()
+        .domain_name("localhost")
+        .ca_certificate(server_root_ca_cert)
+        .identity(identity.clone());
 
-    log::info!("listening on port {}", &addr);
+    let addr = "[::1]:6969".parse()?;
+
+    let mut map = HashMap::new();
+    map.insert(
+        "client_id",
+        std::env::var("AUTH0_CLIENT_ID").expect("client id not set"),
+    );
+    map.insert(
+        "client_secret",
+        std::env::var("AUTH0_CLIENT_SECRET").expect("client secret not set"),
+    );
+    map.insert(
+        "audience",
+        std::env::var("AUTH0_VENUE_API_IDENTIFIER").expect("venue api identifier not set"),
+    );
+    map.insert("grant_type", "client_credentials".to_string());
+    let client = reqwest::Client::new();
+    let mut resp = client
+        .post(&format!(
+            "{}oauth/token",
+            std::env::var("AUTHORITY").expect("AUTHORITY must be set")
+        ))
+        .json(&map)
+        .send()?;
+    let token = resp.json::<Token>().map(|t| t.access_token)?;
+
+    let channel = Channel::from_static("http://[::1]:8888");
+
+    let interceptor = Box::new(move |mut req: Request<()>| {
+        req.metadata_mut().insert(
+            "authorization",
+            MetadataValue::from_str(&*format!("Bearer {}", token)).unwrap(),
+        );
+        Ok(req)
+    });
+
+    let venue_client = VenueApiClient::with_interceptor(
+        channel.clone().tls_config(tls.clone())?.connect().await?,
+        interceptor.clone(),
+    );
+
+    let table_client =
+        TableApiClient::with_interceptor(channel.tls_config(tls)?.connect().await?, interceptor);
+
+    let service = BookingService::new(
+        Box::new(Postgres::new()?),
+        Box::new(venue::VenueClient::new(venue_client)),
+        Box::new(table::TableClient::new(table_client)),
+        None,
+    )?;
+
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
+
+    tracing::info!(message = "Starting server.", %addr);
 
     Server::builder()
         .tls_config(ServerTlsConfig::new().identity(identity))?
+        .trace_fn(|_| tracing::info_span!("booking_api"))
         .add_service(BookingApiServer::with_interceptor(service, check_auth))
         .serve(addr)
         .await?;
@@ -131,4 +147,13 @@ fn fetch_jwks(uri: &str) -> Result<JWKS, Status> {
         .map_err(|_| Status::internal("could not unmarshall jwks"))?;
 
     Ok(val)
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Token {
+    #[serde(rename = "access_token")]
+    pub access_token: String,
+    #[serde(rename = "token_type")]
+    pub token_type: String,
 }

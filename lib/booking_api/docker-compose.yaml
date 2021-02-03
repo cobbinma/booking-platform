@@ -1,0 +1,21 @@
+version: '3'
+services:
+  booking-api-db:
+    image: "postgres"
+    container_name: "booking-api-db"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=booking-api-db
+      - POSTGRES_USER=user
+    volumes:
+      - booking-api-db-data:/var/lib/postgresql/data
+    networks:
+      main:
+        aliases:
+          - booking-api-db
+volumes:
+  booking-api-db-data:
+networks:
+  main:
