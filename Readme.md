@@ -12,12 +12,16 @@
 
 #### venue api
 
+used to manage venue information on the booking platform
+
 1. Go to the `venue_api` lib directory.
 1. populate `.env` file from example
 1. ensure lib folder contains certs (see below)
 1. run `make dev` to run api and postgres instance in docker-compose
 
 #### booking api
+
+used to manage bookings on the platform
 
 1. Go to the `venue_api` lib directory.
 1. populate `.env` file from example
@@ -26,6 +30,8 @@
 1. run command `cargo run` to start api locally
 
 #### gateway api
+
+graphql api used to receive requests from clients and forward them to gRPC apis
 
 1. Go to the `gateway_api` lib directory.
 1. populate `.env` file from example
@@ -46,6 +52,8 @@ Run the following command to generate certificates. Place them in the individual
 ### user interfaces
 
 #### booking ui
+
+a front end client that allows users to make bookings
 
 1. Go to the `booking_ui` lib directory.
 1. Run `make dev` to install dependencies, generate graphql code and run user interface.
