@@ -1,20 +1,26 @@
-FROM rust:1.49 as builder
+FROM rust as planner
+WORKDIR app
 
-RUN USER=root cargo new --bin booking_api
-RUN rustup component add rustfmt
-WORKDIR ./booking_api
-COPY .protobuf ./.protobuf
-COPY ./Cargo.toml ./Cargo.toml
-RUN cargo build --release
-RUN rm src/*.rs
+RUN cargo install cargo-chef
+COPY . .
+RUN cargo chef prepare  --recipe-path recipe.json
 
-ADD . ./
+FROM rust as cacher
+WORKDIR app
+RUN cargo install cargo-chef
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
 
+FROM rust as builder
+WORKDIR app
+COPY . .
+# Copy over the cached dependencies
+COPY --from=cacher /app/target target
+COPY --from=cacher /usr/local/cargo /usr/local/cargo
 RUN cargo test
+RUN cargo build --release --bin app
 
-RUN rm ./target/release/deps/booking_api*
-RUN cargo build --release
-
-
-FROM debian:buster-slim
-ARG APP=/usr/src/app
+FROM rust as runtime
+WORKDIR app
+COPY --from=builder /app/target/release/app /usr/local/bin
+ENTRYPOINT ["./usr/local/bin/app"]
