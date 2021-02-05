@@ -17,6 +17,7 @@ COPY . .
 # Copy over the cached dependencies
 COPY --from=cacher /app/target target
 COPY --from=cacher /usr/local/cargo /usr/local/cargo
+RUN rustup component add rustfmt
 RUN cargo test
 RUN cargo build --release --bin app
 
