@@ -2,8 +2,6 @@ package postgres
 
 import (
 	"context"
-	sql2 "database/sql"
-	"errors"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/customer/api"
@@ -84,12 +82,18 @@ func (c client) IsAdmin(ctx context.Context, req *api.IsAdminRequest) (*api.IsAd
 
 	row := c.db.QueryRow(sql, args...)
 	if row.Err() != nil {
-		if errors.Is(row.Err(), sql2.ErrNoRows) {
-			return &api.IsAdminResponse{IsAdmin: false}, nil
-		}
-
 		c.log.Errorw("could not query row", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	var count int
+	if err := row.Scan(&count); err != nil {
+		c.log.Errorw("could not scan row", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	if count != 1 {
+		return &api.IsAdminResponse{IsAdmin: false}, nil
 	}
 
 	return &api.IsAdminResponse{IsAdmin: true}, nil
