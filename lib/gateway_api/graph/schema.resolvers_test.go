@@ -2,6 +2,7 @@ package graph_test
 
 import (
 	"context"
+	"fmt"
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/bradleyjkemp/cupaloy"
@@ -164,16 +165,41 @@ func Test_CreateBooking(t *testing.T) {
 func Test_IsAdminTrue(t *testing.T) {
 	const venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
-	adminService := mock_resolver.NewMockAdminService(ctrl)
+	customerService := mock_resolver.NewMockCustomerService(ctrl)
 
-	adminService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: venueID}).Return(true, nil)
+	customerService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, nil, adminService)})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, nil, customerService)})))
 
 	var resp struct {
 		IsAdmin bool `json:"isAdmin"`
 	}
-	c.MustPost(`{isAdmin(input:{venueId:"8a18e89b-339b-4e51-ab53-825aae59a070"})}`, &resp)
+	c.MustPost(fmt.Sprintf(`{isAdmin(input:{venueId:"%s"})}`, venueID), &resp)
+
+	if resp.IsAdmin != true {
+		t.Errorf("expected is admin == true, got false")
+	}
+
+	ctrl.Finish()
+}
+
+func Test_IsAdminFalse(t *testing.T) {
+	const venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
+	ctrl := gomock.NewController(t)
+	customerService := mock_resolver.NewMockCustomerService(ctrl)
+
+	customerService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, nil, customerService)})))
+
+	var resp struct {
+		IsAdmin bool `json:"isAdmin"`
+	}
+	c.MustPost(fmt.Sprintf(`{isAdmin(input:{venueId:"%s"})}`, venueID), &resp)
+
+	if resp.IsAdmin != false {
+		t.Errorf("expected is admin == false, got true")
+	}
 
 	ctrl.Finish()
 }

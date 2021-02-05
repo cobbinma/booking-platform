@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,7 +27,7 @@ func Test_userService_GetUser(t *testing.T) {
 		_, _ = w.Write([]byte(fmt.Sprintf(`{"email":"%s","name":"%s"}`, email, name)))
 	}))
 	defer authServer.Close()
-	ctx := auth0.AddTokenToCtx(context.Background(), token)
+	ctx := models.AddTokenToCtx(context.Background(), token)
 	us := auth0.NewUserService(authServer.URL)
 	got, err := us.GetUser(ctx)
 	if err != nil {

@@ -10,14 +10,14 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	venueService   VenueService
-	userService    models.UserService
-	bookingService BookingService
-	adminService   AdminService
+	venueService    VenueService
+	userService     models.UserService
+	bookingService  BookingService
+	customerService CustomerService
 }
 
-func NewResolver(userService models.UserService, venueService VenueService, bookingService BookingService, adminService AdminService) *Resolver {
-	return &Resolver{userService: userService, venueService: venueService, bookingService: bookingService, adminService: adminService}
+func NewResolver(userService models.UserService, venueService VenueService, bookingService BookingService, customerService CustomerService) *Resolver {
+	return &Resolver{userService: userService, venueService: venueService, bookingService: bookingService, customerService: customerService}
 }
 
 //go:generate mockgen -package=mock_resolver -destination=./mock/graph.go -source=resolver.go
@@ -30,6 +30,6 @@ type BookingService interface {
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
 }
 
-type AdminService interface {
-	IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error)
+type CustomerService interface {
+	IsAdmin(ctx context.Context, venueID string, email string) (bool, error)
 }
