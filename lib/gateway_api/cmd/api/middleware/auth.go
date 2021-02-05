@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	"github.com/auth0-community/go-auth0"
-	auth "github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/labstack/echo/v4"
 	"gopkg.in/square/go-jose.v2"
 	"net/http"
@@ -26,7 +26,7 @@ func Auth(domain string, apiIdentifier string) echo.MiddlewareFunc {
 				return c.JSONBlob(http.StatusUnauthorized, []byte(`{"error": "invalid token"}`))
 			}
 
-			c.SetRequest(c.Request().WithContext(auth.AddTokenToCtx(c.Request().Context(), token)))
+			c.SetRequest(c.Request().WithContext(models.AddTokenToCtx(c.Request().Context(), token)))
 			return next(c)
 		}
 	}

@@ -101,3 +101,41 @@ func (mr *MockBookingServiceMockRecorder) CreateBooking(ctx, input interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBooking", reflect.TypeOf((*MockBookingService)(nil).CreateBooking), ctx, input)
 }
+
+// MockAdminService is a mock of AdminService interface
+type MockAdminService struct {
+	ctrl     *gomock.Controller
+	recorder *MockAdminServiceMockRecorder
+}
+
+// MockAdminServiceMockRecorder is the mock recorder for MockAdminService
+type MockAdminServiceMockRecorder struct {
+	mock *MockAdminService
+}
+
+// NewMockAdminService creates a new mock instance
+func NewMockAdminService(ctrl *gomock.Controller) *MockAdminService {
+	mock := &MockAdminService{ctrl: ctrl}
+	mock.recorder = &MockAdminServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockAdminService) EXPECT() *MockAdminServiceMockRecorder {
+	return m.recorder
+}
+
+// IsAdmin mocks base method
+func (m *MockAdminService) IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsAdmin", ctx, input)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsAdmin indicates an expected call of IsAdmin
+func (mr *MockAdminServiceMockRecorder) IsAdmin(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockAdminService)(nil).IsAdmin), ctx, input)
+}

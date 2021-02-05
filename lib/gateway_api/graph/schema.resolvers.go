@@ -32,6 +32,10 @@ func (r *queryResolver) GetSlot(ctx context.Context, input models.SlotInput) (*m
 	return r.bookingService.GetSlot(ctx, input)
 }
 
+func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

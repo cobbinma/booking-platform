@@ -126,7 +126,7 @@ type GetSlotResponse {
 }
 
 input IsAdminInput {
-  venue_id: String!
+  venueId: String!
 }
 
 """
