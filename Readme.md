@@ -38,6 +38,15 @@ graphql api used to receive requests from clients and forward them to gRPC apis
 1. ensure lib folder contains certs (see below)
 1. run command `make local` to start api locally
 
+#### customer api
+
+used to manage administrator access on the booking platform
+
+1. Go to the `customer_api` lib directory.
+1. populate `.env` file from example
+1. ensure lib folder contains certs (see below)
+1. run `make dev` to run api and postgres instance in docker-compose
+
 
 ##### certificate generation
 
