@@ -75,6 +75,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetSlot  func(childComplexity int, input models.SlotInput) int
 		GetVenue func(childComplexity int, id string) int
+		IsAdmin  func(childComplexity int, input models.IsAdminInput) int
 	}
 
 	Slot struct {
@@ -100,6 +101,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	GetVenue(ctx context.Context, id string) (*models.Venue, error)
 	GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error)
+	IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error)
 }
 
 type executableSchema struct {
@@ -257,6 +259,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetVenue(childComplexity, args["id"].(string)), true
+
+	case "Query.isAdmin":
+		if e.complexity.Query.IsAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Query_isAdmin_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.IsAdmin(childComplexity, args["input"].(models.IsAdminInput)), true
 
 	case "Slot.duration":
 		if e.complexity.Slot.Duration == nil {
@@ -519,6 +533,10 @@ type GetSlotResponse {
   otherAvailableSlots: [Slot!]
 }
 
+input IsAdminInput {
+  venueId: String!
+}
+
 """
 Booking queries.
 """
@@ -527,6 +545,8 @@ type Query {
   getVenue(id: ID!): Venue!
   "get slot is a booking enquiry"
   getSlot(input: SlotInput!): GetSlotResponse!
+  "get slot is a booking enquiry"
+  isAdmin(input: IsAdminInput!): Boolean!
 }
 
 """
@@ -600,6 +620,21 @@ func (ec *executionContext) field_Query_getVenue_args(ctx context.Context, rawAr
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_isAdmin_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.IsAdminInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNIsAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐIsAdminInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1278,6 +1313,48 @@ func (ec *executionContext) _Query_getSlot(ctx context.Context, field graphql.Co
 	res := resTmp.(*models.GetSlotResponse)
 	fc.Result = res
 	return ec.marshalNGetSlotResponse2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐGetSlotResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_isAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_isAdmin_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().IsAdmin(rctx, args["input"].(models.IsAdminInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2840,6 +2917,26 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj interface{}) (models.IsAdminInput, error) {
+	var it models.IsAdminInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj interface{}) (models.SlotInput, error) {
 	var it models.SlotInput
 	var asMap = obj.(map[string]interface{})
@@ -3098,6 +3195,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getSlot(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "isAdmin":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_isAdmin(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3543,6 +3654,11 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNIsAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐIsAdminInput(ctx context.Context, v interface{}) (models.IsAdminInput, error) {
+	res, err := ec.unmarshalInputIsAdminInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.OpeningHoursSpecification) graphql.Marshaler {

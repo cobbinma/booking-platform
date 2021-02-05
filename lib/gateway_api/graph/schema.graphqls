@@ -125,6 +125,10 @@ type GetSlotResponse {
   otherAvailableSlots: [Slot!]
 }
 
+input IsAdminInput {
+  venueId: String!
+}
+
 """
 Booking queries.
 """
@@ -133,6 +137,8 @@ type Query {
   getVenue(id: ID!): Venue!
   "get slot is a booking enquiry"
   getSlot(input: SlotInput!): GetSlotResponse!
+  "get slot is a booking enquiry"
+  isAdmin(input: IsAdminInput!): Boolean!
 }
 
 """

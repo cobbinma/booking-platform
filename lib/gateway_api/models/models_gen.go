@@ -48,6 +48,10 @@ type GetSlotResponse struct {
 	OtherAvailableSlots []*Slot `json:"otherAvailableSlots"`
 }
 
+type IsAdminInput struct {
+	VenueID string `json:"venueId"`
+}
+
 // Day specific operating hours.
 type OpeningHoursSpecification struct {
 	// the day of the week for which these opening hours are valid
