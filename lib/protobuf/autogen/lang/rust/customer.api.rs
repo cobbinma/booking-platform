@@ -2,6 +2,8 @@
 pub struct IsAdminRequest {
     #[prost(string, tag = "1")]
     pub venue_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub email: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IsAdminResponse {
@@ -35,13 +37,13 @@ pub struct RemoveAdminResponse {
     pub email: ::prost::alloc::string::String,
 }
 #[doc = r" Generated client implementations."]
-pub mod booking_api_client {
+pub mod customer_api_client {
     #![allow(unused_variables, dead_code, missing_docs)]
     use tonic::codegen::*;
-    pub struct BookingApiClient<T> {
+    pub struct CustomerApiClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl BookingApiClient<tonic::transport::Channel> {
+    impl CustomerApiClient<tonic::transport::Channel> {
         #[doc = r" Attempt to create a new client by connecting to a given endpoint."]
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -52,7 +54,7 @@ pub mod booking_api_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> BookingApiClient<T>
+    impl<T> CustomerApiClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::ResponseBody: Body + HttpBody + Send + 'static,
@@ -78,7 +80,7 @@ pub mod booking_api_client {
                 )
             })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/customer.api.BookingAPI/IsAdmin");
+            let path = http::uri::PathAndQuery::from_static("/customer.api.CustomerAPI/IsAdmin");
             self.inner.unary(request.into_request(), path, codec).await
         }
         pub async fn add_admin(
@@ -92,7 +94,7 @@ pub mod booking_api_client {
                 )
             })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/customer.api.BookingAPI/AddAdmin");
+            let path = http::uri::PathAndQuery::from_static("/customer.api.CustomerAPI/AddAdmin");
             self.inner.unary(request.into_request(), path, codec).await
         }
         pub async fn remove_admin(
@@ -106,30 +108,31 @@ pub mod booking_api_client {
                 )
             })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/customer.api.BookingAPI/RemoveAdmin");
+            let path =
+                http::uri::PathAndQuery::from_static("/customer.api.CustomerAPI/RemoveAdmin");
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
-    impl<T: Clone> Clone for BookingApiClient<T> {
+    impl<T: Clone> Clone for CustomerApiClient<T> {
         fn clone(&self) -> Self {
             Self {
                 inner: self.inner.clone(),
             }
         }
     }
-    impl<T> std::fmt::Debug for BookingApiClient<T> {
+    impl<T> std::fmt::Debug for CustomerApiClient<T> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "BookingApiClient {{ ... }}")
+            write!(f, "CustomerApiClient {{ ... }}")
         }
     }
 }
 #[doc = r" Generated server implementations."]
-pub mod booking_api_server {
+pub mod customer_api_server {
     #![allow(unused_variables, dead_code, missing_docs)]
     use tonic::codegen::*;
-    #[doc = "Generated trait containing gRPC methods that should be implemented for use with BookingApiServer."]
+    #[doc = "Generated trait containing gRPC methods that should be implemented for use with CustomerApiServer."]
     #[async_trait]
-    pub trait BookingApi: Send + Sync + 'static {
+    pub trait CustomerApi: Send + Sync + 'static {
         async fn is_admin(
             &self,
             request: tonic::Request<super::IsAdminRequest>,
@@ -144,11 +147,11 @@ pub mod booking_api_server {
         ) -> Result<tonic::Response<super::RemoveAdminResponse>, tonic::Status>;
     }
     #[derive(Debug)]
-    pub struct BookingApiServer<T: BookingApi> {
+    pub struct CustomerApiServer<T: CustomerApi> {
         inner: _Inner<T>,
     }
     struct _Inner<T>(Arc<T>, Option<tonic::Interceptor>);
-    impl<T: BookingApi> BookingApiServer<T> {
+    impl<T: CustomerApi> CustomerApiServer<T> {
         pub fn new(inner: T) -> Self {
             let inner = Arc::new(inner);
             let inner = _Inner(inner, None);
@@ -160,9 +163,9 @@ pub mod booking_api_server {
             Self { inner }
         }
     }
-    impl<T, B> Service<http::Request<B>> for BookingApiServer<T>
+    impl<T, B> Service<http::Request<B>> for CustomerApiServer<T>
     where
-        T: BookingApi,
+        T: CustomerApi,
         B: HttpBody + Send + Sync + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -175,10 +178,10 @@ pub mod booking_api_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/customer.api.BookingAPI/IsAdmin" => {
+                "/customer.api.CustomerAPI/IsAdmin" => {
                     #[allow(non_camel_case_types)]
-                    struct IsAdminSvc<T: BookingApi>(pub Arc<T>);
-                    impl<T: BookingApi> tonic::server::UnaryService<super::IsAdminRequest> for IsAdminSvc<T> {
+                    struct IsAdminSvc<T: CustomerApi>(pub Arc<T>);
+                    impl<T: CustomerApi> tonic::server::UnaryService<super::IsAdminRequest> for IsAdminSvc<T> {
                         type Response = super::IsAdminResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
@@ -206,10 +209,10 @@ pub mod booking_api_server {
                     };
                     Box::pin(fut)
                 }
-                "/customer.api.BookingAPI/AddAdmin" => {
+                "/customer.api.CustomerAPI/AddAdmin" => {
                     #[allow(non_camel_case_types)]
-                    struct AddAdminSvc<T: BookingApi>(pub Arc<T>);
-                    impl<T: BookingApi> tonic::server::UnaryService<super::AddAdminRequest> for AddAdminSvc<T> {
+                    struct AddAdminSvc<T: CustomerApi>(pub Arc<T>);
+                    impl<T: CustomerApi> tonic::server::UnaryService<super::AddAdminRequest> for AddAdminSvc<T> {
                         type Response = super::AddAdminResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
@@ -237,10 +240,10 @@ pub mod booking_api_server {
                     };
                     Box::pin(fut)
                 }
-                "/customer.api.BookingAPI/RemoveAdmin" => {
+                "/customer.api.CustomerAPI/RemoveAdmin" => {
                     #[allow(non_camel_case_types)]
-                    struct RemoveAdminSvc<T: BookingApi>(pub Arc<T>);
-                    impl<T: BookingApi> tonic::server::UnaryService<super::RemoveAdminRequest> for RemoveAdminSvc<T> {
+                    struct RemoveAdminSvc<T: CustomerApi>(pub Arc<T>);
+                    impl<T: CustomerApi> tonic::server::UnaryService<super::RemoveAdminRequest> for RemoveAdminSvc<T> {
                         type Response = super::RemoveAdminResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
@@ -279,13 +282,13 @@ pub mod booking_api_server {
             }
         }
     }
-    impl<T: BookingApi> Clone for BookingApiServer<T> {
+    impl<T: CustomerApi> Clone for CustomerApiServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self { inner }
         }
     }
-    impl<T: BookingApi> Clone for _Inner<T> {
+    impl<T: CustomerApi> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(self.0.clone(), self.1.clone())
         }
@@ -295,7 +298,7 @@ pub mod booking_api_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: BookingApi> tonic::transport::NamedService for BookingApiServer<T> {
-        const NAME: &'static str = "customer.api.BookingAPI";
+    impl<T: CustomerApi> tonic::transport::NamedService for CustomerApiServer<T> {
+        const NAME: &'static str = "customer.api.CustomerAPI";
     }
 }

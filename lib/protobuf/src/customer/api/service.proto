@@ -4,7 +4,7 @@ package customer.api;
 
 option go_package = "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/customer/api";
 
-service BookingAPI {
+service CustomerAPI {
   rpc IsAdmin(IsAdminRequest) returns (IsAdminResponse);
   rpc AddAdmin(AddAdminRequest) returns (AddAdminResponse);
   rpc RemoveAdmin(RemoveAdminRequest) returns (RemoveAdminResponse);
@@ -12,6 +12,7 @@ service BookingAPI {
 
 message IsAdminRequest {
   string venueId = 1;
+  string email = 2;
 }
 
 message IsAdminResponse {
