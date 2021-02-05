@@ -125,6 +125,10 @@ export type GetSlotResponse = {
   otherAvailableSlots?: Maybe<Array<Slot>>;
 };
 
+export type IsAdminInput = {
+  venue_id: Scalars['String'];
+};
+
 /** Booking queries. */
 export type Query = {
   __typename?: 'Query';
@@ -132,6 +136,8 @@ export type Query = {
   getVenue: Venue;
   /** get slot is a booking enquiry */
   getSlot: GetSlotResponse;
+  /** get slot is a booking enquiry */
+  isAdmin: Scalars['Boolean'];
 };
 
 
@@ -144,6 +150,12 @@ export type QueryGetVenueArgs = {
 /** Booking queries. */
 export type QueryGetSlotArgs = {
   input: SlotInput;
+};
+
+
+/** Booking queries. */
+export type QueryIsAdminArgs = {
+  input: IsAdminInput;
 };
 
 /** Booking mutations. */
