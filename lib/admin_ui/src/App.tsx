@@ -1,26 +1,53 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import LoginButton from "./components/LoginButton";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useParams,
+} from "react-router-dom";
+import { AppState, Auth0Provider } from "@auth0/auth0-react";
+import Secure from "./components/Secure";
+export interface Params {
+  venueId: string;
+  returnURL: string;
+}
 
-function App() {
+const App = () => {
+  const [params, setParams] = useState<Params | null>(null);
+  const onRedirectCallback = (appState: AppState) => {
+    setParams(appState && appState.params);
+  };
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Auth0Provider
+          domain={process.env.REACT_APP_DOMAIN ?? ""}
+          clientId={process.env.REACT_APP_CLIENT_ID ?? ""}
+          redirectUri={window.location.origin}
+          audience={process.env.REACT_APP_AUDIENCE ?? ""}
+          issuer={process.env.REACT_APP_ISSUER ?? ""}
+          onRedirectCallback={onRedirectCallback}
         >
-          Learn React
-        </a>
+          <Router>
+            <Switch>
+              <Route path="/:venueId" children={<GetParams />} />
+            </Switch>
+          </Router>
+          {params && <Secure params={params} />}
+        </Auth0Provider>
       </header>
     </div>
   );
-}
+};
+
+const GetParams = () => {
+  let params = useParams<Params>();
+  return (
+    <div>
+      <LoginButton params={params} />
+    </div>
+  );
+};
 
 export default App;
