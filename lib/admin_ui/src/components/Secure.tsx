@@ -8,17 +8,18 @@ import {
   InMemoryCache,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import IsAdmin from "./IsAdmin";
+import { Spinner } from "baseui/spinner";
 
 const Secure: React.FC<{ params: Params }> = ({ params }) => {
-  const {
-    user,
-    isAuthenticated,
-    isLoading,
-    getAccessTokenSilently,
-  } = useAuth0();
+  const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
 
   if (isLoading) {
-    return <div>Loading ...</div>;
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -34,7 +35,6 @@ const Secure: React.FC<{ params: Params }> = ({ params }) => {
     const token = await getAccessTokenSilently().catch((e) => {
       console.log(e);
     });
-    console.log(token);
     // return the headers to the context so httpLink can read them
     return {
       headers: {
@@ -51,7 +51,9 @@ const Secure: React.FC<{ params: Params }> = ({ params }) => {
 
   return (
     <div>
-      <ApolloProvider client={client}>Hello</ApolloProvider>
+      <ApolloProvider client={client}>
+        <IsAdmin params={params} />
+      </ApolloProvider>
     </div>
   );
 };

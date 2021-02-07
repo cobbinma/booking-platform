@@ -223,6 +223,16 @@ export type GetVenueQuery = (
   ) }
 );
 
+export type IsAdminQueryVariables = Exact<{
+  venueId: Scalars['String'];
+}>;
+
+
+export type IsAdminQuery = (
+  { __typename?: 'Query' }
+  & Pick<Query, 'isAdmin'>
+);
+
 
 export const CreateBookingDocument = gql`
     mutation CreateBooking($slot: BookingInput!) {
@@ -359,3 +369,34 @@ export function useGetVenueLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetVenueQueryHookResult = ReturnType<typeof useGetVenueQuery>;
 export type GetVenueLazyQueryHookResult = ReturnType<typeof useGetVenueLazyQuery>;
 export type GetVenueQueryResult = Apollo.QueryResult<GetVenueQuery, GetVenueQueryVariables>;
+export const IsAdminDocument = gql`
+    query IsAdmin($venueId: String!) {
+  isAdmin(input: {venueId: $venueId})
+}
+    `;
+
+/**
+ * __useIsAdminQuery__
+ *
+ * To run a query within a React component, call `useIsAdminQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsAdminQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIsAdminQuery({
+ *   variables: {
+ *      venueId: // value for 'venueId'
+ *   },
+ * });
+ */
+export function useIsAdminQuery(baseOptions: Apollo.QueryHookOptions<IsAdminQuery, IsAdminQueryVariables>) {
+        return Apollo.useQuery<IsAdminQuery, IsAdminQueryVariables>(IsAdminDocument, baseOptions);
+      }
+export function useIsAdminLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsAdminQuery, IsAdminQueryVariables>) {
+          return Apollo.useLazyQuery<IsAdminQuery, IsAdminQueryVariables>(IsAdminDocument, baseOptions);
+        }
+export type IsAdminQueryHookResult = ReturnType<typeof useIsAdminQuery>;
+export type IsAdminLazyQueryHookResult = ReturnType<typeof useIsAdminLazyQuery>;
+export type IsAdminQueryResult = Apollo.QueryResult<IsAdminQuery, IsAdminQueryVariables>;

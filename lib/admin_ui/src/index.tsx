@@ -8,8 +8,9 @@ import { LightTheme, BaseProvider, styled } from "baseui";
 const engine = new Styletron();
 const Centered = styled("div", {
   display: "flex",
+  flexDirection: "row",
   justifyContent: "center",
-  alignItems: "center",
+  alignItems: "stretch",
   height: "100%",
 });
 

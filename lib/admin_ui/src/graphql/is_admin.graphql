@@ -1,0 +1,3 @@
+query IsAdmin($venueId: String!) {
+    isAdmin(input:{venueId:$venueId})
+}

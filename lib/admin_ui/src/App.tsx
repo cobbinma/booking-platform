@@ -10,7 +10,6 @@ import { AppState, Auth0Provider } from "@auth0/auth0-react";
 import Secure from "./components/Secure";
 export interface Params {
   venueId: string;
-  returnURL: string;
 }
 
 const App = () => {
