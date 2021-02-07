@@ -5,6 +5,8 @@ import Tables from "../pages/Tables";
 import { AppNavBar, NavItemT, setItemActive } from "baseui/app-nav-bar";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { useStyletron } from "baseui";
+import Admins from "../pages/Admins";
+import Bookings from "../pages/Bookings";
 
 const Pages: NavItemT[] = [
   {
@@ -14,14 +16,26 @@ const Pages: NavItemT[] = [
     },
   },
   {
+    label: "Bookings",
+    info: {
+      link: "/bookings",
+    },
+  },
+  {
     label: "Tables",
     info: {
       link: "/tables",
     },
   },
+  {
+    label: "Administrators",
+    info: {
+      link: "/admins",
+    },
+  },
 ];
 
-const Admin = () => {
+const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
   let history = useHistory();
   const [css] = useStyletron();
 
@@ -53,8 +67,14 @@ const Admin = () => {
             <Route path="/tables">
               <Tables />
             </Route>
+            <Route path="/admins">
+              <Admins />
+            </Route>
+            <Route path="/bookings">
+              <Bookings />
+            </Route>
             <Route path="/">
-              <Home />
+              <Home venueID={venueID} />
             </Route>
           </Switch>
         </FlexGridItem>

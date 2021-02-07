@@ -31,7 +31,7 @@ const IsAdmin: React.FC<{ params: Params }> = ({ params }) => {
   return (
     <div>
       <BrowserRouter>
-        <Admin />
+        <Admin venueID={params.venueId} />
       </BrowserRouter>
     </div>
   );
