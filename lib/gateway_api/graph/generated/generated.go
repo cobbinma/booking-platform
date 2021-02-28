@@ -38,6 +38,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Venue() VenueResolver
 }
 
 type DirectiveRoot struct {
@@ -61,7 +62,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddTable      func(childComplexity int, input models.TableInput) int
 		CreateBooking func(childComplexity int, input models.BookingInput) int
+		RemoveTable   func(childComplexity int, tableID string) int
 	}
 
 	OpeningHoursSpecification struct {
@@ -87,21 +90,33 @@ type ComplexityRoot struct {
 		VenueID  func(childComplexity int) int
 	}
 
+	Table struct {
+		Capacity func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Name     func(childComplexity int) int
+	}
+
 	Venue struct {
 		ID                  func(childComplexity int) int
 		Name                func(childComplexity int) int
 		OpeningHours        func(childComplexity int) int
 		SpecialOpeningHours func(childComplexity int) int
+		Tables              func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
+	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
+	RemoveTable(ctx context.Context, tableID string) (*models.Table, error)
 }
 type QueryResolver interface {
 	GetVenue(ctx context.Context, id string) (*models.Venue, error)
 	GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error)
 	IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error)
+}
+type VenueResolver interface {
+	Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error)
 }
 
 type executableSchema struct {
@@ -189,6 +204,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GetSlotResponse.OtherAvailableSlots(childComplexity), true
 
+	case "Mutation.addTable":
+		if e.complexity.Mutation.AddTable == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addTable_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddTable(childComplexity, args["input"].(models.TableInput)), true
+
 	case "Mutation.createBooking":
 		if e.complexity.Mutation.CreateBooking == nil {
 			break
@@ -200,6 +227,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateBooking(childComplexity, args["input"].(models.BookingInput)), true
+
+	case "Mutation.removeTable":
+		if e.complexity.Mutation.RemoveTable == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeTable_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveTable(childComplexity, args["tableId"].(string)), true
 
 	case "OpeningHoursSpecification.closes":
 		if e.complexity.OpeningHoursSpecification.Closes == nil {
@@ -314,6 +353,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Slot.VenueID(childComplexity), true
 
+	case "Table.capacity":
+		if e.complexity.Table.Capacity == nil {
+			break
+		}
+
+		return e.complexity.Table.Capacity(childComplexity), true
+
+	case "Table.id":
+		if e.complexity.Table.ID == nil {
+			break
+		}
+
+		return e.complexity.Table.ID(childComplexity), true
+
+	case "Table.name":
+		if e.complexity.Table.Name == nil {
+			break
+		}
+
+		return e.complexity.Table.Name(childComplexity), true
+
 	case "Venue.id":
 		if e.complexity.Venue.ID == nil {
 			break
@@ -341,6 +401,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Venue.SpecialOpeningHours(childComplexity), true
+
+	case "Venue.tables":
+		if e.complexity.Venue.Tables == nil {
+			break
+		}
+
+		return e.complexity.Venue.Tables(childComplexity), true
 
 	}
 	return 0, false
@@ -505,6 +572,32 @@ type Venue {
   openingHours: [OpeningHoursSpecification!]!
   "special operating hours of the venue"
   specialOpeningHours: [OpeningHoursSpecification!]!
+  "tables at the venue"
+  tables: [Table!]!
+}
+
+"""
+An individual table at a venue.
+"""
+input TableInput {
+  "unique venue identifier the table belongs to"
+  id: ID!
+  "name of the table"
+  name: String!
+  "maximum amount of people that can sit at table"
+  capacity: Int!
+}
+
+"""
+An individual table at a venue.
+"""
+type Table {
+  "unique identifier of the table"
+  id: ID!
+  "name of the table"
+  name: String!
+  "maximum amount of people that can sit at table"
+  capacity: Int!
 }
 
 """
@@ -555,6 +648,10 @@ Booking mutations.
 type Mutation {
   "create booking is a confirming a booking slot"
   createBooking(input: BookingInput!): Booking!
+  "add a table to a venue"
+  addTable(input: TableInput!): Table!
+  "remove a table from a venue"
+  removeTable(tableId: ID!): Table!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -562,6 +659,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.TableInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTableInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -575,6 +687,21 @@ func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Contex
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["tableId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tableId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tableId"] = arg0
 	return args, nil
 }
 
@@ -1060,6 +1187,90 @@ func (ec *executionContext) _Mutation_createBooking(ctx context.Context, field g
 	res := resTmp.(*models.Booking)
 	fc.Result = res
 	return ec.marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_addTable(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_addTable_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddTable(rctx, args["input"].(models.TableInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Table)
+	fc.Result = res
+	return ec.marshalNTable2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_removeTable(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_removeTable_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveTable(rctx, args["tableId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Table)
+	fc.Result = res
+	return ec.marshalNTable2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1638,6 +1849,111 @@ func (ec *executionContext) _Slot_duration(ctx context.Context, field graphql.Co
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Table_id(ctx context.Context, field graphql.CollectedField, obj *models.Table) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Table",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Table_name(ctx context.Context, field graphql.CollectedField, obj *models.Table) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Table",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Table_capacity(ctx context.Context, field graphql.CollectedField, obj *models.Table) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Table",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Capacity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Venue_id(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1776,6 +2092,41 @@ func (ec *executionContext) _Venue_specialOpeningHours(ctx context.Context, fiel
 	res := resTmp.([]*models.OpeningHoursSpecification)
 	fc.Result = res
 	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_tables(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Venue().Tables(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Table)
+	fc.Result = res
+	return ec.marshalNTable2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2989,6 +3340,42 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTableInput(ctx context.Context, obj interface{}) (models.TableInput, error) {
+	var it models.TableInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "capacity":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("capacity"))
+			it.Capacity, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3102,6 +3489,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "createBooking":
 			out.Values[i] = ec._Mutation_createBooking(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "addTable":
+			out.Values[i] = ec._Mutation_addTable(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "removeTable":
+			out.Values[i] = ec._Mutation_removeTable(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3281,6 +3678,43 @@ func (ec *executionContext) _Slot(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var tableImplementors = []string{"Table"}
+
+func (ec *executionContext) _Table(ctx context.Context, sel ast.SelectionSet, obj *models.Table) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tableImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Table")
+		case "id":
+			out.Values[i] = ec._Table_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Table_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "capacity":
+			out.Values[i] = ec._Table_capacity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var venueImplementors = []string{"Venue"}
 
 func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, obj *models.Venue) graphql.Marshaler {
@@ -3295,23 +3729,37 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 			out.Values[i] = ec._Venue_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Venue_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "openingHours":
 			out.Values[i] = ec._Venue_openingHours(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "specialOpeningHours":
 			out.Values[i] = ec._Venue_specialOpeningHours(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "tables":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Venue_tables(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3736,6 +4184,62 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTable2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx context.Context, sel ast.SelectionSet, v models.Table) graphql.Marshaler {
+	return ec._Table(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTable2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Table) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTable2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNTable2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx context.Context, sel ast.SelectionSet, v *models.Table) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Table(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTableInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableInput(ctx context.Context, v interface{}) (models.TableInput, error) {
+	res, err := ec.unmarshalInputTableInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {

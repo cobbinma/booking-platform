@@ -44,6 +44,24 @@ type venueClient struct {
 	log    *zap.SugaredLogger
 }
 
+func (v venueClient) GetTables(ctx context.Context, venueID string) ([]*models.Table, error) {
+	resp, err := v.client.GetTables(ctx, &api.GetTablesRequest{VenueId: venueID})
+	if err != nil {
+		return nil, fmt.Errorf("could not get tables from venue service : %w", err)
+	}
+
+	tables := []*models.Table{}
+	for _, table := range resp.Tables {
+		tables = append(tables, &models.Table{
+			ID:       table.Id,
+			Name:     table.Name,
+			Capacity: int(table.Capacity),
+		})
+	}
+
+	return tables, nil
+}
+
 func (v venueClient) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
 	venue, err := v.client.GetVenue(ctx, &api.GetVenueRequest{Id: id})
 	if err != nil {

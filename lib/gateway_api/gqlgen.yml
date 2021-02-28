@@ -60,3 +60,7 @@ models:
     model: github.com/cobbinma/booking-platform/lib/gateway_api/models.Date
   DayOfWeek:
     model: github.com/cobbinma/booking-platform/lib/gateway_api/models.DayOfWeek
+  Venue:
+    fields:
+      tables:
+        resolver: true

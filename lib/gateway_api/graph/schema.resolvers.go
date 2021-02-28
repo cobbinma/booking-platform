@@ -26,6 +26,14 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 	return r.bookingService.CreateBooking(ctx, input)
 }
 
+func (r *mutationResolver) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) RemoveTable(ctx context.Context, tableID string) (*models.Table, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
 	return r.venueService.GetVenue(ctx, id)
 }
@@ -43,11 +51,33 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 	return r.venueService.IsAdmin(ctx, input.VenueID, user.Email)
 }
 
+func (r *venueResolver) Tables(ctx context.Context, venue *models.Venue) ([]*models.Table, error) {
+	user, err := r.userService.GetUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not get user profile")
+	}
+
+	isAdmin, err := r.venueService.IsAdmin(ctx, venue.ID, user.Email)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not determine is user is admin")
+	}
+
+	if !isAdmin {
+		return nil, status.Errorf(codes.Unauthenticated, "user is not admin")
+	}
+
+	return r.venueService.GetTables(ctx, venue.ID)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Venue returns generated.VenueResolver implementation.
+func (r *Resolver) Venue() generated.VenueResolver { return &venueResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type venueResolver struct{ *Resolver }
