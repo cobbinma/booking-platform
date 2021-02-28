@@ -87,3 +87,15 @@ func (v venueClient) GetVenue(ctx context.Context, id string) (*models.Venue, er
 		SpecialOpeningHours: specialHours,
 	}, nil
 }
+
+func (v venueClient) IsAdmin(ctx context.Context, venueID string, email string) (bool, error) {
+	resp, err := v.client.IsAdmin(ctx, &api.IsAdminRequest{
+		VenueId: venueID,
+		Email:   email,
+	})
+	if err != nil {
+		return false, fmt.Errorf("could not get is admin from customer client : %w", err)
+	}
+
+	return resp.IsAdmin, nil
+}

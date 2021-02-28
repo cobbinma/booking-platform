@@ -40,7 +40,7 @@ func Test_GetVenue(t *testing.T) {
 		SpecialOpeningHours: nil,
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, venueSrv, nil, nil)})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, venueSrv, nil)})))
 
 	var resp struct {
 		GetVenue struct {
@@ -95,7 +95,7 @@ func Test_GetSlot(t *testing.T) {
 		OtherAvailableSlots: nil,
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, bookingService, nil)})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, bookingService)})))
 
 	var resp struct {
 		GetSlot struct {
@@ -141,7 +141,7 @@ func Test_CreateBooking(t *testing.T) {
 		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, bookingService, nil)})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, bookingService)})))
 
 	var resp struct {
 		CreateBooking struct {
@@ -165,11 +165,11 @@ func Test_CreateBooking(t *testing.T) {
 func Test_IsAdminTrue(t *testing.T) {
 	const venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
-	customerService := mock_resolver.NewMockCustomerService(ctrl)
+	venueService := mock_resolver.NewMockVenueService(ctrl)
 
-	customerService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+	venueService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, nil, customerService)})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueService, nil)})))
 
 	var resp struct {
 		IsAdmin bool `json:"isAdmin"`
@@ -186,11 +186,11 @@ func Test_IsAdminTrue(t *testing.T) {
 func Test_IsAdminFalse(t *testing.T) {
 	const venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
-	customerService := mock_resolver.NewMockCustomerService(ctrl)
+	venueService := mock_resolver.NewMockVenueService(ctrl)
 
-	customerService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+	venueService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, nil, customerService)})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueService, nil)})))
 
 	var resp struct {
 		IsAdmin bool `json:"isAdmin"`

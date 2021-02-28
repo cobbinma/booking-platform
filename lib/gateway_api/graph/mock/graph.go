@@ -36,7 +36,6 @@ func (m *MockVenueService) EXPECT() *MockVenueServiceMockRecorder {
 
 // GetVenue mocks base method
 func (m *MockVenueService) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVenue", ctx, id)
 	ret0, _ := ret[0].(*models.Venue)
 	ret1, _ := ret[1].(error)
@@ -45,8 +44,20 @@ func (m *MockVenueService) GetVenue(ctx context.Context, id string) (*models.Ven
 
 // GetVenue indicates an expected call of GetVenue
 func (mr *MockVenueServiceMockRecorder) GetVenue(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVenue", reflect.TypeOf((*MockVenueService)(nil).GetVenue), ctx, id)
+}
+
+// IsAdmin mocks base method
+func (m *MockVenueService) IsAdmin(ctx context.Context, venueID, email string) (bool, error) {
+	ret := m.ctrl.Call(m, "IsAdmin", ctx, venueID, email)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsAdmin indicates an expected call of IsAdmin
+func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, venueID, email interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, venueID, email)
 }
 
 // MockBookingService is a mock of BookingService interface
@@ -74,7 +85,6 @@ func (m *MockBookingService) EXPECT() *MockBookingServiceMockRecorder {
 
 // GetSlot mocks base method
 func (m *MockBookingService) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSlot", ctx, slot)
 	ret0, _ := ret[0].(*models.GetSlotResponse)
 	ret1, _ := ret[1].(error)
@@ -83,13 +93,11 @@ func (m *MockBookingService) GetSlot(ctx context.Context, slot models.SlotInput)
 
 // GetSlot indicates an expected call of GetSlot
 func (mr *MockBookingServiceMockRecorder) GetSlot(ctx, slot interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSlot", reflect.TypeOf((*MockBookingService)(nil).GetSlot), ctx, slot)
 }
 
 // CreateBooking mocks base method
 func (m *MockBookingService) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateBooking", ctx, input)
 	ret0, _ := ret[0].(*models.Booking)
 	ret1, _ := ret[1].(error)
@@ -98,44 +106,5 @@ func (m *MockBookingService) CreateBooking(ctx context.Context, input models.Boo
 
 // CreateBooking indicates an expected call of CreateBooking
 func (mr *MockBookingServiceMockRecorder) CreateBooking(ctx, input interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBooking", reflect.TypeOf((*MockBookingService)(nil).CreateBooking), ctx, input)
-}
-
-// MockCustomerService is a mock of CustomerService interface
-type MockCustomerService struct {
-	ctrl     *gomock.Controller
-	recorder *MockCustomerServiceMockRecorder
-}
-
-// MockCustomerServiceMockRecorder is the mock recorder for MockCustomerService
-type MockCustomerServiceMockRecorder struct {
-	mock *MockCustomerService
-}
-
-// NewMockCustomerService creates a new mock instance
-func NewMockCustomerService(ctrl *gomock.Controller) *MockCustomerService {
-	mock := &MockCustomerService{ctrl: ctrl}
-	mock.recorder = &MockCustomerServiceMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockCustomerService) EXPECT() *MockCustomerServiceMockRecorder {
-	return m.recorder
-}
-
-// IsAdmin mocks base method
-func (m *MockCustomerService) IsAdmin(ctx context.Context, venueID, email string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsAdmin", ctx, venueID, email)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsAdmin indicates an expected call of IsAdmin
-func (mr *MockCustomerServiceMockRecorder) IsAdmin(ctx, venueID, email interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockCustomerService)(nil).IsAdmin), ctx, venueID, email)
 }

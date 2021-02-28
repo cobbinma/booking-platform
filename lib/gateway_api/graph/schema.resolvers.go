@@ -40,7 +40,7 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 		return false, status.Errorf(codes.Internal, "could not get user profile")
 	}
 
-	return r.customerService.IsAdmin(ctx, input.VenueID, user.Email)
+	return r.venueService.IsAdmin(ctx, input.VenueID, user.Email)
 }
 
 // Mutation returns generated.MutationResolver implementation.
