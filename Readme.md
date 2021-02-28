@@ -44,10 +44,12 @@ graphql api used to receive requests from clients and forward them to gRPC apis
 APIs need a public and private key to communicate with each other. 
 Run the following command to generate certificates. Place them in the individual API folders.
 
-`openssl req -x509 -out localhost.crt -keyout localhost.key \
-   -newkey rsa:2048 -nodes -sha256 \
-   -subj '/CN=localhost' -extensions EXT -config <( \
-   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")`
+```shell
+openssl req -x509 -out localhost.crt -keyout localhost.key \
+  -newkey rsa:4096 -nodes -sha256 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+```
 
 ### user interfaces
 
