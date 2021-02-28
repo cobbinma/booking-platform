@@ -1,0 +1,20 @@
+query GetSlot($slot: SlotInput!) {
+    getSlot(input: $slot) {
+        match {
+            venueId
+            email
+            people
+            startsAt
+            endsAt
+            duration
+        }
+        otherAvailableSlots {
+            venueId
+            email
+            people
+            startsAt
+            endsAt
+            duration
+        }
+    }
+}
