@@ -12,11 +12,9 @@ mod service;
 
 pub mod models;
 pub mod schema;
-mod table;
 mod venue;
 
 use crate::postgres::Postgres;
-use protobuf::venue::api::table_api_client::TableApiClient;
 use protobuf::venue::api::venue_api_client::VenueApiClient;
 use service::BookingService;
 use std::collections::HashMap;
@@ -77,13 +75,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         interceptor.clone(),
     );
 
-    let table_client =
-        TableApiClient::with_interceptor(channel.tls_config(tls)?.connect().await?, interceptor);
-
     let service = BookingService::new(
         Box::new(Postgres::new()?),
         Box::new(venue::VenueClient::new(venue_client)),
-        Box::new(table::TableClient::new(table_client)),
         None,
     )?;
 

@@ -17,11 +17,6 @@ use mockall::automock;
 #[async_trait]
 pub trait VenueClient {
     async fn get_venue(&self, venue_id: String) -> Result<Venue, Status>;
-}
-
-#[cfg_attr(test, automock)]
-#[async_trait]
-pub trait TableClient {
     async fn get_tables_with_capacity(
         &self,
         venue_id: String,
@@ -43,7 +38,6 @@ pub trait Repository {
 pub struct BookingService {
     repository: Box<dyn Repository + Send + Sync + 'static>,
     venue_client: Box<dyn VenueClient + Send + Sync + 'static>,
-    table_client: Box<dyn TableClient + Send + Sync + 'static>,
     uuid: Box<dyn UuidGetter + Send + Sync + 'static>,
 }
 
@@ -51,7 +45,6 @@ impl BookingService {
     pub fn new(
         repository: Box<dyn Repository + Send + Sync + 'static>,
         venue_client: Box<dyn VenueClient + Send + Sync + 'static>,
-        table_client: Box<dyn TableClient + Send + Sync + 'static>,
         custom_uuid: Option<Box<dyn UuidGetter + Send + Sync + 'static>>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let uuid = custom_uuid.unwrap_or_else(|| Box::new(GetUuid::default()));
@@ -59,7 +52,6 @@ impl BookingService {
         Ok(BookingService {
             repository,
             venue_client,
-            table_client,
             uuid,
         })
     }
@@ -84,7 +76,7 @@ impl BookingApi for BookingService {
 
         let ((opens, closes), tables_with_capacity) = tokio::try_join!(
             self.get_opening_times(slot.venue_id.clone(), slot_date),
-            self.table_client
+            self.venue_client
                 .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
         )?;
 
@@ -169,7 +161,7 @@ impl BookingApi for BookingService {
 
         let ((opens, closes), tables_with_capacity) = tokio::try_join!(
             self.get_opening_times(slot.venue_id.clone(), slot_date),
-            self.table_client
+            self.venue_client
                 .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
         )?;
 
@@ -431,7 +423,6 @@ mod tests {
         let service = BookingService::new(
             Box::new(MockRepository::new()),
             Box::new(mock),
-            Box::new(MockTableClient::new()),
             None,
         )
         .expect("could not construct booking service");
@@ -462,7 +453,6 @@ mod tests {
         let duration = 60;
 
         let mut venue = MockVenueClient::new();
-        let mut table = MockTableClient::new();
         let mut repository = MockRepository::new();
 
         venue
@@ -484,7 +474,7 @@ mod tests {
                 })
             });
 
-        table
+        venue
             .expect_get_tables_with_capacity()
             .with(predicate::eq(venue_id.clone()), predicate::eq(people))
             .times(1)
@@ -502,7 +492,7 @@ mod tests {
             .returning(|_, _| Ok(vec![]));
 
         let service =
-            BookingService::new(Box::new(repository), Box::new(venue), Box::new(table), None)
+            BookingService::new(Box::new(repository), Box::new(venue), None)
                 .expect("could not construct booking service");
 
         let result = service
@@ -567,7 +557,6 @@ mod tests {
         let duration = 60;
 
         let mut venue = MockVenueClient::new();
-        let mut table = MockTableClient::new();
         let mut repository = MockRepository::new();
 
         venue
@@ -589,7 +578,7 @@ mod tests {
                 })
             });
 
-        table
+        venue
             .expect_get_tables_with_capacity()
             .with(predicate::eq(venue_id.clone()), predicate::eq(people))
             .times(1)
@@ -633,7 +622,6 @@ mod tests {
         let service = BookingService::new(
             Box::new(repository),
             Box::new(venue),
-            Box::new(table),
             Some(Box::new(get_uuid)),
         )
         .expect("could not construct booking service");
