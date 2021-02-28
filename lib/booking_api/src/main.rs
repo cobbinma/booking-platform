@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate diesel;
 
+#[macro_use]
+extern crate diesel_migrations;
+
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
 use protobuf::booking::api::booking_api_server::BookingApiServer;
 use serde::{Deserialize, Serialize};
