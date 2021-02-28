@@ -10,6 +10,8 @@ use std::env;
 use tonic::Status;
 use uuid::Uuid;
 
+embed_migrations!("./migrations");
+
 pub struct Postgres {
     pool: Pool<ConnectionManager<PgConnection>>,
 }
@@ -19,6 +21,8 @@ impl Postgres {
         let database_url = env::var("DATABASE_URL")?;
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         let pool = diesel::r2d2::Builder::new().build(manager)?;
+
+        embedded_migrations::run(&pool.get()?)?;
 
         Ok(Postgres { pool })
     }

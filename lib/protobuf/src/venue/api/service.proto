@@ -9,6 +9,13 @@ import "src/venue/models/models.proto";
 service VenueAPI {
   rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
   rpc CreateVenue(CreateVenueRequest) returns (venue.models.Venue);
+
+  rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
+  rpc AddTable(AddTableRequest) returns (venue.models.Table);
+
+  rpc IsAdmin(IsAdminRequest) returns (IsAdminResponse);
+  rpc AddAdmin(AddAdminRequest) returns (AddAdminResponse);
+  rpc RemoveAdmin(RemoveAdminRequest) returns (RemoveAdminResponse);
 }
 
 message GetVenueRequest {
@@ -18,11 +25,6 @@ message GetVenueRequest {
 message CreateVenueRequest {
   string name = 1;
   repeated venue.models.OpeningHoursSpecification openingHours = 2;
-}
-
-service TableAPI {
-  rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
-  rpc AddTable(AddTableRequest) returns (venue.models.Table);
 }
 
 message GetTablesRequest {
@@ -35,6 +37,35 @@ message GetTablesResponse {
 
 message AddTableRequest {
   string venueId = 1;
-  venue.models.Table table = 2;
+  string name = 2;
+  uint32 capacity = 3;
+}
+
+message IsAdminRequest {
+  string venueId = 1;
+  string email = 2;
+}
+
+message IsAdminResponse {
+  bool isAdmin = 1;
+}
+
+message AddAdminRequest {
+  string venueId = 1;
+  string email = 2;
+}
+
+message AddAdminResponse {
+  string venueId = 1;
+  string email = 2;
+}
+
+message RemoveAdminRequest {
+  string venueId = 1;
+  string email = 2;
+}
+
+message RemoveAdminResponse {
+  string email = 1;
 }
 

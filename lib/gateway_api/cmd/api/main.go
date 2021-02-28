@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	mw "github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/auth0"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/booking"
-	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/customer"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/internal/venue"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -62,19 +63,8 @@ func main() {
 	}
 	defer closeBookingClient(log)
 
-	customerToken, err := tokenClient.GetToken(log, "http://customer")
-	if err != nil {
-		log.Fatalf("could not get customer client : %s", err)
-	}
-
-	customerClient, closeCustomerClient, err := customer.NewCustomerClient(c.customerURL, log, customerToken)
-	if err != nil {
-		log.Fatalf("could not create customer client : %s", err)
-	}
-	defer closeCustomerClient(log)
-
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
-		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(c.authDomain), venueClient, bookingClient, customerClient)}))
+		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(c.authDomain), venueClient, bookingClient)}))
 	e := echo.New()
 	e.Use(mw.ZapLogger(logger))
 
@@ -97,16 +87,14 @@ func main() {
 }
 
 type Config struct {
-	port                 string
-	allowCors            bool
-	authDomain           string
-	authApiId            string
-	venueURL             string
-	authVenueAudience    string
-	bookingURL           string
-	authBookingAudience  string
-	customerURL          string
-	authCustomerAudience string
+	port                string
+	allowCors           bool
+	authDomain          string
+	authApiId           string
+	venueURL            string
+	authVenueAudience   string
+	bookingURL          string
+	authBookingAudience string
 }
 
 func NewConfig() (*Config, error) {
@@ -149,27 +137,19 @@ func NewConfig() (*Config, error) {
 	if !present {
 		missing = append(missing, e)
 	}
-	e = "AUTH0_CUSTOMER_API_IDENTIFIER"
-	authCustomerAudience, present := os.LookupEnv(e)
-	if !present {
-		missing = append(missing, e)
-	}
-	e = "CUSTOMER_API_ROOT"
-	customerURL, present := os.LookupEnv(e)
-	if !present {
-		missing = append(missing, e)
+
+	if len(missing) > 0 {
+		return nil, fmt.Errorf("missing environment variables [%s]", strings.Join(missing, ", "))
 	}
 
 	return &Config{
-		port:                 port,
-		allowCors:            allowCors,
-		authDomain:           domain,
-		authApiId:            apiId,
-		venueURL:             venueURL,
-		authVenueAudience:    authVenueAudience,
-		bookingURL:           bookingURL,
-		authBookingAudience:  authBookingAudience,
-		customerURL:          customerURL,
-		authCustomerAudience: authCustomerAudience,
+		port:                port,
+		allowCors:           allowCors,
+		authDomain:          domain,
+		authApiId:           apiId,
+		venueURL:            venueURL,
+		authVenueAudience:   authVenueAudience,
+		bookingURL:          bookingURL,
+		authBookingAudience: authBookingAudience,
 	}, nil
 }

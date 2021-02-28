@@ -231,8 +231,9 @@ type AddTableRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	VenueId string        `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
-	Table   *models.Table `protobuf:"bytes,2,opt,name=table,proto3" json:"table,omitempty"`
+	VenueId  string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Capacity uint32 `protobuf:"varint,3,opt,name=capacity,proto3" json:"capacity,omitempty"`
 }
 
 func (x *AddTableRequest) Reset() {
@@ -274,11 +275,332 @@ func (x *AddTableRequest) GetVenueId() string {
 	return ""
 }
 
-func (x *AddTableRequest) GetTable() *models.Table {
+func (x *AddTableRequest) GetName() string {
 	if x != nil {
-		return x.Table
+		return x.Name
 	}
-	return nil
+	return ""
+}
+
+func (x *AddTableRequest) GetCapacity() uint32 {
+	if x != nil {
+		return x.Capacity
+	}
+	return 0
+}
+
+type IsAdminRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	VenueId string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Email   string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+}
+
+func (x *IsAdminRequest) Reset() {
+	*x = IsAdminRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *IsAdminRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IsAdminRequest) ProtoMessage() {}
+
+func (x *IsAdminRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IsAdminRequest.ProtoReflect.Descriptor instead.
+func (*IsAdminRequest) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *IsAdminRequest) GetVenueId() string {
+	if x != nil {
+		return x.VenueId
+	}
+	return ""
+}
+
+func (x *IsAdminRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type IsAdminResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	IsAdmin bool `protobuf:"varint,1,opt,name=isAdmin,proto3" json:"isAdmin,omitempty"`
+}
+
+func (x *IsAdminResponse) Reset() {
+	*x = IsAdminResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *IsAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IsAdminResponse) ProtoMessage() {}
+
+func (x *IsAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IsAdminResponse.ProtoReflect.Descriptor instead.
+func (*IsAdminResponse) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *IsAdminResponse) GetIsAdmin() bool {
+	if x != nil {
+		return x.IsAdmin
+	}
+	return false
+}
+
+type AddAdminRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	VenueId string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Email   string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+}
+
+func (x *AddAdminRequest) Reset() {
+	*x = AddAdminRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddAdminRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddAdminRequest) ProtoMessage() {}
+
+func (x *AddAdminRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddAdminRequest.ProtoReflect.Descriptor instead.
+func (*AddAdminRequest) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *AddAdminRequest) GetVenueId() string {
+	if x != nil {
+		return x.VenueId
+	}
+	return ""
+}
+
+func (x *AddAdminRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type AddAdminResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	VenueId string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Email   string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+}
+
+func (x *AddAdminResponse) Reset() {
+	*x = AddAdminResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddAdminResponse) ProtoMessage() {}
+
+func (x *AddAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddAdminResponse.ProtoReflect.Descriptor instead.
+func (*AddAdminResponse) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *AddAdminResponse) GetVenueId() string {
+	if x != nil {
+		return x.VenueId
+	}
+	return ""
+}
+
+func (x *AddAdminResponse) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type RemoveAdminRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	VenueId string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Email   string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+}
+
+func (x *RemoveAdminRequest) Reset() {
+	*x = RemoveAdminRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RemoveAdminRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAdminRequest) ProtoMessage() {}
+
+func (x *RemoveAdminRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAdminRequest.ProtoReflect.Descriptor instead.
+func (*RemoveAdminRequest) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *RemoveAdminRequest) GetVenueId() string {
+	if x != nil {
+		return x.VenueId
+	}
+	return ""
+}
+
+func (x *RemoveAdminRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type RemoveAdminResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Email string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+}
+
+func (x *RemoveAdminResponse) Reset() {
+	*x = RemoveAdminResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_src_venue_api_service_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RemoveAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAdminResponse) ProtoMessage() {}
+
+func (x *RemoveAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_src_venue_api_service_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAdminResponse.ProtoReflect.Descriptor instead.
+func (*RemoveAdminResponse) Descriptor() ([]byte, []int) {
+	return file_src_venue_api_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *RemoveAdminResponse) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
 }
 
 var File_src_venue_api_service_proto protoreflect.FileDescriptor
@@ -305,35 +627,71 @@ var file_src_venue_api_service_proto_rawDesc = []byte{
 	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64,
 	0x65, 0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x06, 0x74, 0x61, 0x62, 0x6c, 0x65,
-	0x73, 0x22, 0x56, 0x0a, 0x0f, 0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x73, 0x22, 0x5b, 0x0a, 0x0f, 0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x29,
-	0x0a, 0x05, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e,
-	0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62,
-	0x6c, 0x65, 0x52, 0x05, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x32, 0x8a, 0x01, 0x0a, 0x08, 0x56, 0x65,
-	0x6e, 0x75, 0x65, 0x41, 0x50, 0x49, 0x12, 0x3b, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x56, 0x65, 0x6e,
-	0x75, 0x65, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47,
-	0x65, 0x74, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13,
-	0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x56, 0x65,
-	0x6e, 0x75, 0x65, 0x12, 0x41, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x56, 0x65, 0x6e,
-	0x75, 0x65, 0x12, 0x1d, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x43,
-	0x72, 0x65, 0x61, 0x74, 0x65, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73,
-	0x2e, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x32, 0x8f, 0x01, 0x0a, 0x08, 0x54, 0x61, 0x62, 0x6c, 0x65,
-	0x41, 0x50, 0x49, 0x12, 0x46, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73,
-	0x12, 0x1b, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65, 0x74,
-	0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e,
-	0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62,
-	0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x08, 0x41,
-	0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e,
-	0x61, 0x70, 0x69, 0x2e, 0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x42, 0x4d, 0x5a, 0x4b, 0x67, 0x69, 0x74, 0x68,
-	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x62, 0x62, 0x69, 0x6e, 0x6d, 0x61, 0x2f,
-	0x62, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x2d, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d,
-	0x2f, 0x6c, 0x69, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x61, 0x75,
-	0x74, 0x6f, 0x67, 0x65, 0x6e, 0x2f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x65,
-	0x6e, 0x75, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61, 0x70, 0x61, 0x63, 0x69, 0x74, 0x79, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x63, 0x61, 0x70, 0x61, 0x63, 0x69, 0x74, 0x79, 0x22, 0x40,
+	0x0a, 0x0e, 0x49, 0x73, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d,
+	0x61, 0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c,
+	0x22, 0x2b, 0x0a, 0x0f, 0x49, 0x73, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x73, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x69, 0x73, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x22, 0x41, 0x0a,
+	0x0f, 0x41, 0x64, 0x64, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d,
+	0x61, 0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c,
+	0x22, 0x42, 0x0a, 0x10, 0x41, 0x64, 0x64, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x14,
+	0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65,
+	0x6d, 0x61, 0x69, 0x6c, 0x22, 0x44, 0x0a, 0x12, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x64,
+	0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65,
+	0x6e, 0x75, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e,
+	0x75, 0x65, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x22, 0x2b, 0x0a, 0x13, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x32, 0xe4, 0x03, 0x0a, 0x08, 0x56, 0x65, 0x6e, 0x75,
+	0x65, 0x41, 0x50, 0x49, 0x12, 0x3b, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x56, 0x65, 0x6e, 0x75, 0x65,
+	0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65, 0x74,
+	0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x76,
+	0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x56, 0x65, 0x6e, 0x75,
+	0x65, 0x12, 0x41, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x56, 0x65, 0x6e, 0x75, 0x65,
+	0x12, 0x1d, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x43, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x56, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x56,
+	0x65, 0x6e, 0x75, 0x65, 0x12, 0x46, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x54, 0x61, 0x62, 0x6c, 0x65,
+	0x73, 0x12, 0x1b, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65,
+	0x74, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c,
+	0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x47, 0x65, 0x74, 0x54, 0x61,
+	0x62, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x08,
+	0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x41, 0x64, 0x64, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x6d, 0x6f, 0x64,
+	0x65, 0x6c, 0x73, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x40, 0x0a, 0x07, 0x49, 0x73, 0x41,
+	0x64, 0x6d, 0x69, 0x6e, 0x12, 0x19, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69,
+	0x2e, 0x49, 0x73, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x49, 0x73, 0x41, 0x64,
+	0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x43, 0x0a, 0x08, 0x41,
+	0x64, 0x64, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x12, 0x1a, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e,
+	0x61, 0x70, 0x69, 0x2e, 0x41, 0x64, 0x64, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x1b, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e,
+	0x41, 0x64, 0x64, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x4c, 0x0a, 0x0b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x12,
+	0x1d, 0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e,
+	0x2e, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x4d,
+	0x5a, 0x4b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x62,
+	0x62, 0x69, 0x6e, 0x6d, 0x61, 0x2f, 0x62, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x2d, 0x70, 0x6c,
+	0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x2f, 0x6c, 0x69, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2f, 0x61, 0x75, 0x74, 0x6f, 0x67, 0x65, 0x6e, 0x2f, 0x6c, 0x61, 0x6e, 0x67,
+	0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -348,34 +706,45 @@ func file_src_venue_api_service_proto_rawDescGZIP() []byte {
 	return file_src_venue_api_service_proto_rawDescData
 }
 
-var file_src_venue_api_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_src_venue_api_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_src_venue_api_service_proto_goTypes = []interface{}{
 	(*GetVenueRequest)(nil),                  // 0: venue.api.GetVenueRequest
 	(*CreateVenueRequest)(nil),               // 1: venue.api.CreateVenueRequest
 	(*GetTablesRequest)(nil),                 // 2: venue.api.GetTablesRequest
 	(*GetTablesResponse)(nil),                // 3: venue.api.GetTablesResponse
 	(*AddTableRequest)(nil),                  // 4: venue.api.AddTableRequest
-	(*models.OpeningHoursSpecification)(nil), // 5: venue.models.OpeningHoursSpecification
-	(*models.Table)(nil),                     // 6: venue.models.Table
-	(*models.Venue)(nil),                     // 7: venue.models.Venue
+	(*IsAdminRequest)(nil),                   // 5: venue.api.IsAdminRequest
+	(*IsAdminResponse)(nil),                  // 6: venue.api.IsAdminResponse
+	(*AddAdminRequest)(nil),                  // 7: venue.api.AddAdminRequest
+	(*AddAdminResponse)(nil),                 // 8: venue.api.AddAdminResponse
+	(*RemoveAdminRequest)(nil),               // 9: venue.api.RemoveAdminRequest
+	(*RemoveAdminResponse)(nil),              // 10: venue.api.RemoveAdminResponse
+	(*models.OpeningHoursSpecification)(nil), // 11: venue.models.OpeningHoursSpecification
+	(*models.Table)(nil),                     // 12: venue.models.Table
+	(*models.Venue)(nil),                     // 13: venue.models.Venue
 }
 var file_src_venue_api_service_proto_depIdxs = []int32{
-	5, // 0: venue.api.CreateVenueRequest.openingHours:type_name -> venue.models.OpeningHoursSpecification
-	6, // 1: venue.api.GetTablesResponse.tables:type_name -> venue.models.Table
-	6, // 2: venue.api.AddTableRequest.table:type_name -> venue.models.Table
-	0, // 3: venue.api.VenueAPI.GetVenue:input_type -> venue.api.GetVenueRequest
-	1, // 4: venue.api.VenueAPI.CreateVenue:input_type -> venue.api.CreateVenueRequest
-	2, // 5: venue.api.TableAPI.GetTables:input_type -> venue.api.GetTablesRequest
-	4, // 6: venue.api.TableAPI.AddTable:input_type -> venue.api.AddTableRequest
-	7, // 7: venue.api.VenueAPI.GetVenue:output_type -> venue.models.Venue
-	7, // 8: venue.api.VenueAPI.CreateVenue:output_type -> venue.models.Venue
-	3, // 9: venue.api.TableAPI.GetTables:output_type -> venue.api.GetTablesResponse
-	6, // 10: venue.api.TableAPI.AddTable:output_type -> venue.models.Table
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	11, // 0: venue.api.CreateVenueRequest.openingHours:type_name -> venue.models.OpeningHoursSpecification
+	12, // 1: venue.api.GetTablesResponse.tables:type_name -> venue.models.Table
+	0,  // 2: venue.api.VenueAPI.GetVenue:input_type -> venue.api.GetVenueRequest
+	1,  // 3: venue.api.VenueAPI.CreateVenue:input_type -> venue.api.CreateVenueRequest
+	2,  // 4: venue.api.VenueAPI.GetTables:input_type -> venue.api.GetTablesRequest
+	4,  // 5: venue.api.VenueAPI.AddTable:input_type -> venue.api.AddTableRequest
+	5,  // 6: venue.api.VenueAPI.IsAdmin:input_type -> venue.api.IsAdminRequest
+	7,  // 7: venue.api.VenueAPI.AddAdmin:input_type -> venue.api.AddAdminRequest
+	9,  // 8: venue.api.VenueAPI.RemoveAdmin:input_type -> venue.api.RemoveAdminRequest
+	13, // 9: venue.api.VenueAPI.GetVenue:output_type -> venue.models.Venue
+	13, // 10: venue.api.VenueAPI.CreateVenue:output_type -> venue.models.Venue
+	3,  // 11: venue.api.VenueAPI.GetTables:output_type -> venue.api.GetTablesResponse
+	12, // 12: venue.api.VenueAPI.AddTable:output_type -> venue.models.Table
+	6,  // 13: venue.api.VenueAPI.IsAdmin:output_type -> venue.api.IsAdminResponse
+	8,  // 14: venue.api.VenueAPI.AddAdmin:output_type -> venue.api.AddAdminResponse
+	10, // 15: venue.api.VenueAPI.RemoveAdmin:output_type -> venue.api.RemoveAdminResponse
+	9,  // [9:16] is the sub-list for method output_type
+	2,  // [2:9] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_src_venue_api_service_proto_init() }
@@ -444,6 +813,78 @@ func file_src_venue_api_service_proto_init() {
 				return nil
 			}
 		}
+		file_src_venue_api_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*IsAdminRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*IsAdminResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddAdminRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddAdminResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RemoveAdminRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_src_venue_api_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RemoveAdminResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -451,9 +892,9 @@ func file_src_venue_api_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_src_venue_api_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   11,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   1,
 		},
 		GoTypes:           file_src_venue_api_service_proto_goTypes,
 		DependencyIndexes: file_src_venue_api_service_proto_depIdxs,
@@ -479,6 +920,11 @@ const _ = grpc.SupportPackageIsVersion6
 type VenueAPIClient interface {
 	GetVenue(ctx context.Context, in *GetVenueRequest, opts ...grpc.CallOption) (*models.Venue, error)
 	CreateVenue(ctx context.Context, in *CreateVenueRequest, opts ...grpc.CallOption) (*models.Venue, error)
+	GetTables(ctx context.Context, in *GetTablesRequest, opts ...grpc.CallOption) (*GetTablesResponse, error)
+	AddTable(ctx context.Context, in *AddTableRequest, opts ...grpc.CallOption) (*models.Table, error)
+	IsAdmin(ctx context.Context, in *IsAdminRequest, opts ...grpc.CallOption) (*IsAdminResponse, error)
+	AddAdmin(ctx context.Context, in *AddAdminRequest, opts ...grpc.CallOption) (*AddAdminResponse, error)
+	RemoveAdmin(ctx context.Context, in *RemoveAdminRequest, opts ...grpc.CallOption) (*RemoveAdminResponse, error)
 }
 
 type venueAPIClient struct {
@@ -507,10 +953,60 @@ func (c *venueAPIClient) CreateVenue(ctx context.Context, in *CreateVenueRequest
 	return out, nil
 }
 
+func (c *venueAPIClient) GetTables(ctx context.Context, in *GetTablesRequest, opts ...grpc.CallOption) (*GetTablesResponse, error) {
+	out := new(GetTablesResponse)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueAPI/GetTables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *venueAPIClient) AddTable(ctx context.Context, in *AddTableRequest, opts ...grpc.CallOption) (*models.Table, error) {
+	out := new(models.Table)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueAPI/AddTable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *venueAPIClient) IsAdmin(ctx context.Context, in *IsAdminRequest, opts ...grpc.CallOption) (*IsAdminResponse, error) {
+	out := new(IsAdminResponse)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueAPI/IsAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *venueAPIClient) AddAdmin(ctx context.Context, in *AddAdminRequest, opts ...grpc.CallOption) (*AddAdminResponse, error) {
+	out := new(AddAdminResponse)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueAPI/AddAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *venueAPIClient) RemoveAdmin(ctx context.Context, in *RemoveAdminRequest, opts ...grpc.CallOption) (*RemoveAdminResponse, error) {
+	out := new(RemoveAdminResponse)
+	err := c.cc.Invoke(ctx, "/venue.api.VenueAPI/RemoveAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VenueAPIServer is the server API for VenueAPI service.
 type VenueAPIServer interface {
 	GetVenue(context.Context, *GetVenueRequest) (*models.Venue, error)
 	CreateVenue(context.Context, *CreateVenueRequest) (*models.Venue, error)
+	GetTables(context.Context, *GetTablesRequest) (*GetTablesResponse, error)
+	AddTable(context.Context, *AddTableRequest) (*models.Table, error)
+	IsAdmin(context.Context, *IsAdminRequest) (*IsAdminResponse, error)
+	AddAdmin(context.Context, *AddAdminRequest) (*AddAdminResponse, error)
+	RemoveAdmin(context.Context, *RemoveAdminRequest) (*RemoveAdminResponse, error)
 }
 
 // UnimplementedVenueAPIServer can be embedded to have forward compatible implementations.
@@ -522,6 +1018,21 @@ func (*UnimplementedVenueAPIServer) GetVenue(context.Context, *GetVenueRequest) 
 }
 func (*UnimplementedVenueAPIServer) CreateVenue(context.Context, *CreateVenueRequest) (*models.Venue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVenue not implemented")
+}
+func (*UnimplementedVenueAPIServer) GetTables(context.Context, *GetTablesRequest) (*GetTablesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTables not implemented")
+}
+func (*UnimplementedVenueAPIServer) AddTable(context.Context, *AddTableRequest) (*models.Table, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTable not implemented")
+}
+func (*UnimplementedVenueAPIServer) IsAdmin(context.Context, *IsAdminRequest) (*IsAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsAdmin not implemented")
+}
+func (*UnimplementedVenueAPIServer) AddAdmin(context.Context, *AddAdminRequest) (*AddAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAdmin not implemented")
+}
+func (*UnimplementedVenueAPIServer) RemoveAdmin(context.Context, *RemoveAdminRequest) (*RemoveAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveAdmin not implemented")
 }
 
 func RegisterVenueAPIServer(s *grpc.Server, srv VenueAPIServer) {
@@ -564,6 +1075,96 @@ func _VenueAPI_CreateVenue_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VenueAPI_GetTables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueAPIServer).GetTables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueAPI/GetTables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueAPIServer).GetTables(ctx, req.(*GetTablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VenueAPI_AddTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueAPIServer).AddTable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueAPI/AddTable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueAPIServer).AddTable(ctx, req.(*AddTableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VenueAPI_IsAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueAPIServer).IsAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueAPI/IsAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueAPIServer).IsAdmin(ctx, req.(*IsAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VenueAPI_AddAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueAPIServer).AddAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueAPI/AddAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueAPIServer).AddAdmin(ctx, req.(*AddAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VenueAPI_RemoveAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VenueAPIServer).RemoveAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/venue.api.VenueAPI/RemoveAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VenueAPIServer).RemoveAdmin(ctx, req.(*RemoveAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _VenueAPI_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "venue.api.VenueAPI",
 	HandlerType: (*VenueAPIServer)(nil),
@@ -576,113 +1177,25 @@ var _VenueAPI_serviceDesc = grpc.ServiceDesc{
 			MethodName: "CreateVenue",
 			Handler:    _VenueAPI_CreateVenue_Handler,
 		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "src/venue/api/service.proto",
-}
-
-// TableAPIClient is the client API for TableAPI service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type TableAPIClient interface {
-	GetTables(ctx context.Context, in *GetTablesRequest, opts ...grpc.CallOption) (*GetTablesResponse, error)
-	AddTable(ctx context.Context, in *AddTableRequest, opts ...grpc.CallOption) (*models.Table, error)
-}
-
-type tableAPIClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewTableAPIClient(cc grpc.ClientConnInterface) TableAPIClient {
-	return &tableAPIClient{cc}
-}
-
-func (c *tableAPIClient) GetTables(ctx context.Context, in *GetTablesRequest, opts ...grpc.CallOption) (*GetTablesResponse, error) {
-	out := new(GetTablesResponse)
-	err := c.cc.Invoke(ctx, "/venue.api.TableAPI/GetTables", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *tableAPIClient) AddTable(ctx context.Context, in *AddTableRequest, opts ...grpc.CallOption) (*models.Table, error) {
-	out := new(models.Table)
-	err := c.cc.Invoke(ctx, "/venue.api.TableAPI/AddTable", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// TableAPIServer is the server API for TableAPI service.
-type TableAPIServer interface {
-	GetTables(context.Context, *GetTablesRequest) (*GetTablesResponse, error)
-	AddTable(context.Context, *AddTableRequest) (*models.Table, error)
-}
-
-// UnimplementedTableAPIServer can be embedded to have forward compatible implementations.
-type UnimplementedTableAPIServer struct {
-}
-
-func (*UnimplementedTableAPIServer) GetTables(context.Context, *GetTablesRequest) (*GetTablesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTables not implemented")
-}
-func (*UnimplementedTableAPIServer) AddTable(context.Context, *AddTableRequest) (*models.Table, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddTable not implemented")
-}
-
-func RegisterTableAPIServer(s *grpc.Server, srv TableAPIServer) {
-	s.RegisterService(&_TableAPI_serviceDesc, srv)
-}
-
-func _TableAPI_GetTables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTablesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TableAPIServer).GetTables(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/venue.api.TableAPI/GetTables",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TableAPIServer).GetTables(ctx, req.(*GetTablesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TableAPI_AddTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddTableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TableAPIServer).AddTable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/venue.api.TableAPI/AddTable",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TableAPIServer).AddTable(ctx, req.(*AddTableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-var _TableAPI_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "venue.api.TableAPI",
-	HandlerType: (*TableAPIServer)(nil),
-	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetTables",
-			Handler:    _TableAPI_GetTables_Handler,
+			Handler:    _VenueAPI_GetTables_Handler,
 		},
 		{
 			MethodName: "AddTable",
-			Handler:    _TableAPI_AddTable_Handler,
+			Handler:    _VenueAPI_AddTable_Handler,
+		},
+		{
+			MethodName: "IsAdmin",
+			Handler:    _VenueAPI_IsAdmin_Handler,
+		},
+		{
+			MethodName: "AddAdmin",
+			Handler:    _VenueAPI_AddAdmin_Handler,
+		},
+		{
+			MethodName: "RemoveAdmin",
+			Handler:    _VenueAPI_RemoveAdmin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

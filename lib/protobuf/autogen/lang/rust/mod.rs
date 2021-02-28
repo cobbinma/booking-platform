@@ -1,8 +1,3 @@
-pub mod customer {
-    pub mod api {
-        include!("customer.api.rs");
-    }
-}
 pub mod venue {
     pub mod models {
         include!("venue.models.rs");

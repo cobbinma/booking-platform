@@ -1,4 +1,4 @@
-FROM golang:1.14-stretch
+FROM golang:1.15-buster
 
 ENV GO111MODULE=on
 WORKDIR /go/src

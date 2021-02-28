@@ -12,6 +12,7 @@ deploy:
 
 .PHONY: generate
 generate:
+	go get github.com/99designs/gqlgen
 	gqlgen generate
 	go generate ./...
 

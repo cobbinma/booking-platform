@@ -64,7 +64,6 @@ func main() {
 
 	s := grpc.NewServer(opts...)
 	api.RegisterVenueAPIServer(s, db)
-	api.RegisterTableAPIServer(s, db)
 
 	log.Infof("starting gRPC listener on port %s", port)
 	if err := s.Serve(lis); err != nil {
