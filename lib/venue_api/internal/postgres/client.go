@@ -11,6 +11,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	pgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
@@ -24,14 +25,10 @@ const (
 	OpeningHoursTable = "opening_hours"
 	VenuesTable       = "venues"
 	TablesTable       = "tables"
+	AdminsTable       = "admins"
 )
 
-var _ Repository = (*client)(nil)
-
-type Repository interface {
-	api.TableAPIServer
-	api.VenueAPIServer
-}
+var _ api.VenueAPIServer = (*client)(nil)
 
 type client struct {
 	db               *sqlx.DB
@@ -41,7 +38,7 @@ type client struct {
 	uuid             uuidGenerator
 }
 
-func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (Repository, func(log *zap.SugaredLogger), error) {
+func NewPostgres(log *zap.SugaredLogger, options ...func(*client)) (api.VenueAPIServer, func(log *zap.SugaredLogger), error) {
 	c := &client{log: log}
 	for i := range options {
 		options[i](c)
@@ -124,7 +121,7 @@ func (c client) AddTable(ctx context.Context, req *api.AddTableRequest) (*models
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert(TablesTable).
 		Columns("id", "venue_id", "name", "capacity").
-		Values(id, req.VenueId, req.Table.Name, req.Table.Capacity).ToSql()
+		Values(id, req.VenueId, req.Name, req.Capacity).ToSql()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not build table sql : %s", err)
 	}
@@ -135,8 +132,8 @@ func (c client) AddTable(ctx context.Context, req *api.AddTableRequest) (*models
 
 	return &models.Table{
 		Id:       id,
-		Name:     req.Table.Name,
-		Capacity: req.Table.Capacity,
+		Name:     req.Name,
+		Capacity: req.Capacity,
 	}, nil
 }
 
@@ -245,6 +242,74 @@ func (c client) CreateVenue(ctx context.Context, req *api.CreateVenueRequest) (*
 		OpeningHours:        req.OpeningHours,
 		SpecialOpeningHours: nil,
 	}, nil
+}
+
+func (c client) IsAdmin(ctx context.Context, req *api.IsAdminRequest) (*api.IsAdminResponse, error) {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("COUNT(*)").
+		From(AdminsTable).
+		Where(sq.And{sq.Eq{"venue_id": req.VenueId}, sq.Eq{"email": req.Email}}).ToSql()
+	if err != nil {
+		c.log.Errorw("could not construct sql", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	row := c.db.QueryRow(sql, args...)
+	if row.Err() != nil {
+		c.log.Errorw("could not query row", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	var count int
+	if err := row.Scan(&count); err != nil {
+		c.log.Errorw("could not scan row", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	if count != 1 {
+		return &api.IsAdminResponse{IsAdmin: false}, nil
+	}
+
+	return &api.IsAdminResponse{IsAdmin: true}, nil
+}
+
+func (c client) AddAdmin(ctx context.Context, req *api.AddAdminRequest) (*api.AddAdminResponse, error) {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Insert(AdminsTable).Columns("id", "venue_id", "email").
+		Values(uuid.New().String(), req.VenueId, req.Email).ToSql()
+	if err != nil {
+		c.log.Errorw("could not construct sql", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	_, err = c.db.Exec(sql, args...)
+	if err != nil {
+		c.log.Errorw("could not insert row", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "could not insert row")
+	}
+
+	return &api.AddAdminResponse{
+		VenueId: req.VenueId,
+		Email:   req.Email,
+	}, nil
+}
+
+func (c client) RemoveAdmin(ctx context.Context, req *api.RemoveAdminRequest) (*api.RemoveAdminResponse, error) {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete(AdminsTable).
+		Where(sq.And{sq.Eq{"venue_id": req.VenueId}, sq.Eq{"email": req.Email}}).ToSql()
+	if err != nil {
+		c.log.Errorw("could not construct sql", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	_, err = c.db.Exec(sql, args...)
+	if err != nil {
+		c.log.Errorw("could not delete row", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "could not delete row")
+	}
+
+	return &api.RemoveAdminResponse{Email: req.Email}, nil
 }
 
 func (c *client) migrate() error {

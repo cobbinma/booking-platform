@@ -75,7 +75,7 @@ func Test_Repository(t *testing.T) {
 		}
 	}(log)
 
-	var repository postgres.Repository
+	var repository api.VenueAPIServer
 	var closeDB func(*zap.SugaredLogger)
 
 	pool.MaxWait = 10 * time.Second
@@ -108,7 +108,7 @@ type test struct {
 	test func(t *testing.T)
 }
 
-func suite(repository postgres.Repository) []test {
+func suite(repository api.VenueAPIServer) []test {
 	return []test{
 		{
 			name: "add venue successfully",
@@ -157,12 +157,9 @@ func suite(repository postgres.Repository) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				table, err := repository.AddTable(ctx, &api.AddTableRequest{
-					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
-					Table: &models.Table{
-						Id:       "66d499a2-75e2-400c-a9aa-43f6d08c5d2b",
-						Name:     "test table",
-						Capacity: 4,
-					},
+					VenueId:  "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					Name:     "test table",
+					Capacity: 4,
 				})
 				if err != nil {
 					t.Fatalf("did not expect error, got '%s'", err)
@@ -182,6 +179,89 @@ func suite(repository postgres.Repository) []test {
 				}
 
 				cupaloy.SnapshotT(t, table)
+			},
+		},
+		{
+			name: "is not administrator",
+			test: func(t *testing.T) {
+				resp, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
+					VenueId: "f982066f-1289-4317-83c1-d415dd4982c9",
+					Email:   "test@test.com",
+				})
+				if err != nil {
+					t.Fatalf("did not expect error from is admin, got '%s'", err)
+				}
+
+				if resp.IsAdmin != false {
+					t.Errorf("expected is admin == false, got %v", resp.IsAdmin)
+				}
+			},
+		},
+		{
+			name: "add administrator",
+			test: func(t *testing.T) {
+				venueID := "f982066f-1289-4317-83c1-d415dd4982c9"
+				email := "test@test.com"
+				resp, err := repository.AddAdmin(context.Background(), &api.AddAdminRequest{
+					VenueId: venueID,
+					Email:   email,
+				})
+				if err != nil {
+					t.Fatalf("did not expect error from add admin, got '%s'", err)
+				}
+
+				if resp.VenueId != venueID {
+					t.Errorf("expected is venueID == '%s', got '%s'", venueID, resp.VenueId)
+				}
+
+				if resp.Email != email {
+					t.Errorf("expected is venueID == '%s', got '%s'", email, resp.Email)
+				}
+			},
+		},
+		{
+			name: "is administrator",
+			test: func(t *testing.T) {
+				resp, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
+					VenueId: "f982066f-1289-4317-83c1-d415dd4982c9",
+					Email:   "test@test.com",
+				})
+				if err != nil {
+					t.Fatalf("did not expect error from is admin, got '%s'", err)
+				}
+
+				if resp.IsAdmin != true {
+					t.Errorf("expected is admin == true, got %v", resp.IsAdmin)
+				}
+			},
+		},
+		{
+			name: "remove administrator",
+			test: func(t *testing.T) {
+				venueID := "f982066f-1289-4317-83c1-d415dd4982c9"
+				email := "test@test.com"
+				resp, err := repository.RemoveAdmin(context.Background(), &api.RemoveAdminRequest{
+					VenueId: venueID,
+					Email:   email,
+				})
+				if err != nil {
+					t.Fatalf("did not expect error from remove admin, got '%s'", err)
+				}
+				if resp.Email != email {
+					t.Errorf("expected is venueID == '%s', got '%s'", email, resp.Email)
+				}
+
+				admin, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
+					VenueId: venueID,
+					Email:   email,
+				})
+				if err != nil {
+					t.Fatalf("did not expect error from is admin, got '%s'", err)
+				}
+
+				if admin.IsAdmin != false {
+					t.Errorf("expected is admin == false, got %v", admin.IsAdmin)
+				}
 			},
 		},
 	}
