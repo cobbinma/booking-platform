@@ -126,7 +126,7 @@ export type GetSlotResponse = {
 };
 
 export type IsAdminInput = {
-  venue_id: Scalars['String'];
+  venueId: Scalars['String'];
 };
 
 /** Booking queries. */
