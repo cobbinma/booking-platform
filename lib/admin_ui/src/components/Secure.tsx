@@ -1,6 +1,5 @@
 import React from "react";
 import { Params } from "../App";
-import Booking from "./Booking";
 import { useAuth0 } from "@auth0/auth0-react";
 import {
   ApolloClient,
@@ -9,17 +8,18 @@ import {
   InMemoryCache,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import IsAdmin from "./IsAdmin";
+import { Spinner } from "baseui/spinner";
 
 const Secure: React.FC<{ params: Params }> = ({ params }) => {
-  const {
-    user,
-    isAuthenticated,
-    isLoading,
-    getAccessTokenSilently,
-  } = useAuth0();
+  const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
 
   if (isLoading) {
-    return <div>Loading ...</div>;
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -52,7 +52,7 @@ const Secure: React.FC<{ params: Params }> = ({ params }) => {
   return (
     <div>
       <ApolloProvider client={client}>
-        <Booking params={params} email={user.email} />
+        <IsAdmin params={params} />
       </ApolloProvider>
     </div>
   );
