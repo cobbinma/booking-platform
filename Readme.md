@@ -23,7 +23,7 @@ used to manage venue information on the booking platform
 
 used to manage bookings on the platform
 
-1. Go to the `venue_api` lib directory.
+1. Go to the `booking_api` lib directory.
 1. populate `.env` file from example
 1. ensure lib folder contains certs (see below)
 1. run command `make postgres` to create an instance of the booking database in docker-compose
