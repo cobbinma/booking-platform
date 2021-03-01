@@ -106,11 +106,21 @@ An individual table at a venue.
 """
 input TableInput {
   "unique venue identifier the table belongs to"
-  id: ID!
+  venueId: ID!
   "name of the table"
   name: String!
   "maximum amount of people that can sit at table"
   capacity: Int!
+}
+
+"""
+Input to remove a venue table
+"""
+input RemoveTableInput {
+  "unique venue identifier the table belongs to"
+  venueId: ID!
+  "unique identifier of the table to be removed"
+  tableId: ID!
 }
 
 """
@@ -176,5 +186,5 @@ type Mutation {
   "add a table to a venue"
   addTable(input: TableInput!): Table!
   "remove a table from a venue"
-  removeTable(tableId: ID!): Table!
+  removeTable(input: RemoveTableInput!): Table!
 }

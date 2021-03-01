@@ -27,15 +27,19 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 }
 
 func (r *mutationResolver) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
-	if err := r.authIsAdmin(ctx, input.ID); err != nil {
+	if err := r.authIsAdmin(ctx, input.VenueID); err != nil {
 		return nil, err
 	}
 
 	return r.venueService.AddTable(ctx, input)
 }
 
-func (r *mutationResolver) RemoveTable(ctx context.Context, tableID string) (*models.Table, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
+	if err := r.authIsAdmin(ctx, input.VenueID); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.RemoveTable(ctx, input)
 }
 
 func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {

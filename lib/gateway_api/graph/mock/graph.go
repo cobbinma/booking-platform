@@ -74,16 +74,16 @@ func (mr *MockVenueServiceMockRecorder) AddTable(ctx, input interface{}) *gomock
 }
 
 // RemoveTable mocks base method
-func (m *MockVenueService) RemoveTable(ctx context.Context, venueID, tableID string) (*models.Table, error) {
-	ret := m.ctrl.Call(m, "RemoveTable", ctx, venueID, tableID)
+func (m *MockVenueService) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
+	ret := m.ctrl.Call(m, "RemoveTable", ctx, input)
 	ret0, _ := ret[0].(*models.Table)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RemoveTable indicates an expected call of RemoveTable
-func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, venueID, tableID interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTable", reflect.TypeOf((*MockVenueService)(nil).RemoveTable), ctx, venueID, tableID)
+func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTable", reflect.TypeOf((*MockVenueService)(nil).RemoveTable), ctx, input)
 }
 
 // IsAdmin mocks base method

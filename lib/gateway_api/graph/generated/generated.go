@@ -64,7 +64,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddTable      func(childComplexity int, input models.TableInput) int
 		CreateBooking func(childComplexity int, input models.BookingInput) int
-		RemoveTable   func(childComplexity int, tableID string) int
+		RemoveTable   func(childComplexity int, input models.RemoveTableInput) int
 	}
 
 	OpeningHoursSpecification struct {
@@ -108,7 +108,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
 	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
-	RemoveTable(ctx context.Context, tableID string) (*models.Table, error)
+	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)
 }
 type QueryResolver interface {
 	GetVenue(ctx context.Context, id string) (*models.Venue, error)
@@ -238,7 +238,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RemoveTable(childComplexity, args["tableId"].(string)), true
+		return e.complexity.Mutation.RemoveTable(childComplexity, args["input"].(models.RemoveTableInput)), true
 
 	case "OpeningHoursSpecification.closes":
 		if e.complexity.OpeningHoursSpecification.Closes == nil {
@@ -581,11 +581,21 @@ An individual table at a venue.
 """
 input TableInput {
   "unique venue identifier the table belongs to"
-  id: ID!
+  venueId: ID!
   "name of the table"
   name: String!
   "maximum amount of people that can sit at table"
   capacity: Int!
+}
+
+"""
+Input to remove a venue table
+"""
+input RemoveTableInput {
+  "unique venue identifier the table belongs to"
+  venueId: ID!
+  "unique identifier of the table to be removed"
+  tableId: ID!
 }
 
 """
@@ -651,7 +661,7 @@ type Mutation {
   "add a table to a venue"
   addTable(input: TableInput!): Table!
   "remove a table from a venue"
-  removeTable(tableId: ID!): Table!
+  removeTable(input: RemoveTableInput!): Table!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -693,15 +703,15 @@ func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Contex
 func (ec *executionContext) field_Mutation_removeTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["tableId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tableId"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+	var arg0 models.RemoveTableInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNRemoveTableInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐRemoveTableInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["tableId"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1256,7 +1266,7 @@ func (ec *executionContext) _Mutation_removeTable(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemoveTable(rctx, args["tableId"].(string))
+		return ec.resolvers.Mutation().RemoveTable(rctx, args["input"].(models.RemoveTableInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3288,6 +3298,34 @@ func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputRemoveTableInput(ctx context.Context, obj interface{}) (models.RemoveTableInput, error) {
+	var it models.RemoveTableInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tableId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tableId"))
+			it.TableID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj interface{}) (models.SlotInput, error) {
 	var it models.SlotInput
 	var asMap = obj.(map[string]interface{})
@@ -3346,11 +3384,11 @@ func (ec *executionContext) unmarshalInputTableInput(ctx context.Context, obj in
 
 	for k, v := range asMap {
 		switch k {
-		case "id":
+		case "venueId":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4154,6 +4192,11 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋ
 		return graphql.Null
 	}
 	return ec._OpeningHoursSpecification(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRemoveTableInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐRemoveTableInput(ctx context.Context, v interface{}) (models.RemoveTableInput, error) {
+	res, err := ec.unmarshalInputRemoveTableInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlot(ctx context.Context, sel ast.SelectionSet, v *models.Slot) graphql.Marshaler {
