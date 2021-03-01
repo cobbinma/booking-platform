@@ -179,15 +179,22 @@ func (c client) RemoveTable(ctx context.Context, req *api.RemoveTableRequest) (*
 }
 
 func (c client) GetVenue(ctx context.Context, req *api.GetVenueRequest) (*models.Venue, error) {
+	and := sq.And{}
+	if req.Id != "" {
+		and = append(and, sq.Eq{"id": req.Id})
+	}
+	if req.Slug != "" {
+		and = append(and, sq.Eq{"slug": req.Slug})
+	}
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id", "name").From(VenuesTable).
-		Where(sq.Eq{"id": req.Id}).ToSql()
+		Select("id", "name", "slug").From(VenuesTable).
+		Where(and).ToSql()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not venue build sql : %s", err)
 	}
 
-	var id, name string
-	if err := c.db.QueryRow(sql, args...).Scan(&id, &name); err != nil {
+	var id, name, slug string
+	if err := c.db.QueryRow(sql, args...).Scan(&id, &name, &slug); err != nil {
 		if errors.Is(err, sql2.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "could not find venue")
 		}
@@ -197,7 +204,7 @@ func (c client) GetVenue(ctx context.Context, req *api.GetVenueRequest) (*models
 
 	sql, args, err = sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("day_of_week", "opens", "closes").
-		From(OpeningHoursTable).Where(sq.Eq{"venue_id": req.Id}).ToSql()
+		From(OpeningHoursTable).Where(sq.Eq{"venue_id": id}).ToSql()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not build opening hours sql : %s", err)
 	}
@@ -230,6 +237,7 @@ func (c client) GetVenue(ctx context.Context, req *api.GetVenueRequest) (*models
 		Id:           id,
 		Name:         name,
 		OpeningHours: hours,
+		Slug:         slug,
 	}, nil
 }
 
@@ -242,7 +250,7 @@ func (c client) CreateVenue(ctx context.Context, req *api.CreateVenueRequest) (*
 
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert(VenuesTable).
-		Columns("id", "name").Values(id, req.GetName()).ToSql()
+		Columns("id", "name", "slug").Values(id, req.Name, req.Slug).ToSql()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not build venue sql : %s", err)
 	}

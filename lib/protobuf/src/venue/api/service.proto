@@ -27,6 +27,7 @@ message GetVenueRequest {
 message CreateVenueRequest {
   string name = 1;
   repeated venue.models.OpeningHoursSpecification openingHours = 2;
+  string slug = 3;
 }
 
 message GetTablesRequest {

@@ -11,6 +11,8 @@ pub struct CreateVenueRequest {
     pub name: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "2")]
     pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
+    #[prost(string, tag = "3")]
+    pub slug: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetTablesRequest {

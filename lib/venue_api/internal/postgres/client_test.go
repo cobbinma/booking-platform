@@ -92,6 +92,7 @@ type test struct {
 
 func suite(repository api.VenueAPIServer) []test {
 	const UUID = "b31a9f99-3f64-4ee9-af27-45b2acd36d86"
+	const Slug = "test-venue"
 	return []test{
 		{
 			name: "add venue successfully",
@@ -115,6 +116,7 @@ func suite(repository api.VenueAPIServer) []test {
 							ValidThrough: "",
 						},
 					},
+					Slug: Slug,
 				})
 				require.NoError(t, err)
 
@@ -126,6 +128,16 @@ func suite(repository api.VenueAPIServer) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, venues)
+			},
+		},
+		{
+			name: "get venue by slug successfully",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Slug: Slug})
 				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, venues)
