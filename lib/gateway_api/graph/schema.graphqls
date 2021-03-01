@@ -99,6 +99,8 @@ type Venue {
   specialOpeningHours: [OpeningHoursSpecification!]!
   "tables at the venue"
   tables: [Table!]!
+  "human readable identifier of the venue"
+  slug: ID!
 }
 
 """
@@ -166,11 +168,21 @@ input IsAdminInput {
 }
 
 """
+Filter get venue queries. Fields AND together.
+"""
+input VenueFilter {
+  "unique identifier of the venue"
+  id: ID
+  "human readable identifier of the venue"
+  slug: ID
+}
+
+"""
 Booking queries.
 """
 type Query {
   "get venue information from an venue identifier"
-  getVenue(id: ID!): Venue!
+  getVenue(filter: VenueFilter!): Venue!
   "get slot is a booking enquiry"
   getSlot(input: SlotInput!): GetSlotResponse!
   "get slot is a booking enquiry"

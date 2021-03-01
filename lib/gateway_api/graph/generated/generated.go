@@ -77,7 +77,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetSlot  func(childComplexity int, input models.SlotInput) int
-		GetVenue func(childComplexity int, id string) int
+		GetVenue func(childComplexity int, filter models.VenueFilter) int
 		IsAdmin  func(childComplexity int, input models.IsAdminInput) int
 	}
 
@@ -100,6 +100,7 @@ type ComplexityRoot struct {
 		ID                  func(childComplexity int) int
 		Name                func(childComplexity int) int
 		OpeningHours        func(childComplexity int) int
+		Slug                func(childComplexity int) int
 		SpecialOpeningHours func(childComplexity int) int
 		Tables              func(childComplexity int) int
 	}
@@ -111,7 +112,7 @@ type MutationResolver interface {
 	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)
 }
 type QueryResolver interface {
-	GetVenue(ctx context.Context, id string) (*models.Venue, error)
+	GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error)
 	GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error)
 	IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error)
 }
@@ -297,7 +298,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetVenue(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.GetVenue(childComplexity, args["filter"].(models.VenueFilter)), true
 
 	case "Query.isAdmin":
 		if e.complexity.Query.IsAdmin == nil {
@@ -394,6 +395,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Venue.OpeningHours(childComplexity), true
+
+	case "Venue.slug":
+		if e.complexity.Venue.Slug == nil {
+			break
+		}
+
+		return e.complexity.Venue.Slug(childComplexity), true
 
 	case "Venue.specialOpeningHours":
 		if e.complexity.Venue.SpecialOpeningHours == nil {
@@ -574,6 +582,8 @@ type Venue {
   specialOpeningHours: [OpeningHoursSpecification!]!
   "tables at the venue"
   tables: [Table!]!
+  "human readable identifier of the venue"
+  slug: ID!
 }
 
 """
@@ -641,11 +651,21 @@ input IsAdminInput {
 }
 
 """
+Filter get venue queries. Fields AND together.
+"""
+input VenueFilter {
+  "unique identifier of the venue"
+  id: ID
+  "human readable identifier of the venue"
+  slug: ID
+}
+
+"""
 Booking queries.
 """
 type Query {
   "get venue information from an venue identifier"
-  getVenue(id: ID!): Venue!
+  getVenue(filter: VenueFilter!): Venue!
   "get slot is a booking enquiry"
   getSlot(input: SlotInput!): GetSlotResponse!
   "get slot is a booking enquiry"
@@ -748,15 +768,15 @@ func (ec *executionContext) field_Query_getSlot_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_getVenue_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+	var arg0 models.VenueFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalNVenueFilter2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenueFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["filter"] = arg0
 	return args, nil
 }
 
@@ -1477,7 +1497,7 @@ func (ec *executionContext) _Query_getVenue(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetVenue(rctx, args["id"].(string))
+		return ec.resolvers.Query().GetVenue(rctx, args["filter"].(models.VenueFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2137,6 +2157,41 @@ func (ec *executionContext) _Venue_tables(ctx context.Context, field graphql.Col
 	res := resTmp.([]*models.Table)
 	fc.Result = res
 	return ec.marshalNTable2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_slug(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Slug, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -3414,6 +3469,34 @@ func (ec *executionContext) unmarshalInputTableInput(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputVenueFilter(ctx context.Context, obj interface{}) (models.VenueFilter, error) {
+	var it models.VenueFilter
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "slug":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+			it.Slug, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3798,6 +3881,11 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 				}
 				return res
 			})
+		case "slug":
+			out.Values[i] = ec._Venue_slug(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4324,6 +4412,11 @@ func (ec *executionContext) marshalNVenue2ᚖgithubᚗcomᚋcobbinmaᚋbooking�
 	return ec._Venue(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNVenueFilter2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenueFilter(ctx context.Context, v interface{}) (models.VenueFilter, error) {
+	res, err := ec.unmarshalInputVenueFilter(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -4575,6 +4668,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalID(*v)
 }
 
 func (ec *executionContext) marshalOSlot2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Slot) graphql.Marshaler {

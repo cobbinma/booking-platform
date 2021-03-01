@@ -2,6 +2,8 @@
 pub struct GetVenueRequest {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub slug: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateVenueRequest {

@@ -8,6 +8,8 @@ pub struct Venue {
     pub opening_hours: ::prost::alloc::vec::Vec<OpeningHoursSpecification>,
     #[prost(message, repeated, tag = "4")]
     pub special_opening_hours: ::prost::alloc::vec::Vec<OpeningHoursSpecification>,
+    #[prost(string, tag = "5")]
+    pub slug: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct OpeningHoursSpecification {

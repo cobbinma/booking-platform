@@ -95,8 +95,8 @@ func (v venueClient) GetTables(ctx context.Context, venueID string) ([]*models.T
 	return tables, nil
 }
 
-func (v venueClient) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
-	venue, err := v.client.GetVenue(ctx, &api.GetVenueRequest{Id: id})
+func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
+	venue, err := v.client.GetVenue(ctx, &api.GetVenueRequest{Id: *filter.Slug, Slug: *filter.Slug})
 	if err != nil {
 		return nil, fmt.Errorf("could not get venue from venue service : %w", err)
 	}
@@ -136,6 +136,7 @@ func (v venueClient) GetVenue(ctx context.Context, id string) (*models.Venue, er
 		Name:                venue.Name,
 		OpeningHours:        openingHours,
 		SpecialOpeningHours: specialHours,
+		Slug:                venue.Slug,
 	}, nil
 }
 

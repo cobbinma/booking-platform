@@ -42,8 +42,11 @@ func (r *mutationResolver) RemoveTable(ctx context.Context, input models.RemoveT
 	return r.venueService.RemoveTable(ctx, input)
 }
 
-func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
-	return r.venueService.GetVenue(ctx, id)
+func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
+	if filter.ID == nil && filter.Slug == nil {
+		return nil, fmt.Errorf("at least one field must not be nil on filter")
+	}
+	return r.venueService.GetVenue(ctx, filter)
 }
 
 func (r *queryResolver) GetSlot(ctx context.Context, input models.SlotInput) (*models.GetSlotResponse, error) {

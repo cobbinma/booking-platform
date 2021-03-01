@@ -18,6 +18,7 @@ import (
 )
 
 func Test_GetVenue(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 	monday := &models.OpeningHoursSpecification{
@@ -35,11 +36,14 @@ func Test_GetVenue(t *testing.T) {
 		ValidThrough: nil,
 	}
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), "a3291740-e89f-4cc0-845c-75c4c39842c9").Return(&models.Venue{
+	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
+		ID: &venueID,
+	}).Return(&models.Venue{
 		ID:                  "a3291740-e89f-4cc0-845c-75c4c39842c9",
 		Name:                "hop and vine",
 		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, venueSrv, nil)})))
@@ -62,9 +66,10 @@ func Test_GetVenue(t *testing.T) {
 				ValidFrom    string `json:"validFrom"`
 				ValidThrough string `json:"validThrough"`
 			} `json:"specialOpeningHours"`
+			Slug string `json:"slug"`
 		} `json:"getVenue"`
 	}
-	c.MustPost(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough}}}`, &resp)
+	c.MustPost(`{getVenue(filter:{id:"a3291740-e89f-4cc0-845c-75c4c39842c9"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},slug}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 
@@ -73,6 +78,7 @@ func Test_GetVenue(t *testing.T) {
 
 func Test_GetVenueTables(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	slug := "test-venue"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 	monday := &models.OpeningHoursSpecification{
@@ -90,7 +96,9 @@ func Test_GetVenueTables(t *testing.T) {
 		ValidThrough: nil,
 	}
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), venueID).Return(&models.Venue{
+	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
+		Slug: &slug,
+	}).Return(&models.Venue{
 		ID:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
@@ -134,7 +142,7 @@ func Test_GetVenueTables(t *testing.T) {
 			} `json:"tables"`
 		} `json:"getVenue"`
 	}
-	c.MustPost(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},tables{id,name,capacity}}}`, &resp)
+	c.MustPost(`{getVenue(filter:{slug:"test-venue"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},tables{id,name,capacity}}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 
@@ -160,7 +168,9 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 		ValidThrough: nil,
 	}
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), venueID).Return(&models.Venue{
+	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
+		ID: &venueID,
+	}).Return(&models.Venue{
 		ID:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
@@ -197,7 +207,7 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 		} `json:"getVenue"`
 	}
 
-	assert.Error(t, c.Post(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},tables{id,name,capacity}}}`, &resp), "user is not admin")
+	assert.Error(t, c.Post(`{getVenue(filter:{id:"a3291740-e89f-4cc0-845c-75c4c39842c9"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},tables{id,name,capacity}}}`, &resp), "user is not admin")
 	cupaloy.SnapshotT(t, resp)
 
 	ctrl.Finish()

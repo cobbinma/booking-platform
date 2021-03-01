@@ -35,16 +35,16 @@ func (m *MockVenueService) EXPECT() *MockVenueServiceMockRecorder {
 }
 
 // GetVenue mocks base method
-func (m *MockVenueService) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
-	ret := m.ctrl.Call(m, "GetVenue", ctx, id)
+func (m *MockVenueService) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
+	ret := m.ctrl.Call(m, "GetVenue", ctx, filter)
 	ret0, _ := ret[0].(*models.Venue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVenue indicates an expected call of GetVenue
-func (mr *MockVenueServiceMockRecorder) GetVenue(ctx, id interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVenue", reflect.TypeOf((*MockVenueService)(nil).GetVenue), ctx, id)
+func (mr *MockVenueServiceMockRecorder) GetVenue(ctx, filter interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVenue", reflect.TypeOf((*MockVenueService)(nil).GetVenue), ctx, filter)
 }
 
 // GetTables mocks base method

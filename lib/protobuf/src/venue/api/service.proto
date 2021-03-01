@@ -21,6 +21,7 @@ service VenueAPI {
 
 message GetVenueRequest {
   string id = 1;
+  string slug = 2;
 }
 
 message CreateVenueRequest {

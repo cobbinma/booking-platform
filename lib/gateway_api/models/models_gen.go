@@ -136,4 +136,14 @@ type Venue struct {
 	SpecialOpeningHours []*OpeningHoursSpecification `json:"specialOpeningHours"`
 	// tables at the venue
 	Tables []*Table `json:"tables"`
+	// human readable identifier of the venue
+	Slug string `json:"slug"`
+}
+
+// Filter get venue queries. Fields AND together.
+type VenueFilter struct {
+	// unique identifier of the venue
+	ID *string `json:"id"`
+	// human readable identifier of the venue
+	Slug *string `json:"slug"`
 }

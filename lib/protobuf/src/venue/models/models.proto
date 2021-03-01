@@ -9,6 +9,7 @@ message Venue {
   string name = 2;
   repeated OpeningHoursSpecification openingHours = 3;
   repeated OpeningHoursSpecification specialOpeningHours = 4;
+  string slug = 5;
 }
 
 message OpeningHoursSpecification {
