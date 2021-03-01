@@ -203,6 +203,58 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_AddTableNotAuthorised(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		AddTable struct {
+			ID       string `json:"id"`
+			Name     string `json:"name"`
+			Capacity int    `json:"capacity"`
+		} `json:"addTable"`
+	}
+	assert.Error(t, c.Post(`mutation{addTable(input:{id:"a3291740-e89f-4cc0-845c-75c4c39842c9",name:"test table",capacity:5}) {id,name,capacity}}`, &resp), "user is not admin")
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
+func Test_AddTable(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().AddTable(gomock.Any(), models.TableInput{
+		ID:       venueID,
+		Name:     "test table",
+		Capacity: 5,
+	}).Return(&models.Table{
+		ID:       "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
+		Name:     "test table",
+		Capacity: 5,
+	}, nil)
+
+	var resp struct {
+		AddTable struct {
+			ID       string `json:"id"`
+			Name     string `json:"name"`
+			Capacity int    `json:"capacity"`
+		} `json:"addTable"`
+	}
+	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
+		MustPost(`mutation{addTable(input:{id:"a3291740-e89f-4cc0-845c-75c4c39842c9",name:"test table",capacity:5}) {id,name,capacity}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
 func Test_GetSlot(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bookingService := mock_resolver.NewMockBookingService(ctrl)

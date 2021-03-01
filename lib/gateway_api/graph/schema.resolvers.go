@@ -27,7 +27,11 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 }
 
 func (r *mutationResolver) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
-	panic(fmt.Errorf("not implemented"))
+	if err := r.authIsAdmin(ctx, input.ID); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.AddTable(ctx, input)
 }
 
 func (r *mutationResolver) RemoveTable(ctx context.Context, tableID string) (*models.Table, error) {
@@ -52,18 +56,8 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 }
 
 func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error) {
-	user, err := r.userService.GetUser(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not get user profile")
-	}
-
-	isAdmin, err := r.venueService.IsAdmin(ctx, obj.ID, user.Email)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not determine is user is admin")
-	}
-
-	if !isAdmin {
-		return nil, status.Errorf(codes.Unauthenticated, "user is not admin")
+	if err := r.authIsAdmin(ctx, obj.ID); err != nil {
+		return nil, err
 	}
 
 	return r.venueService.GetTables(ctx, obj.ID)

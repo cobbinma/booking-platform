@@ -3,6 +3,8 @@ package graph
 import (
 	"context"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // This file will not be regenerated automatically.
@@ -31,4 +33,22 @@ type VenueService interface {
 type BookingService interface {
 	GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error)
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
+}
+
+func (r *Resolver) authIsAdmin(ctx context.Context, venueID string) error {
+	user, err := r.userService.GetUser(ctx)
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not get user profile")
+	}
+
+	isAdmin, err := r.venueService.IsAdmin(ctx, venueID, user.Email)
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not determine is user is admin")
+	}
+
+	if isAdmin {
+		return nil
+	}
+
+	return status.Errorf(codes.Unauthenticated, "user is not admin")
 }
