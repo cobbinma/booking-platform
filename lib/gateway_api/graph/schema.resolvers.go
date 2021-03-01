@@ -51,13 +51,13 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 	return r.venueService.IsAdmin(ctx, input.VenueID, user.Email)
 }
 
-func (r *venueResolver) Tables(ctx context.Context, venue *models.Venue) ([]*models.Table, error) {
+func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error) {
 	user, err := r.userService.GetUser(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not get user profile")
 	}
 
-	isAdmin, err := r.venueService.IsAdmin(ctx, venue.ID, user.Email)
+	isAdmin, err := r.venueService.IsAdmin(ctx, obj.ID, user.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not determine is user is admin")
 	}
@@ -66,7 +66,7 @@ func (r *venueResolver) Tables(ctx context.Context, venue *models.Venue) ([]*mod
 		return nil, status.Errorf(codes.Unauthenticated, "user is not admin")
 	}
 
-	return r.venueService.GetTables(ctx, venue.ID)
+	return r.venueService.GetTables(ctx, obj.ID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

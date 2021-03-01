@@ -11,6 +11,8 @@ import (
 	mock_resolver "github.com/cobbinma/booking-platform/lib/gateway_api/graph/mock"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -69,13 +71,143 @@ func Test_GetVenue(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_GetVenueTables(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	monday := &models.OpeningHoursSpecification{
+		DayOfWeek:    models.Monday,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+	tuesday := &models.OpeningHoursSpecification{
+		DayOfWeek:    2,
+		Opens:        "11:00",
+		Closes:       "20:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+
+	venueSrv.EXPECT().GetVenue(gomock.Any(), venueID).Return(&models.Venue{
+		ID:                  venueID,
+		Name:                "hop and vine",
+		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		SpecialOpeningHours: nil,
+	}, nil)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+
+	venueSrv.EXPECT().GetTables(gomock.Any(), venueID).Return([]*models.Table{
+		{
+			ID:       "175fd06d-9a60-4ea6-86ca-bb96ca861208",
+			Name:     "table one",
+			Capacity: 4,
+		},
+	}, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		GetVenue struct {
+			ID           string `json:"id"`
+			Name         string `json:"name"`
+			OpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHours"`
+			SpecialOpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"specialOpeningHours"`
+			Tables []struct {
+				ID       string `json:"id"`
+				Name     string `json:"name"`
+				Capacity int    `json:"capacity"`
+			} `json:"tables"`
+		} `json:"getVenue"`
+	}
+	c.MustPost(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},tables{id,name,capacity}}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
+func Test_GetVenueTablesNotAuthorised(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	monday := &models.OpeningHoursSpecification{
+		DayOfWeek:    models.Monday,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+	tuesday := &models.OpeningHoursSpecification{
+		DayOfWeek:    2,
+		Opens:        "11:00",
+		Closes:       "20:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+
+	venueSrv.EXPECT().GetVenue(gomock.Any(), venueID).Return(&models.Venue{
+		ID:                  venueID,
+		Name:                "hop and vine",
+		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		SpecialOpeningHours: nil,
+	}, nil)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		GetVenue struct {
+			ID           string `json:"id"`
+			Name         string `json:"name"`
+			OpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHours"`
+			SpecialOpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"specialOpeningHours"`
+			Tables []struct {
+				ID       string `json:"id"`
+				Name     string `json:"name"`
+				Capacity int    `json:"capacity"`
+			} `json:"tables"`
+		} `json:"getVenue"`
+	}
+
+	assert.Error(t, c.Post(`{getVenue(id:"a3291740-e89f-4cc0-845c-75c4c39842c9"){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},tables{id,name,capacity}}}`, &resp), "user is not admin")
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
 func Test_GetSlot(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bookingService := mock_resolver.NewMockBookingService(ctrl)
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
-	if err != nil {
-		t.Fatalf("could not parse time : %s", err)
-	}
+	require.NoError(t, err)
 
 	bookingService.EXPECT().GetSlot(gomock.Any(), models.SlotInput{
 		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
@@ -120,9 +252,7 @@ func Test_CreateBooking(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bookingService := mock_resolver.NewMockBookingService(ctrl)
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
-	if err != nil {
-		t.Fatalf("could not parse time : %s", err)
-	}
+	require.NoError(t, err)
 
 	bookingService.EXPECT().CreateBooking(gomock.Any(), models.BookingInput{
 		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",

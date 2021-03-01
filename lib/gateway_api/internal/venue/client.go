@@ -44,6 +44,39 @@ type venueClient struct {
 	log    *zap.SugaredLogger
 }
 
+func (v venueClient) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
+	table, err := v.client.AddTable(ctx, &api.AddTableRequest{
+		VenueId:  input.ID,
+		Name:     input.Name,
+		Capacity: uint32(input.Capacity),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not add table using venue service : %w", err)
+	}
+
+	return &models.Table{
+		ID:       table.Id,
+		Name:     table.Name,
+		Capacity: int(table.Capacity),
+	}, nil
+}
+
+func (v venueClient) RemoveTable(ctx context.Context, venueID string, tableID string) (*models.Table, error) {
+	table, err := v.client.RemoveTable(ctx, &api.RemoveTableRequest{
+		VenueId: venueID,
+		TableId: tableID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not add table using venue service : %w", err)
+	}
+
+	return &models.Table{
+		ID:       table.Id,
+		Name:     table.Name,
+		Capacity: int(table.Capacity),
+	}, nil
+}
+
 func (v venueClient) GetTables(ctx context.Context, venueID string) ([]*models.Table, error) {
 	resp, err := v.client.GetTables(ctx, &api.GetTablesRequest{VenueId: venueID})
 	if err != nil {

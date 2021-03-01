@@ -23,6 +23,8 @@ func NewResolver(userService models.UserService, venueService VenueService, book
 type VenueService interface {
 	GetVenue(ctx context.Context, id string) (*models.Venue, error)
 	GetTables(ctx context.Context, venueID string) ([]*models.Table, error)
+	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
+	RemoveTable(ctx context.Context, venueID string, tableID string) (*models.Table, error)
 	IsAdmin(ctx context.Context, venueID string, email string) (bool, error)
 }
 

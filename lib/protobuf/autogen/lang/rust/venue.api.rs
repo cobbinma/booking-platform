@@ -30,6 +30,13 @@ pub struct AddTableRequest {
     pub capacity: u32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct RemoveTableRequest {
+    #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub table_id: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IsAdminRequest {
     #[prost(string, tag = "1")]
     pub venue_id: ::prost::alloc::string::String,
@@ -156,6 +163,20 @@ pub mod venue_api_client {
             let path = http::uri::PathAndQuery::from_static("/venue.api.VenueAPI/AddTable");
             self.inner.unary(request.into_request(), path, codec).await
         }
+        pub async fn remove_table(
+            &mut self,
+            request: impl tonic::IntoRequest<super::RemoveTableRequest>,
+        ) -> Result<tonic::Response<super::super::models::Table>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/venue.api.VenueAPI/RemoveTable");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
         pub async fn is_admin(
             &mut self,
             request: impl tonic::IntoRequest<super::IsAdminRequest>,
@@ -234,6 +255,10 @@ pub mod venue_api_server {
         async fn add_table(
             &self,
             request: tonic::Request<super::AddTableRequest>,
+        ) -> Result<tonic::Response<super::super::models::Table>, tonic::Status>;
+        async fn remove_table(
+            &self,
+            request: tonic::Request<super::RemoveTableRequest>,
         ) -> Result<tonic::Response<super::super::models::Table>, tonic::Status>;
         async fn is_admin(
             &self,
@@ -393,6 +418,37 @@ pub mod venue_api_server {
                         let interceptor = inner.1.clone();
                         let inner = inner.0;
                         let method = AddTableSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/venue.api.VenueAPI/RemoveTable" => {
+                    #[allow(non_camel_case_types)]
+                    struct RemoveTableSvc<T: VenueApi>(pub Arc<T>);
+                    impl<T: VenueApi> tonic::server::UnaryService<super::RemoveTableRequest> for RemoveTableSvc<T> {
+                        type Response = super::super::models::Table;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::RemoveTableRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).remove_table(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = RemoveTableSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = if let Some(interceptor) = interceptor {
                             tonic::server::Grpc::with_interceptor(codec, interceptor)
