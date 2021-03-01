@@ -12,6 +12,7 @@ service VenueAPI {
 
   rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
   rpc AddTable(AddTableRequest) returns (venue.models.Table);
+  rpc RemoveTable(RemoveTableRequest) returns (venue.models.Table);
 
   rpc IsAdmin(IsAdminRequest) returns (IsAdminResponse);
   rpc AddAdmin(AddAdminRequest) returns (AddAdminResponse);
@@ -39,6 +40,11 @@ message AddTableRequest {
   string venueId = 1;
   string name = 2;
   uint32 capacity = 3;
+}
+
+message RemoveTableRequest {
+  string venueId = 1;
+  string tableId = 2;
 }
 
 message IsAdminRequest {

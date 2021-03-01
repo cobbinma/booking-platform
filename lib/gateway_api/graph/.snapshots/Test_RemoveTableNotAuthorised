@@ -1,0 +1,7 @@
+(struct { AddTable struct { ID string "json:\"id\""; Name string "json:\"name\""; Capacity int "json:\"capacity\"" } "json:\"removeTable\"" }) {
+  AddTable: (struct { ID string "json:\"id\""; Name string "json:\"name\""; Capacity int "json:\"capacity\"" }) {
+    ID: (string) "",
+    Name: (string) "",
+    Capacity: (int) 0
+  }
+}

@@ -66,6 +66,14 @@ type OpeningHoursSpecification struct {
 	ValidThrough *time.Time `json:"validThrough"`
 }
 
+// Input to remove a venue table
+type RemoveTableInput struct {
+	// unique venue identifier the table belongs to
+	VenueID string `json:"venueId"`
+	// unique identifier of the table to be removed
+	TableID string `json:"tableId"`
+}
+
 // Slot is a possible booking that has yet to be confirmed.
 type Slot struct {
 	// unique identifier of the venue
@@ -96,6 +104,26 @@ type SlotInput struct {
 	Duration int `json:"duration"`
 }
 
+// An individual table at a venue.
+type Table struct {
+	// unique identifier of the table
+	ID string `json:"id"`
+	// name of the table
+	Name string `json:"name"`
+	// maximum amount of people that can sit at table
+	Capacity int `json:"capacity"`
+}
+
+// An individual table at a venue.
+type TableInput struct {
+	// unique venue identifier the table belongs to
+	VenueID string `json:"venueId"`
+	// name of the table
+	Name string `json:"name"`
+	// maximum amount of people that can sit at table
+	Capacity int `json:"capacity"`
+}
+
 // Venue where a booking can take place.
 type Venue struct {
 	// unique identifier of the venue
@@ -106,4 +134,6 @@ type Venue struct {
 	OpeningHours []*OpeningHoursSpecification `json:"openingHours"`
 	// special operating hours of the venue
 	SpecialOpeningHours []*OpeningHoursSpecification `json:"specialOpeningHours"`
+	// tables at the venue
+	Tables []*Table `json:"tables"`
 }

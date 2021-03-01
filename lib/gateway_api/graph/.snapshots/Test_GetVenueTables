@@ -1,0 +1,31 @@
+(struct { GetVenue struct { ID string "json:\"id\""; Name string "json:\"name\""; OpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"openingHours\""; SpecialOpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"specialOpeningHours\""; Tables []struct { ID string "json:\"id\""; Name string "json:\"name\""; Capacity int "json:\"capacity\"" } "json:\"tables\"" } "json:\"getVenue\"" }) {
+  GetVenue: (struct { ID string "json:\"id\""; Name string "json:\"name\""; OpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"openingHours\""; SpecialOpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"specialOpeningHours\""; Tables []struct { ID string "json:\"id\""; Name string "json:\"name\""; Capacity int "json:\"capacity\"" } "json:\"tables\"" }) {
+    ID: (string) (len=36) "a3291740-e89f-4cc0-845c-75c4c39842c9",
+    Name: (string) (len=12) "hop and vine",
+    OpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) (len=2) {
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 1,
+        Opens: (string) (len=5) "10:00",
+        Closes: (string) (len=5) "19:00",
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      },
+      (struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+        DayOfWeek: (int) 2,
+        Opens: (string) (len=5) "11:00",
+        Closes: (string) (len=5) "20:00",
+        ValidFrom: (string) "",
+        ValidThrough: (string) ""
+      }
+    },
+    SpecialOpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+    },
+    Tables: ([]struct { ID string "json:\"id\""; Name string "json:\"name\""; Capacity int "json:\"capacity\"" }) (len=1) {
+      (struct { ID string "json:\"id\""; Name string "json:\"name\""; Capacity int "json:\"capacity\"" }) {
+        ID: (string) (len=36) "175fd06d-9a60-4ea6-86ca-bb96ca861208",
+        Name: (string) (len=9) "table one",
+        Capacity: (int) 4
+      }
+    }
+  }
+}

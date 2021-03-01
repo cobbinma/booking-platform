@@ -97,6 +97,42 @@ type Venue {
   openingHours: [OpeningHoursSpecification!]!
   "special operating hours of the venue"
   specialOpeningHours: [OpeningHoursSpecification!]!
+  "tables at the venue"
+  tables: [Table!]!
+}
+
+"""
+An individual table at a venue.
+"""
+input TableInput {
+  "unique venue identifier the table belongs to"
+  venueId: ID!
+  "name of the table"
+  name: String!
+  "maximum amount of people that can sit at table"
+  capacity: Int!
+}
+
+"""
+Input to remove a venue table
+"""
+input RemoveTableInput {
+  "unique venue identifier the table belongs to"
+  venueId: ID!
+  "unique identifier of the table to be removed"
+  tableId: ID!
+}
+
+"""
+An individual table at a venue.
+"""
+type Table {
+  "unique identifier of the table"
+  id: ID!
+  "name of the table"
+  name: String!
+  "maximum amount of people that can sit at table"
+  capacity: Int!
 }
 
 """
@@ -147,4 +183,8 @@ Booking mutations.
 type Mutation {
   "create booking is a confirming a booking slot"
   createBooking(input: BookingInput!): Booking!
+  "add a table to a venue"
+  addTable(input: TableInput!): Table!
+  "remove a table from a venue"
+  removeTable(input: RemoveTableInput!): Table!
 }

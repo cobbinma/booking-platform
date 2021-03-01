@@ -15,14 +15,14 @@ import (
 )
 
 func NewVenueClient(url string, log *zap.SugaredLogger, token *oauth2.Token) (graph.VenueService, func(log *zap.SugaredLogger), error) {
-	creds, err := credentials.NewClientTLSFromFile("localhost.crt", "localhost")
+	c, err := credentials.NewClientTLSFromFile("localhost.crt", "localhost")
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to load credentials : %w", err)
 	}
 
 	opts := []grpc.DialOption{
 		grpc.WithPerRPCCredentials(oauth.NewOauthAccess(token)),
-		grpc.WithTransportCredentials(creds),
+		grpc.WithTransportCredentials(c),
 	}
 	conn, err := grpc.Dial(url, opts...)
 	if err != nil {
@@ -42,6 +42,57 @@ func NewVenueClient(url string, log *zap.SugaredLogger, token *oauth2.Token) (gr
 type venueClient struct {
 	client api.VenueAPIClient
 	log    *zap.SugaredLogger
+}
+
+func (v venueClient) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
+	table, err := v.client.AddTable(ctx, &api.AddTableRequest{
+		VenueId:  input.VenueID,
+		Name:     input.Name,
+		Capacity: uint32(input.Capacity),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not add table using venue service : %w", err)
+	}
+
+	return &models.Table{
+		ID:       table.Id,
+		Name:     table.Name,
+		Capacity: int(table.Capacity),
+	}, nil
+}
+
+func (v venueClient) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
+	table, err := v.client.RemoveTable(ctx, &api.RemoveTableRequest{
+		VenueId: input.VenueID,
+		TableId: input.TableID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not add table using venue service : %w", err)
+	}
+
+	return &models.Table{
+		ID:       table.Id,
+		Name:     table.Name,
+		Capacity: int(table.Capacity),
+	}, nil
+}
+
+func (v venueClient) GetTables(ctx context.Context, venueID string) ([]*models.Table, error) {
+	resp, err := v.client.GetTables(ctx, &api.GetTablesRequest{VenueId: venueID})
+	if err != nil {
+		return nil, fmt.Errorf("could not get tables from venue service : %w", err)
+	}
+
+	tables := []*models.Table{}
+	for _, table := range resp.Tables {
+		tables = append(tables, &models.Table{
+			ID:       table.Id,
+			Name:     table.Name,
+			Capacity: int(table.Capacity),
+		})
+	}
+
+	return tables, nil
 }
 
 func (v venueClient) GetVenue(ctx context.Context, id string) (*models.Venue, error) {

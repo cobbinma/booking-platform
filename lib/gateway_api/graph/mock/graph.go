@@ -47,6 +47,45 @@ func (mr *MockVenueServiceMockRecorder) GetVenue(ctx, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVenue", reflect.TypeOf((*MockVenueService)(nil).GetVenue), ctx, id)
 }
 
+// GetTables mocks base method
+func (m *MockVenueService) GetTables(ctx context.Context, venueID string) ([]*models.Table, error) {
+	ret := m.ctrl.Call(m, "GetTables", ctx, venueID)
+	ret0, _ := ret[0].([]*models.Table)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTables indicates an expected call of GetTables
+func (mr *MockVenueServiceMockRecorder) GetTables(ctx, venueID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTables", reflect.TypeOf((*MockVenueService)(nil).GetTables), ctx, venueID)
+}
+
+// AddTable mocks base method
+func (m *MockVenueService) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
+	ret := m.ctrl.Call(m, "AddTable", ctx, input)
+	ret0, _ := ret[0].(*models.Table)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTable indicates an expected call of AddTable
+func (mr *MockVenueServiceMockRecorder) AddTable(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTable", reflect.TypeOf((*MockVenueService)(nil).AddTable), ctx, input)
+}
+
+// RemoveTable mocks base method
+func (m *MockVenueService) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
+	ret := m.ctrl.Call(m, "RemoveTable", ctx, input)
+	ret0, _ := ret[0].(*models.Table)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveTable indicates an expected call of RemoveTable
+func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTable", reflect.TypeOf((*MockVenueService)(nil).RemoveTable), ctx, input)
+}
+
 // IsAdmin mocks base method
 func (m *MockVenueService) IsAdmin(ctx context.Context, venueID, email string) (bool, error) {
 	ret := m.ctrl.Call(m, "IsAdmin", ctx, venueID, email)

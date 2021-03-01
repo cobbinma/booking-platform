@@ -26,6 +26,22 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 	return r.bookingService.CreateBooking(ctx, input)
 }
 
+func (r *mutationResolver) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
+	if err := r.authIsAdmin(ctx, input.VenueID); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.AddTable(ctx, input)
+}
+
+func (r *mutationResolver) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
+	if err := r.authIsAdmin(ctx, input.VenueID); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.RemoveTable(ctx, input)
+}
+
 func (r *queryResolver) GetVenue(ctx context.Context, id string) (*models.Venue, error) {
 	return r.venueService.GetVenue(ctx, id)
 }
@@ -43,11 +59,23 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 	return r.venueService.IsAdmin(ctx, input.VenueID, user.Email)
 }
 
+func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error) {
+	if err := r.authIsAdmin(ctx, obj.ID); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.GetTables(ctx, obj.ID)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Venue returns generated.VenueResolver implementation.
+func (r *Resolver) Venue() generated.VenueResolver { return &venueResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type venueResolver struct{ *Resolver }
