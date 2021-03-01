@@ -8,8 +8,13 @@ import (
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"github.com/cobbinma/booking-platform/lib/venue_api/internal/postgres"
+	"github.com/google/uuid"
 	"github.com/ory/dockertest/v3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
 	"net/url"
 	"runtime"
@@ -133,9 +138,7 @@ func suite(repository api.VenueAPIServer) []test {
 						},
 					},
 				})
-				if err != nil {
-					t.Fatalf("did not expect error, got '%s'", err)
-				}
+				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, venue)
 			},
@@ -145,9 +148,7 @@ func suite(repository api.VenueAPIServer) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: "b31a9f99-3f64-4ee9-af27-45b2acd36d86"})
-				if err != nil {
-					t.Fatalf("did not expect error, got '%s'", err)
-				}
+				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, venues)
 			},
@@ -161,9 +162,7 @@ func suite(repository api.VenueAPIServer) []test {
 					Name:     "test table",
 					Capacity: 4,
 				})
-				if err != nil {
-					t.Fatalf("did not expect error, got '%s'", err)
-				}
+				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, table)
 			},
@@ -174,11 +173,37 @@ func suite(repository api.VenueAPIServer) []test {
 				ctx := context.Background()
 				table, err := repository.GetTables(ctx, &api.GetTablesRequest{
 					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86"})
-				if err != nil {
-					t.Fatalf("did not expect error, got '%s'", err)
-				}
+				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, table)
+			},
+		},
+		{
+			name: "remove not found table",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.RemoveTable(ctx, &api.RemoveTableRequest{
+					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					TableId: uuid.New().String(),
+				})
+				assert.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
+			name: "remove table successfully",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				removed, err := repository.RemoveTable(ctx, &api.RemoveTableRequest{
+					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					TableId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+				})
+				require.NoError(t, err)
+
+				assert.Equal(t, &models.Table{
+					Id:       "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					Name:     "test table",
+					Capacity: 4,
+				}, removed)
 			},
 		},
 		{
@@ -188,13 +213,9 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: "f982066f-1289-4317-83c1-d415dd4982c9",
 					Email:   "test@test.com",
 				})
-				if err != nil {
-					t.Fatalf("did not expect error from is admin, got '%s'", err)
-				}
+				require.NoError(t, err)
 
-				if resp.IsAdmin != false {
-					t.Errorf("expected is admin == false, got %v", resp.IsAdmin)
-				}
+				assert.Equal(t, false, resp.IsAdmin)
 			},
 		},
 		{
@@ -206,17 +227,10 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: venueID,
 					Email:   email,
 				})
-				if err != nil {
-					t.Fatalf("did not expect error from add admin, got '%s'", err)
-				}
+				require.NoError(t, err)
 
-				if resp.VenueId != venueID {
-					t.Errorf("expected is venueID == '%s', got '%s'", venueID, resp.VenueId)
-				}
-
-				if resp.Email != email {
-					t.Errorf("expected is venueID == '%s', got '%s'", email, resp.Email)
-				}
+				assert.Equal(t, venueID, resp.VenueId)
+				assert.Equal(t, email, resp.Email)
 			},
 		},
 		{
@@ -226,13 +240,9 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: "f982066f-1289-4317-83c1-d415dd4982c9",
 					Email:   "test@test.com",
 				})
-				if err != nil {
-					t.Fatalf("did not expect error from is admin, got '%s'", err)
-				}
+				require.NoError(t, err)
 
-				if resp.IsAdmin != true {
-					t.Errorf("expected is admin == true, got %v", resp.IsAdmin)
-				}
+				assert.Equal(t, true, resp.IsAdmin)
 			},
 		},
 		{
@@ -244,24 +254,16 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: venueID,
 					Email:   email,
 				})
-				if err != nil {
-					t.Fatalf("did not expect error from remove admin, got '%s'", err)
-				}
-				if resp.Email != email {
-					t.Errorf("expected is venueID == '%s', got '%s'", email, resp.Email)
-				}
+				require.NoError(t, err)
+				require.Equal(t, email, resp.Email)
 
 				admin, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
 					VenueId: venueID,
 					Email:   email,
 				})
-				if err != nil {
-					t.Fatalf("did not expect error from is admin, got '%s'", err)
-				}
+				require.NoError(t, err)
 
-				if admin.IsAdmin != false {
-					t.Errorf("expected is admin == false, got %v", admin.IsAdmin)
-				}
+				assert.Equal(t, false, admin.IsAdmin)
 			},
 		},
 	}

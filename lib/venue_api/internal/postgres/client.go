@@ -137,6 +137,47 @@ func (c client) AddTable(ctx context.Context, req *api.AddTableRequest) (*models
 	}, nil
 }
 
+func (c client) RemoveTable(ctx context.Context, req *api.RemoveTableRequest) (*models.Table, error) {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id", "name", "capacity").
+		From(TablesTable).
+		Where(sq.And{sq.Eq{"id": req.TableId}, sq.Eq{"venue_id": req.VenueId}}).
+		ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not build select table sql : %s", err)
+	}
+
+	row := c.db.QueryRow(sql, args...)
+	if row.Err() != nil {
+		c.log.Errorw("could not query row", zap.Error(err))
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	var id, name string
+	var capacity uint32
+	if err := c.db.QueryRow(sql, args...).Scan(&id, &name, &capacity); err != nil {
+		if errors.Is(err, sql2.ErrNoRows) {
+			return nil, status.Errorf(codes.NotFound, "could not find venue")
+		}
+
+		return nil, status.Errorf(codes.Internal, "could get find venue : %s", err)
+	}
+
+	sql, args, err = sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete(TablesTable).
+		Where(sq.And{sq.Eq{"id": req.TableId}, sq.Eq{"venue_id": req.VenueId}}).
+		ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not build select table sql : %s", err)
+	}
+
+	if _, err := c.db.Exec(sql, args...); err != nil {
+		return nil, status.Errorf(codes.Internal, "could not delete table : %s", err)
+	}
+
+	return &models.Table{Id: id, Name: name, Capacity: capacity}, nil
+}
+
 func (c client) GetVenue(ctx context.Context, req *api.GetVenueRequest) (*models.Venue, error) {
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "name").From(VenuesTable).

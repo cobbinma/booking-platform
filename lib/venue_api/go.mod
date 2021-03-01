@@ -14,6 +14,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.9.0
 	github.com/ory/dockertest/v3 v3.6.3
+	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.16.0
 	google.golang.org/grpc v1.35.0
 	gopkg.in/square/go-jose.v2 v2.5.1
