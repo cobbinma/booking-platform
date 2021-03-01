@@ -33,10 +33,7 @@ func Test_Repository(t *testing.T) {
 	pgURL.RawQuery = q.Encode()
 
 	pool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Errorf("could not connect to docker : %s", err)
-		return
-	}
+	require.NoError(t, err)
 
 	pw, _ := pgURL.User.Password()
 	runOpts := dockertest.RunOptions{
@@ -50,15 +47,9 @@ func Test_Repository(t *testing.T) {
 	}
 
 	resource, err := pool.RunWithOptions(&runOpts)
-	if err != nil {
-		t.Errorf("Could start postgres container : %s", err)
-		return
-	}
+	require.NoError(t, err)
 	defer func() {
-		err = pool.Purge(resource)
-		if err != nil {
-			t.Errorf("Could not purge resource : %s", err)
-		}
+		require.NoError(t, pool.Purge(resource))
 	}()
 
 	pgURL.Host = resource.Container.NetworkSettings.IPAddress
@@ -68,23 +59,13 @@ func Test_Repository(t *testing.T) {
 		pgURL.Host = net.JoinHostPort(resource.GetBoundIP("5432/tcp"), resource.GetPort("5432/tcp"))
 	}
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		t.Errorf("Could start construct zap logger : %s", err)
-		return
-	}
-	log := logger.Sugar()
-	defer func(log *zap.SugaredLogger) {
-		if err := logger.Sync(); err != nil {
-			log.Errorf("could not sync logger : %s", err)
-		}
-	}(log)
+	log := zap.NewNop().Sugar()
 
 	var repository api.VenueAPIServer
 	var closeDB func(*zap.SugaredLogger)
 
 	pool.MaxWait = 10 * time.Second
-	err = pool.Retry(func() error {
+	require.NoError(t, pool.Retry(func() error {
 		p, c, err := postgres.
 			NewPostgres(log, postgres.WithDatabaseURL(pgURL),
 				postgres.WithMigrationsSourceURL("file://migrations"),
@@ -95,11 +76,7 @@ func Test_Repository(t *testing.T) {
 		closeDB = c
 		repository = p
 		return nil
-	})
-	if err != nil {
-		t.Errorf("could not connect to postgres server : %s", err)
-		return
-	}
+	}))
 	defer closeDB(log)
 
 	s := suite(repository)
