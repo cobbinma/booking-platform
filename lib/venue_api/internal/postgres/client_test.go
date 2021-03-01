@@ -91,6 +91,7 @@ type test struct {
 }
 
 func suite(repository api.VenueAPIServer) []test {
+	const UUID = "b31a9f99-3f64-4ee9-af27-45b2acd36d86"
 	return []test{
 		{
 			name: "add venue successfully",
@@ -124,7 +125,7 @@ func suite(repository api.VenueAPIServer) []test {
 			name: "get venue successfully",
 			test: func(t *testing.T) {
 				ctx := context.Background()
-				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: "b31a9f99-3f64-4ee9-af27-45b2acd36d86"})
+				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, venues)
@@ -135,7 +136,7 @@ func suite(repository api.VenueAPIServer) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				table, err := repository.AddTable(ctx, &api.AddTableRequest{
-					VenueId:  "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					VenueId:  UUID,
 					Name:     "test table",
 					Capacity: 4,
 				})
@@ -149,7 +150,7 @@ func suite(repository api.VenueAPIServer) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				table, err := repository.GetTables(ctx, &api.GetTablesRequest{
-					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86"})
+					VenueId: UUID})
 				require.NoError(t, err)
 
 				cupaloy.SnapshotT(t, table)
@@ -160,7 +161,7 @@ func suite(repository api.VenueAPIServer) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				_, err := repository.RemoveTable(ctx, &api.RemoveTableRequest{
-					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					VenueId: UUID,
 					TableId: uuid.New().String(),
 				})
 				assert.Equal(t, codes.NotFound, status.Code(err))
@@ -171,13 +172,13 @@ func suite(repository api.VenueAPIServer) []test {
 			test: func(t *testing.T) {
 				ctx := context.Background()
 				removed, err := repository.RemoveTable(ctx, &api.RemoveTableRequest{
-					VenueId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
-					TableId: "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					VenueId: UUID,
+					TableId: UUID,
 				})
 				require.NoError(t, err)
 
 				assert.Equal(t, &models.Table{
-					Id:       "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+					Id:       UUID,
 					Name:     "test table",
 					Capacity: 4,
 				}, removed)
@@ -187,7 +188,7 @@ func suite(repository api.VenueAPIServer) []test {
 			name: "is not administrator",
 			test: func(t *testing.T) {
 				resp, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
-					VenueId: "f982066f-1289-4317-83c1-d415dd4982c9",
+					VenueId: UUID,
 					Email:   "test@test.com",
 				})
 				require.NoError(t, err)
@@ -198,7 +199,7 @@ func suite(repository api.VenueAPIServer) []test {
 		{
 			name: "add administrator",
 			test: func(t *testing.T) {
-				venueID := "f982066f-1289-4317-83c1-d415dd4982c9"
+				venueID := UUID
 				email := "test@test.com"
 				resp, err := repository.AddAdmin(context.Background(), &api.AddAdminRequest{
 					VenueId: venueID,
@@ -214,7 +215,7 @@ func suite(repository api.VenueAPIServer) []test {
 			name: "is administrator",
 			test: func(t *testing.T) {
 				resp, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
-					VenueId: "f982066f-1289-4317-83c1-d415dd4982c9",
+					VenueId: UUID,
 					Email:   "test@test.com",
 				})
 				require.NoError(t, err)
@@ -225,7 +226,7 @@ func suite(repository api.VenueAPIServer) []test {
 		{
 			name: "remove administrator",
 			test: func(t *testing.T) {
-				venueID := "f982066f-1289-4317-83c1-d415dd4982c9"
+				venueID := UUID
 				email := "test@test.com"
 				resp, err := repository.RemoveAdmin(context.Background(), &api.RemoveAdminRequest{
 					VenueId: venueID,
