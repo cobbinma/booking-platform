@@ -99,6 +99,39 @@ export type Venue = {
   openingHours: Array<OpeningHoursSpecification>;
   /** special operating hours of the venue */
   specialOpeningHours: Array<OpeningHoursSpecification>;
+  /** tables at the venue */
+  tables: Array<Table>;
+  /** human readable identifier of the venue */
+  slug: Scalars['ID'];
+};
+
+/** An individual table at a venue. */
+export type TableInput = {
+  /** unique venue identifier the table belongs to */
+  venueId: Scalars['ID'];
+  /** name of the table */
+  name: Scalars['String'];
+  /** maximum amount of people that can sit at table */
+  capacity: Scalars['Int'];
+};
+
+/** Input to remove a venue table */
+export type RemoveTableInput = {
+  /** unique venue identifier the table belongs to */
+  venueId: Scalars['ID'];
+  /** unique identifier of the table to be removed */
+  tableId: Scalars['ID'];
+};
+
+/** An individual table at a venue. */
+export type Table = {
+  __typename?: 'Table';
+  /** unique identifier of the table */
+  id: Scalars['ID'];
+  /** name of the table */
+  name: Scalars['String'];
+  /** maximum amount of people that can sit at table */
+  capacity: Scalars['Int'];
 };
 
 /** Day specific operating hours. */
@@ -129,6 +162,14 @@ export type IsAdminInput = {
   venueId: Scalars['String'];
 };
 
+/** Filter get venue queries. Fields AND together. */
+export type VenueFilter = {
+  /** unique identifier of the venue */
+  id?: Maybe<Scalars['ID']>;
+  /** human readable identifier of the venue */
+  slug?: Maybe<Scalars['ID']>;
+};
+
 /** Booking queries. */
 export type Query = {
   __typename?: 'Query';
@@ -143,7 +184,7 @@ export type Query = {
 
 /** Booking queries. */
 export type QueryGetVenueArgs = {
-  id: Scalars['ID'];
+  filter: VenueFilter;
 };
 
 
@@ -163,12 +204,28 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** create booking is a confirming a booking slot */
   createBooking: Booking;
+  /** add a table to a venue */
+  addTable: Table;
+  /** remove a table from a venue */
+  removeTable: Table;
 };
 
 
 /** Booking mutations. */
 export type MutationCreateBookingArgs = {
   input: BookingInput;
+};
+
+
+/** Booking mutations. */
+export type MutationAddTableArgs = {
+  input: TableInput;
+};
+
+
+/** Booking mutations. */
+export type MutationRemoveTableArgs = {
+  input: RemoveTableInput;
 };
 
 export type CreateBookingMutationVariables = Exact<{
@@ -204,7 +261,7 @@ export type GetSlotQuery = (
 );
 
 export type GetVenueQueryVariables = Exact<{
-  venueID: Scalars['ID'];
+  slug: Scalars['ID'];
 }>;
 
 
@@ -322,8 +379,8 @@ export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
 export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
 export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
-    query GetVenue($venueID: ID!) {
-  getVenue(id: $venueID) {
+    query GetVenue($slug: ID!) {
+  getVenue(filter: {slug: $slug}) {
     id
     name
     openingHours {
@@ -356,7 +413,7 @@ export const GetVenueDocument = gql`
  * @example
  * const { data, loading, error } = useGetVenueQuery({
  *   variables: {
- *      venueID: // value for 'venueID'
+ *      slug: // value for 'slug'
  *   },
  * });
  */

@@ -17,7 +17,7 @@ weekday[7] = "Sunday";
 const Venue: React.FC<{ venueId: string }> = ({ venueId }) => {
   const { data, loading, error } = useGetVenueQuery({
     variables: {
-      venueID: venueId,
+      slug: venueId,
     },
   });
 

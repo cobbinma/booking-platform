@@ -7,7 +7,7 @@ import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 const Home: React.FC<{ venueID: string }> = ({ venueID }) => {
   const { data, loading, error } = useGetVenueQuery({
     variables: {
-      venueID: venueID,
+      slug: venueID,
     },
   });
   if (loading)

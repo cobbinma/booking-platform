@@ -179,16 +179,17 @@ func (c client) RemoveTable(ctx context.Context, req *api.RemoveTableRequest) (*
 }
 
 func (c client) GetVenue(ctx context.Context, req *api.GetVenueRequest) (*models.Venue, error) {
-	and := sq.And{}
+	fmt.Println("input: ", req)
+	where := sq.And{}
 	if req.Id != "" {
-		and = append(and, sq.Eq{"id": req.Id})
+		where = append(where, sq.Eq{"id": req.Id})
 	}
 	if req.Slug != "" {
-		and = append(and, sq.Eq{"slug": req.Slug})
+		where = append(where, sq.Eq{"slug": req.Slug})
 	}
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "name", "slug").From(VenuesTable).
-		Where(and).ToSql()
+		Where(where).ToSql()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not venue build sql : %s", err)
 	}
