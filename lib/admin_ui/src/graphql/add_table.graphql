@@ -1,0 +1,7 @@
+mutation AddTable($table: TableInput!) {
+    addTable(input: $table) {
+        id
+        name
+        capacity
+    }
+}

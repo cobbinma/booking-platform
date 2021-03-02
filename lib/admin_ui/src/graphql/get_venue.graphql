@@ -16,5 +16,11 @@ query GetVenue($slug: ID!) {
             validFrom
             validThrough
         }
+        tables {
+            id
+            name
+            capacity
+        }
+        slug
     }
 }

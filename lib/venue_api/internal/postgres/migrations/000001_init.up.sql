@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS tables
     venue_id UUID NOT NULL,
     name     VARCHAR NOT NULL,
     capacity INTEGER NOT NULL
+    UNIQUE (venue_id, name),
 );
 
 CREATE TABLE IF NOT EXISTS opening_hours
