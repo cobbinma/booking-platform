@@ -295,10 +295,35 @@ func (c client) CreateVenue(ctx context.Context, req *api.CreateVenueRequest) (*
 }
 
 func (c client) IsAdmin(ctx context.Context, req *api.IsAdminRequest) (*api.IsAdminResponse, error) {
+	var venueID string
+	if req.VenueId != "" {
+		venueID = req.VenueId
+	} else if req.Slug != "" {
+		sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+			Select("id").From(VenuesTable).
+			Where(sq.Eq{"slug": req.Slug}).ToSql()
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not venue build sql : %s", err)
+		}
+
+		var id string
+		if err := c.db.QueryRow(sql, args...).Scan(&id); err != nil {
+			if errors.Is(err, sql2.ErrNoRows) {
+				return nil, status.Errorf(codes.NotFound, "could not find venue")
+			}
+
+			return nil, status.Errorf(codes.Internal, "could get find venue : %s", err)
+		}
+
+		venueID = id
+	} else {
+		return nil, status.Error(codes.InvalidArgument, "either venue id or slug must be given")
+	}
+
 	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("COUNT(*)").
 		From(AdminsTable).
-		Where(sq.And{sq.Eq{"venue_id": req.VenueId}, sq.Eq{"email": req.Email}}).ToSql()
+		Where(sq.And{sq.Eq{"venue_id": venueID}, sq.Eq{"email": req.Email}}).ToSql()
 	if err != nil {
 		c.log.Errorw("could not construct sql", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "internal database error")

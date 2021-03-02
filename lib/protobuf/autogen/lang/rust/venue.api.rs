@@ -46,6 +46,8 @@ pub struct IsAdminRequest {
     pub venue_id: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub email: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub slug: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IsAdminResponse {

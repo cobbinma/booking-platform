@@ -236,6 +236,18 @@ func suite(repository api.VenueAPIServer) []test {
 			},
 		},
 		{
+			name: "is administrator by slug",
+			test: func(t *testing.T) {
+				resp, err := repository.IsAdmin(context.Background(), &api.IsAdminRequest{
+					Slug:  Slug,
+					Email: "test@test.com",
+				})
+				require.NoError(t, err)
+
+				assert.Equal(t, true, resp.IsAdmin)
+			},
+		},
+		{
 			name: "remove administrator",
 			test: func(t *testing.T) {
 				venueID := UUID

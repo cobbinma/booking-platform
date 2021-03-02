@@ -52,6 +52,7 @@ message RemoveTableRequest {
 message IsAdminRequest {
   string venueId = 1;
   string email = 2;
+  string slug = 3;
 }
 
 message IsAdminResponse {
