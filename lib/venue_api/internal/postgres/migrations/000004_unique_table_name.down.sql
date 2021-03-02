@@ -1,0 +1,1 @@
+ALTER TABLE tables DROP CONSTRAINT unique_table_name;

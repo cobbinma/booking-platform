@@ -1,0 +1,1 @@
+ALTER TABLE tables ADD CONSTRAINT unique_table_name UNIQUE (venue_id, name);
