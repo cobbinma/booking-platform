@@ -158,8 +158,12 @@ export type GetSlotResponse = {
   otherAvailableSlots?: Maybe<Array<Slot>>;
 };
 
+/** Input to query if the user is an admin. Fields AND together. */
 export type IsAdminInput = {
-  venueId: Scalars['String'];
+  /** unique identifier of the venue */
+  venueId?: Maybe<Scalars['ID']>;
+  /** human readable identifier of the venue */
+  slug?: Maybe<Scalars['ID']>;
 };
 
 /** Filter get venue queries. Fields AND together. */
@@ -281,7 +285,7 @@ export type GetVenueQuery = (
 );
 
 export type IsAdminQueryVariables = Exact<{
-  venueId: Scalars['String'];
+  slug: Scalars['ID'];
 }>;
 
 
@@ -427,8 +431,8 @@ export type GetVenueQueryHookResult = ReturnType<typeof useGetVenueQuery>;
 export type GetVenueLazyQueryHookResult = ReturnType<typeof useGetVenueLazyQuery>;
 export type GetVenueQueryResult = Apollo.QueryResult<GetVenueQuery, GetVenueQueryVariables>;
 export const IsAdminDocument = gql`
-    query IsAdmin($venueId: String!) {
-  isAdmin(input: {venueId: $venueId})
+    query IsAdmin($slug: ID!) {
+  isAdmin(input: {slug: $slug})
 }
     `;
 
@@ -444,7 +448,7 @@ export const IsAdminDocument = gql`
  * @example
  * const { data, loading, error } = useIsAdminQuery({
  *   variables: {
- *      venueId: // value for 'venueId'
+ *      slug: // value for 'slug'
  *   },
  * });
  */

@@ -27,7 +27,7 @@ type VenueService interface {
 	GetTables(ctx context.Context, venueID string) ([]*models.Table, error)
 	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
 	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)
-	IsAdmin(ctx context.Context, venueID string, email string) (bool, error)
+	IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error)
 }
 
 type BookingService interface {
@@ -35,13 +35,13 @@ type BookingService interface {
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
 }
 
-func (r *Resolver) authIsAdmin(ctx context.Context, venueID string) error {
+func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) error {
 	user, err := r.userService.GetUser(ctx)
 	if err != nil {
 		return status.Errorf(codes.Internal, "could not get user profile")
 	}
 
-	isAdmin, err := r.venueService.IsAdmin(ctx, venueID, user.Email)
+	isAdmin, err := r.venueService.IsAdmin(ctx, input, user.Email)
 	if err != nil {
 		return status.Errorf(codes.Internal, "could not determine is user is admin")
 	}

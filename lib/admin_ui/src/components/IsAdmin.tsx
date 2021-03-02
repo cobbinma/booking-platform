@@ -8,7 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 const IsAdmin: React.FC<{ params: Params }> = ({ params }) => {
   const { data, loading, error } = useIsAdminQuery({
     variables: {
-      venueId: params.venueId,
+      slug: params.venueId,
     },
   });
 

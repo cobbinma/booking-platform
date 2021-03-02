@@ -27,7 +27,9 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 }
 
 func (r *mutationResolver) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
-	if err := r.authIsAdmin(ctx, input.VenueID); err != nil {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +37,9 @@ func (r *mutationResolver) AddTable(ctx context.Context, input models.TableInput
 }
 
 func (r *mutationResolver) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
-	if err := r.authIsAdmin(ctx, input.VenueID); err != nil {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -54,16 +58,22 @@ func (r *queryResolver) GetSlot(ctx context.Context, input models.SlotInput) (*m
 }
 
 func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error) {
+	if input.VenueID == nil && input.Slug == nil {
+		return false, fmt.Errorf("either venue id or slug must be given")
+	}
+
 	user, err := r.userService.GetUser(ctx)
 	if err != nil {
 		return false, status.Errorf(codes.Internal, "could not get user profile")
 	}
 
-	return r.venueService.IsAdmin(ctx, input.VenueID, user.Email)
+	return r.venueService.IsAdmin(ctx, input, user.Email)
 }
 
 func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error) {
-	if err := r.authIsAdmin(ctx, obj.ID); err != nil {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &obj.ID,
+	}); err != nil {
 		return nil, err
 	}
 

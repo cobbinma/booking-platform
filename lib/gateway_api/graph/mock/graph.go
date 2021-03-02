@@ -87,16 +87,16 @@ func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, input interface{}) *gom
 }
 
 // IsAdmin mocks base method
-func (m *MockVenueService) IsAdmin(ctx context.Context, venueID, email string) (bool, error) {
-	ret := m.ctrl.Call(m, "IsAdmin", ctx, venueID, email)
+func (m *MockVenueService) IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error) {
+	ret := m.ctrl.Call(m, "IsAdmin", ctx, input, email)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsAdmin indicates an expected call of IsAdmin
-func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, venueID, email interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, venueID, email)
+func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, input, email interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, input, email)
 }
 
 // MockBookingService is a mock of BookingService interface

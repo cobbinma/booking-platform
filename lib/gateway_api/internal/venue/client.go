@@ -147,9 +147,17 @@ func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*
 	}, nil
 }
 
-func (v venueClient) IsAdmin(ctx context.Context, venueID string, email string) (bool, error) {
+func (v venueClient) IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error) {
+	var venueID, slug string
+	if input.VenueID != nil {
+		venueID = *input.VenueID
+	}
+	if input.Slug != nil {
+		slug = *input.Slug
+	}
 	resp, err := v.client.IsAdmin(ctx, &api.IsAdminRequest{
 		VenueId: venueID,
+		Slug:    slug,
 		Email:   email,
 	})
 	if err != nil {

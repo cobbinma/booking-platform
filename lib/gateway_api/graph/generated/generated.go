@@ -646,8 +646,14 @@ type GetSlotResponse {
   otherAvailableSlots: [Slot!]
 }
 
+"""
+Input to query if the user is an admin. Fields AND together.
+"""
 input IsAdminInput {
-  venueId: String!
+  "unique identifier of the venue"
+  venueId: ID
+  "human readable identifier of the venue"
+  slug: ID
 }
 
 """
@@ -3343,7 +3349,15 @@ func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
-			it.VenueID, err = ec.unmarshalNString2string(ctx, v)
+			it.VenueID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "slug":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+			it.Slug, err = ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}

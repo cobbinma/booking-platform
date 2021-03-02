@@ -168,7 +168,7 @@ Input to query if the user is an admin. Fields AND together.
 """
 input IsAdminInput {
   "unique identifier of the venue"
-  id: ID
+  venueId: ID
   "human readable identifier of the venue"
   slug: ID
 }

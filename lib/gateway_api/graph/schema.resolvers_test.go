@@ -105,7 +105,7 @@ func Test_GetVenueTables(t *testing.T) {
 		SpecialOpeningHours: nil,
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
 
 	venueSrv.EXPECT().GetTables(gomock.Any(), venueID).Return([]*models.Table{
 		{
@@ -177,7 +177,7 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 		SpecialOpeningHours: nil,
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
 
@@ -218,7 +218,7 @@ func Test_AddTableNotAuthorised(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
 
@@ -240,7 +240,7 @@ func Test_AddTable(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
 	venueSrv.EXPECT().AddTable(gomock.Any(), models.TableInput{
 		VenueID:  venueID,
 		Name:     "test table",
@@ -270,7 +270,7 @@ func Test_RemoveTableNotAuthorised(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
 
@@ -292,7 +292,7 @@ func Test_RemoveTable(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
 	venueSrv.EXPECT().RemoveTable(gomock.Any(), models.RemoveTableInput{
 		VenueID: venueID,
 		TableID: "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
@@ -406,11 +406,11 @@ func Test_CreateBooking(t *testing.T) {
 }
 
 func Test_IsAdminTrue(t *testing.T) {
-	const venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
+	var venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
 	venueService := mock_resolver.NewMockVenueService(ctrl)
 
-	venueService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(true, nil)
+	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
 
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueService, nil)})))
 
@@ -427,11 +427,11 @@ func Test_IsAdminTrue(t *testing.T) {
 }
 
 func Test_IsAdminFalse(t *testing.T) {
-	const venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
+	var venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
 	venueService := mock_resolver.NewMockVenueService(ctrl)
 
-	venueService.EXPECT().IsAdmin(gomock.Any(), venueID, "test@test.com").Return(false, nil)
+	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueService, nil)})))
 

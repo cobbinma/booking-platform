@@ -48,8 +48,12 @@ type GetSlotResponse struct {
 	OtherAvailableSlots []*Slot `json:"otherAvailableSlots"`
 }
 
+// Input to query if the user is an admin. Fields AND together.
 type IsAdminInput struct {
-	VenueID string `json:"venueId"`
+	// unique identifier of the venue
+	VenueID *string `json:"venueId"`
+	// human readable identifier of the venue
+	Slug *string `json:"slug"`
 }
 
 // Day specific operating hours.
