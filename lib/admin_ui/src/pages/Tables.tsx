@@ -122,9 +122,9 @@ const DeleteTableModal: React.FC<{
               removeTableMutation()
                 .then((table) => {
                   removeTable(table.data?.removeTable?.id || "");
-                  setDeleteIsOpen(false);
                 })
                 .catch((e) => console.log(e));
+              setDeleteIsOpen(false);
             }}
           >
             Okay
@@ -180,20 +180,22 @@ const AddTableModal: React.FC<{
         <ModalButton onClick={close} kind="tertiary">
           Cancel
         </ModalButton>
-        <ModalButton
-          onClick={() => {
-            addTableMutation()
-              .then((table) => {
-                addTable(table?.data?.addTable);
-                setName("");
-                setCapacity("");
-                setAddIsOpen(false);
-              })
-              .catch((e) => console.log(e));
-          }}
-        >
-          Okay
-        </ModalButton>
+        {!isNaN(Number(capacity)) && parseInt(capacity) > 0 && name !== "" ? (
+          <ModalButton
+            onClick={() => {
+              addTableMutation()
+                .then((table) => {
+                  addTable(table?.data?.addTable);
+                  setName("");
+                  setCapacity("");
+                  setAddIsOpen(false);
+                })
+                .catch((e) => console.log(e));
+            }}
+          >
+            Okay
+          </ModalButton>
+        ) : null}
       </ModalFooter>
     </Modal>
   );
