@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { H2 } from "baseui/typography";
 import { Table as BaseTable } from "baseui/table";
-import { Table, useRemoveTableMutation } from "../graph";
+import { Table, useAddTableMutation, useRemoveTableMutation } from "../graph";
 import { Button } from "baseui/button";
 import {
   Modal,
@@ -11,12 +11,15 @@ import {
   ModalFooter,
   ModalHeader,
 } from "baseui/modal";
+import { Input } from "baseui/input";
+import { FormControl } from "baseui/form-control";
 
 const Tables: React.FC<{ tables: Array<Table>; venueId: string }> = ({
   tables,
   venueId,
 }) => {
   const [deleteIsOpen, setDeleteIsOpen] = React.useState<boolean>(false);
+  const [addIsOpen, setAddIsOpen] = React.useState<boolean>(false);
   const [selectedTable, setSelectedTable] = React.useState<Table | null>(null);
   const [currentTables, setCurrentTables] = React.useState<Array<Table>>(
     tables
@@ -26,11 +29,24 @@ const Tables: React.FC<{ tables: Array<Table>; venueId: string }> = ({
     setCurrentTables(currentTables.filter((table) => table.id !== id));
   };
 
+  const addTable = (table: Table | null | undefined) => {
+    if (table) setCurrentTables(currentTables.concat(table));
+  };
+
   return (
     <div>
       <FlexGrid>
         <FlexGridItem>
           <H2>Tables</H2>
+        </FlexGridItem>
+        <FlexGridItem>
+          <Button
+            onClick={() => {
+              setAddIsOpen(true);
+            }}
+          >
+            Add Table
+          </Button>
         </FlexGridItem>
         <FlexGridItem>
           <BaseTable
@@ -57,6 +73,12 @@ const Tables: React.FC<{ tables: Array<Table>; venueId: string }> = ({
           selectedTable={selectedTable}
           removeTable={removeTable}
           venueId={venueId}
+        />
+        <AddTableModal
+          addIsOpen={addIsOpen}
+          setAddIsOpen={setAddIsOpen}
+          venueId={venueId}
+          addTable={addTable}
         />
       </FlexGrid>
     </div>
@@ -110,5 +132,69 @@ const DeleteTableModal: React.FC<{
         </ModalFooter>
       </Modal>
     </div>
+  );
+};
+
+const AddTableModal: React.FC<{
+  addIsOpen: boolean;
+  setAddIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  venueId: string;
+  addTable: (table: Table | null | undefined) => void;
+}> = ({ addIsOpen, setAddIsOpen, venueId, addTable }) => {
+  const [name, setName] = useState<string>("");
+  const [capacity, setCapacity] = useState<string>("");
+  const [addTableMutation] = useAddTableMutation({
+    variables: {
+      table: { venueId: venueId, name: name, capacity: parseInt(capacity) },
+    },
+  });
+  const close = () => {
+    setName("");
+    setCapacity("");
+    setAddIsOpen(false);
+  };
+
+  return (
+    <Modal onClose={close} isOpen={addIsOpen}>
+      <ModalHeader>Add Table</ModalHeader>
+      <ModalBody>
+        <FormControl label={() => "Table Name"}>
+          <Input
+            value={name}
+            onChange={(event) => setName(event.currentTarget.value)}
+            placeholder="Name"
+          />
+        </FormControl>
+        <FormControl label={() => "Table Capacity"}>
+          <Input
+            value={capacity}
+            onChange={(event) => {
+              setCapacity(event.currentTarget.value);
+            }}
+            placeholder="Capacity"
+            error={isNaN(Number(capacity))}
+          />
+        </FormControl>
+      </ModalBody>
+      <ModalFooter>
+        <ModalButton onClick={close} kind="tertiary">
+          Cancel
+        </ModalButton>
+        <ModalButton
+          onClick={() => {
+            addTableMutation()
+              .then((table) => {
+                addTable(table?.data?.addTable);
+                setName("");
+                setCapacity("");
+                setAddIsOpen(false);
+              })
+              .catch((e) => console.log(e));
+          }}
+        >
+          Okay
+        </ModalButton>
+      </ModalFooter>
+    </Modal>
   );
 };
