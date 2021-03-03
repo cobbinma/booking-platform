@@ -51,7 +51,7 @@ const Admins: React.FC<{
         </FlexGridItem>
         <FlexGridItem>
           <BaseTable
-            columns={["Name", ""]}
+            columns={["Email", ""]}
             data={admins.slice().map((admin) => {
               return [
                 admin,
