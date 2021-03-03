@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { Switch, Route, useHistory } from "react-router-dom";
 import Home from "../pages/Home";
 import Tables from "../pages/Tables";
-import { AppNavBar, NavItemT, setItemActive } from "baseui/app-nav-bar";
+import { AppNavBar, NavItemT } from "baseui/app-nav-bar";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { useStyletron } from "baseui";
 import Admins from "../pages/Admins";
 import Bookings from "../pages/Bookings";
-import { Table, useGetVenueQuery } from "../graph";
+import { useGetVenueQuery } from "../graph";
 import { Spinner } from "baseui/spinner";
 
 const Pages: NavItemT[] = [
@@ -41,10 +41,11 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
   let history = useHistory();
   const [css] = useStyletron();
 
-  const { data, loading, error } = useGetVenueQuery({
+  const { data, loading, error, refetch } = useGetVenueQuery({
     variables: {
       slug: venueID,
     },
+    pollInterval: 5000,
   });
 
   if (loading)
@@ -75,8 +76,6 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
               title="Admin"
               mainItems={Pages}
               onMainItemSelect={(item) => {
-                console.log(item);
-                setItemActive(Pages, item);
                 history.push(item.info.link);
               }}
             />
@@ -87,7 +86,8 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
             <Route path="/tables">
               <Tables
                 tables={data?.getVenue?.tables || []}
-                venueId={data?.getVenue?.id || ""}
+                venueId={data?.getVenue?.id}
+                refetch={refetch}
               />
             </Route>
             <Route path="/admins">
@@ -97,10 +97,7 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
               <Bookings />
             </Route>
             <Route path="/">
-              <Home
-                name={data?.getVenue?.name || ""}
-                slug={data?.getVenue?.slug || ""}
-              />
+              <Home name={data?.getVenue?.name} slug={data?.getVenue?.slug} />
             </Route>
           </Switch>
         </FlexGridItem>

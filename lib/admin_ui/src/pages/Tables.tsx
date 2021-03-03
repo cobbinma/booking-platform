@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { H2 } from "baseui/typography";
 import { Table as BaseTable } from "baseui/table";
-import { Table, useAddTableMutation, useRemoveTableMutation } from "../graph";
+import {
+  GetVenueQuery,
+  GetVenueQueryVariables,
+  Table,
+  useAddTableMutation,
+  useRemoveTableMutation,
+} from "../graph";
 import { Button } from "baseui/button";
 import {
   Modal,
@@ -13,25 +19,20 @@ import {
 } from "baseui/modal";
 import { Input } from "baseui/input";
 import { FormControl } from "baseui/form-control";
+import { ApolloQueryResult } from "@apollo/client";
 
-const Tables: React.FC<{ tables: Array<Table>; venueId: string }> = ({
-  tables,
-  venueId,
-}) => {
+const Tables: React.FC<{
+  tables: Array<Table>;
+  venueId: string | null | undefined;
+  refetch: (
+    variables?: GetVenueQueryVariables
+  ) => Promise<ApolloQueryResult<GetVenueQuery>>;
+}> = ({ tables, venueId, refetch }) => {
   const [deleteIsOpen, setDeleteIsOpen] = React.useState<boolean>(false);
   const [addIsOpen, setAddIsOpen] = React.useState<boolean>(false);
   const [selectedTable, setSelectedTable] = React.useState<Table | null>(null);
-  const [currentTables, setCurrentTables] = React.useState<Array<Table>>(
-    tables
-  );
 
-  const removeTable = (id: string) => {
-    setCurrentTables(currentTables.filter((table) => table.id !== id));
-  };
-
-  const addTable = (table: Table | null | undefined) => {
-    if (table) setCurrentTables(currentTables.concat(table));
-  };
+  if (!venueId) return <div>error</div>;
 
   return (
     <div>
@@ -51,7 +52,7 @@ const Tables: React.FC<{ tables: Array<Table>; venueId: string }> = ({
         <FlexGridItem>
           <BaseTable
             columns={["Name", "Capacity", ""]}
-            data={currentTables.slice().map((table) => {
+            data={tables.slice().map((table) => {
               return [
                 table.name,
                 table.capacity,
@@ -71,14 +72,14 @@ const Tables: React.FC<{ tables: Array<Table>; venueId: string }> = ({
           deleteIsOpen={deleteIsOpen}
           setDeleteIsOpen={setDeleteIsOpen}
           selectedTable={selectedTable}
-          removeTable={removeTable}
+          refetch={refetch}
           venueId={venueId}
         />
         <AddTableModal
           addIsOpen={addIsOpen}
           setAddIsOpen={setAddIsOpen}
           venueId={venueId}
-          addTable={addTable}
+          refetch={refetch}
         />
       </FlexGrid>
     </div>
@@ -91,15 +92,11 @@ const DeleteTableModal: React.FC<{
   deleteIsOpen: boolean;
   setDeleteIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTable: Table | null;
-  removeTable: (id: string) => void;
+  refetch: (
+    variables?: GetVenueQueryVariables
+  ) => Promise<ApolloQueryResult<GetVenueQuery>>;
   venueId: string;
-}> = ({
-  deleteIsOpen,
-  setDeleteIsOpen,
-  selectedTable,
-  venueId,
-  removeTable,
-}) => {
+}> = ({ deleteIsOpen, setDeleteIsOpen, selectedTable, venueId, refetch }) => {
   const [removeTableMutation] = useRemoveTableMutation({
     variables: {
       table: { venueId: venueId, tableId: selectedTable?.id || "" },
@@ -120,8 +117,8 @@ const DeleteTableModal: React.FC<{
           <ModalButton
             onClick={() => {
               removeTableMutation()
-                .then((table) => {
-                  removeTable(table.data?.removeTable?.id || "");
+                .then(() => {
+                  refetch();
                 })
                 .catch((e) => console.log(e));
               setDeleteIsOpen(false);
@@ -139,8 +136,10 @@ const AddTableModal: React.FC<{
   addIsOpen: boolean;
   setAddIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   venueId: string;
-  addTable: (table: Table | null | undefined) => void;
-}> = ({ addIsOpen, setAddIsOpen, venueId, addTable }) => {
+  refetch: (
+    variables?: GetVenueQueryVariables
+  ) => Promise<ApolloQueryResult<GetVenueQuery>>;
+}> = ({ addIsOpen, setAddIsOpen, venueId, refetch }) => {
   const [name, setName] = useState<string>("");
   const [capacity, setCapacity] = useState<string>("");
   const [addTableMutation] = useAddTableMutation({
@@ -184,8 +183,8 @@ const AddTableModal: React.FC<{
           <ModalButton
             onClick={() => {
               addTableMutation()
-                .then((table) => {
-                  addTable(table?.data?.addTable);
+                .then(() => {
+                  refetch();
                   setName("");
                   setCapacity("");
                   setAddIsOpen(false);
