@@ -1,7 +1,3 @@
-mutation RemoveTable($table: RemoveAd!) {
-    removeTable(input: $table) {
-        id
-        name
-        capacity
-    }
+mutation RemoveAdmin($admin: RemoveAdminInput!) {
+    removeAdmin(input: $admin)
 }
