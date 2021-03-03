@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { H2 } from "baseui/typography";
-import { Table as BaseTable } from "baseui/table";
 import {
   GetVenueQuery,
   GetVenueQueryVariables,
