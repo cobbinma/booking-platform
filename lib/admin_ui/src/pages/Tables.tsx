@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { H2 } from "baseui/typography";
-import { Table as BaseTable } from "baseui/table";
 import {
   GetVenueQuery,
   GetVenueQueryVariables,
@@ -20,6 +19,7 @@ import {
 import { Input } from "baseui/input";
 import { FormControl } from "baseui/form-control";
 import { ApolloQueryResult } from "@apollo/client";
+import { TableBuilder, TableBuilderColumn } from "baseui/table-semantic";
 
 const Tables: React.FC<{
   tables: Array<Table>;
@@ -28,6 +28,20 @@ const Tables: React.FC<{
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
 }> = ({ tables, venueId, refetch }) => {
+  const overrides = {
+    TableBodyRow: {
+      style: ({ $theme, $rowIndex }: any) => ({
+        backgroundColor:
+          $rowIndex % 2
+            ? $theme.colors.backgroundPrimary
+            : $theme.colors.backgroundSecondary,
+        ":hover": {
+          backgroundColor: $theme.colors.backgroundTertiary,
+        },
+      }),
+    },
+  };
+
   const [deleteIsOpen, setDeleteIsOpen] = React.useState<boolean>(false);
   const [addIsOpen, setAddIsOpen] = React.useState<boolean>(false);
   const [selectedTable, setSelectedTable] = React.useState<Table | null>(null);
@@ -50,23 +64,26 @@ const Tables: React.FC<{
           </Button>
         </FlexGridItem>
         <FlexGridItem>
-          <BaseTable
-            columns={["Name", "Capacity", ""]}
-            data={tables.slice().map((table) => {
-              return [
-                table.name,
-                table.capacity,
+          <TableBuilder data={tables} overrides={overrides}>
+            <TableBuilderColumn header="Name">
+              {(row) => row.name}
+            </TableBuilderColumn>
+            <TableBuilderColumn header="Capacity">
+              {(row) => row.capacity}
+            </TableBuilderColumn>
+            <TableBuilderColumn>
+              {(row) => (
                 <Button
                   onClick={() => {
-                    setSelectedTable(table);
+                    setSelectedTable(row);
                     setDeleteIsOpen(true);
                   }}
                 >
                   Delete
-                </Button>,
-              ];
-            })}
-          />
+                </Button>
+              )}
+            </TableBuilderColumn>
+          </TableBuilder>
         </FlexGridItem>
         <DeleteTableModal
           deleteIsOpen={deleteIsOpen}

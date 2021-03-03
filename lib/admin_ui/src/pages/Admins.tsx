@@ -19,6 +19,7 @@ import {
 import { Input } from "baseui/input";
 import { FormControl } from "baseui/form-control";
 import { ApolloQueryResult } from "@apollo/client";
+import { TableBuilder, TableBuilderColumn } from "baseui/table-semantic";
 
 const Admins: React.FC<{
   admins: Array<string>;
@@ -27,6 +28,20 @@ const Admins: React.FC<{
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
 }> = ({ admins, venueId, refetch }) => {
+  const overrides = {
+    TableBodyRow: {
+      style: ({ $theme, $rowIndex }: any) => ({
+        backgroundColor:
+          $rowIndex % 2
+            ? $theme.colors.backgroundPrimary
+            : $theme.colors.backgroundSecondary,
+        ":hover": {
+          backgroundColor: $theme.colors.backgroundTertiary,
+        },
+      }),
+    },
+  };
+
   const [deleteIsOpen, setDeleteIsOpen] = React.useState<boolean>(false);
   const [addIsOpen, setAddIsOpen] = React.useState<boolean>(false);
   const [selectedAdmin, setSelectedAdmin] = React.useState<string | null>(null);
@@ -49,22 +64,23 @@ const Admins: React.FC<{
           </Button>
         </FlexGridItem>
         <FlexGridItem>
-          <BaseTable
-            columns={["Email", ""]}
-            data={admins.slice().map((admin) => {
-              return [
-                admin,
+          <TableBuilder data={admins} overrides={overrides}>
+            <TableBuilderColumn header="Email">
+              {(row) => row}
+            </TableBuilderColumn>
+            <TableBuilderColumn>
+              {(row) => (
                 <Button
                   onClick={() => {
-                    setSelectedAdmin(admin);
+                    setSelectedAdmin(row);
                     setDeleteIsOpen(true);
                   }}
                 >
                   Delete
-                </Button>,
-              ];
-            })}
-          />
+                </Button>
+              )}
+            </TableBuilderColumn>
+          </TableBuilder>
         </FlexGridItem>
         <DeleteAdminModal
           deleteIsOpen={deleteIsOpen}
