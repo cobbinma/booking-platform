@@ -19,7 +19,6 @@ import {
 import { Input } from "baseui/input";
 import { FormControl } from "baseui/form-control";
 import { ApolloQueryResult } from "@apollo/client";
-import { isBoolean } from "util";
 
 const Admins: React.FC<{
   admins: Array<string>;

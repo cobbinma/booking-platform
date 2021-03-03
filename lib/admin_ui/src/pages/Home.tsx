@@ -1,5 +1,5 @@
 import React from "react";
-import { H2, H4 } from "baseui/typography";
+import { H2 } from "baseui/typography";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
 import { Input } from "baseui/input";
 import { FormControl } from "baseui/form-control";
