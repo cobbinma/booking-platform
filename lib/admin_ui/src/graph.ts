@@ -232,6 +232,19 @@ export type MutationRemoveTableArgs = {
   input: RemoveTableInput;
 };
 
+export type AddTableMutationVariables = Exact<{
+  table: TableInput;
+}>;
+
+
+export type AddTableMutation = (
+  { __typename?: 'Mutation' }
+  & { addTable: (
+    { __typename?: 'Table' }
+    & Pick<Table, 'id' | 'name' | 'capacity'>
+  ) }
+);
+
 export type CreateBookingMutationVariables = Exact<{
   slot: BookingInput;
 }>;
@@ -273,13 +286,16 @@ export type GetVenueQuery = (
   { __typename?: 'Query' }
   & { getVenue: (
     { __typename?: 'Venue' }
-    & Pick<Venue, 'id' | 'name'>
+    & Pick<Venue, 'id' | 'name' | 'slug'>
     & { openingHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
       & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
     )>, specialOpeningHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
       & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+    )>, tables: Array<(
+      { __typename?: 'Table' }
+      & Pick<Table, 'id' | 'name' | 'capacity'>
     )> }
   ) }
 );
@@ -294,7 +310,54 @@ export type IsAdminQuery = (
   & Pick<Query, 'isAdmin'>
 );
 
+export type RemoveTableMutationVariables = Exact<{
+  table: RemoveTableInput;
+}>;
 
+
+export type RemoveTableMutation = (
+  { __typename?: 'Mutation' }
+  & { removeTable: (
+    { __typename?: 'Table' }
+    & Pick<Table, 'id' | 'name' | 'capacity'>
+  ) }
+);
+
+
+export const AddTableDocument = gql`
+    mutation AddTable($table: TableInput!) {
+  addTable(input: $table) {
+    id
+    name
+    capacity
+  }
+}
+    `;
+export type AddTableMutationFn = Apollo.MutationFunction<AddTableMutation, AddTableMutationVariables>;
+
+/**
+ * __useAddTableMutation__
+ *
+ * To run a mutation, you first call `useAddTableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddTableMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addTableMutation, { data, loading, error }] = useAddTableMutation({
+ *   variables: {
+ *      table: // value for 'table'
+ *   },
+ * });
+ */
+export function useAddTableMutation(baseOptions?: Apollo.MutationHookOptions<AddTableMutation, AddTableMutationVariables>) {
+        return Apollo.useMutation<AddTableMutation, AddTableMutationVariables>(AddTableDocument, baseOptions);
+      }
+export type AddTableMutationHookResult = ReturnType<typeof useAddTableMutation>;
+export type AddTableMutationResult = Apollo.MutationResult<AddTableMutation>;
+export type AddTableMutationOptions = Apollo.BaseMutationOptions<AddTableMutation, AddTableMutationVariables>;
 export const CreateBookingDocument = gql`
     mutation CreateBooking($slot: BookingInput!) {
   createBooking(input: $slot) {
@@ -401,6 +464,12 @@ export const GetVenueDocument = gql`
       validFrom
       validThrough
     }
+    tables {
+      id
+      name
+      capacity
+    }
+    slug
   }
 }
     `;
@@ -461,3 +530,37 @@ export function useIsAdminLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Is
 export type IsAdminQueryHookResult = ReturnType<typeof useIsAdminQuery>;
 export type IsAdminLazyQueryHookResult = ReturnType<typeof useIsAdminLazyQuery>;
 export type IsAdminQueryResult = Apollo.QueryResult<IsAdminQuery, IsAdminQueryVariables>;
+export const RemoveTableDocument = gql`
+    mutation RemoveTable($table: RemoveTableInput!) {
+  removeTable(input: $table) {
+    id
+    name
+    capacity
+  }
+}
+    `;
+export type RemoveTableMutationFn = Apollo.MutationFunction<RemoveTableMutation, RemoveTableMutationVariables>;
+
+/**
+ * __useRemoveTableMutation__
+ *
+ * To run a mutation, you first call `useRemoveTableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveTableMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeTableMutation, { data, loading, error }] = useRemoveTableMutation({
+ *   variables: {
+ *      table: // value for 'table'
+ *   },
+ * });
+ */
+export function useRemoveTableMutation(baseOptions?: Apollo.MutationHookOptions<RemoveTableMutation, RemoveTableMutationVariables>) {
+        return Apollo.useMutation<RemoveTableMutation, RemoveTableMutationVariables>(RemoveTableDocument, baseOptions);
+      }
+export type RemoveTableMutationHookResult = ReturnType<typeof useRemoveTableMutation>;
+export type RemoveTableMutationResult = Apollo.MutationResult<RemoveTableMutation>;
+export type RemoveTableMutationOptions = Apollo.BaseMutationOptions<RemoveTableMutation, RemoveTableMutationVariables>;
