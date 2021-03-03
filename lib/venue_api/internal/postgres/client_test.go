@@ -248,6 +248,16 @@ func suite(repository api.VenueAPIServer) []test {
 			},
 		},
 		{
+			name: "get administrators",
+			test: func(t *testing.T) {
+				resp, err := repository.GetAdmins(context.Background(), &api.GetAdminsRequest{VenueId: UUID})
+				require.NoError(t, err)
+
+				require.Equal(t, 1, len(resp.Admins))
+				assert.Equal(t, "test@test.com", resp.Admins[0])
+			},
+		},
+		{
 			name: "remove administrator",
 			test: func(t *testing.T) {
 				venueID := UUID
@@ -266,6 +276,15 @@ func suite(repository api.VenueAPIServer) []test {
 				require.NoError(t, err)
 
 				assert.Equal(t, false, admin.IsAdmin)
+			},
+		},
+		{
+			name: "get administrators none",
+			test: func(t *testing.T) {
+				resp, err := repository.GetAdmins(context.Background(), &api.GetAdminsRequest{VenueId: UUID})
+				require.NoError(t, err)
+
+				require.Equal(t, 0, len(resp.Admins))
 			},
 		},
 	}

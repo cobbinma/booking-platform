@@ -387,6 +387,31 @@ func (c client) RemoveAdmin(ctx context.Context, req *api.RemoveAdminRequest) (*
 	return &api.RemoveAdminResponse{Email: req.Email}, nil
 }
 
+func (c client) GetAdmins(ctx context.Context, req *api.GetAdminsRequest) (*api.GetAdminsResponse, error) {
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("email").From(AdminsTable).
+		Where(sq.Eq{"venue_id": req.VenueId}).ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not venue build sql : %s", err)
+	}
+
+	emails := []string{}
+	rows, err := c.db.Queryx(sql, args...)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could query admins : %s", err)
+	}
+	for rows.Next() {
+		email := ""
+		if err := rows.Scan(&email); err != nil {
+			return nil, status.Errorf(codes.Internal, "could scan admin row: %s", err)
+		}
+
+		emails = append(emails, email)
+	}
+
+	return &api.GetAdminsResponse{Admins: emails}, nil
+}
+
 func (c *client) migrate() error {
 	driver, err := pgres.WithInstance(c.db.DB, &pgres.Config{})
 	if err != nil {
