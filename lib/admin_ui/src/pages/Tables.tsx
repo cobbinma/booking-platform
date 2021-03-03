@@ -108,7 +108,7 @@ const DeleteTableModal: React.FC<{
       <Modal onClose={() => setDeleteIsOpen(false)} isOpen={deleteIsOpen}>
         <ModalHeader>Delete {selectedTable?.name}</ModalHeader>
         <ModalBody>
-          Deleting table will cancel all bookings associated with the booking.
+          Deleting table will cancel all bookings associated with the table.
         </ModalBody>
         <ModalFooter>
           <ModalButton kind="tertiary" onClick={() => setDeleteIsOpen(false)}>
