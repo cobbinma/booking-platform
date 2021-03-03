@@ -99,6 +99,8 @@ type Venue {
   specialOpeningHours: [OpeningHoursSpecification!]!
   "tables at the venue"
   tables: [Table!]!
+  "email addresses of venue administrators"
+  admins: [String!]!
   "human readable identifier of the venue"
   slug: ID!
 }

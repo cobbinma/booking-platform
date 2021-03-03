@@ -140,6 +140,8 @@ type Venue struct {
 	SpecialOpeningHours []*OpeningHoursSpecification `json:"specialOpeningHours"`
 	// tables at the venue
 	Tables []*Table `json:"tables"`
+	// email addresses of venue administrators
+	Admins []string `json:"admins"`
 	// human readable identifier of the venue
 	Slug string `json:"slug"`
 }

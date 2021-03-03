@@ -55,6 +55,16 @@ pub struct IsAdminResponse {
     pub is_admin: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetAdminsRequest {
+    #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetAdminsResponse {
+    #[prost(string, repeated, tag = "1")]
+    pub admins: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AddAdminRequest {
     #[prost(string, tag = "1")]
     pub venue_id: ::prost::alloc::string::String,
@@ -211,6 +221,20 @@ pub mod venue_api_client {
             let path = http::uri::PathAndQuery::from_static("/venue.api.VenueAPI/AddAdmin");
             self.inner.unary(request.into_request(), path, codec).await
         }
+        pub async fn get_admins(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetAdminsRequest>,
+        ) -> Result<tonic::Response<super::GetAdminsResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/venue.api.VenueAPI/GetAdmins");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
         pub async fn remove_admin(
             &mut self,
             request: impl tonic::IntoRequest<super::RemoveAdminRequest>,
@@ -274,6 +298,10 @@ pub mod venue_api_server {
             &self,
             request: tonic::Request<super::AddAdminRequest>,
         ) -> Result<tonic::Response<super::AddAdminResponse>, tonic::Status>;
+        async fn get_admins(
+            &self,
+            request: tonic::Request<super::GetAdminsRequest>,
+        ) -> Result<tonic::Response<super::GetAdminsResponse>, tonic::Status>;
         async fn remove_admin(
             &self,
             request: tonic::Request<super::RemoveAdminRequest>,
@@ -517,6 +545,37 @@ pub mod venue_api_server {
                         let interceptor = inner.1.clone();
                         let inner = inner.0;
                         let method = AddAdminSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/venue.api.VenueAPI/GetAdmins" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetAdminsSvc<T: VenueApi>(pub Arc<T>);
+                    impl<T: VenueApi> tonic::server::UnaryService<super::GetAdminsRequest> for GetAdminsSvc<T> {
+                        type Response = super::GetAdminsResponse;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetAdminsRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).get_admins(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = GetAdminsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = if let Some(interceptor) = interceptor {
                             tonic::server::Grpc::with_interceptor(codec, interceptor)

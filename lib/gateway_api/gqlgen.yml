@@ -64,3 +64,5 @@ models:
     fields:
       tables:
         resolver: true
+      admins:
+        resolver: true

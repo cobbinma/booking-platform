@@ -80,6 +80,10 @@ func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*model
 	return r.venueService.GetTables(ctx, obj.ID)
 }
 
+func (r *venueResolver) Admins(ctx context.Context, obj *models.Venue) ([]string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

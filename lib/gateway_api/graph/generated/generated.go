@@ -97,6 +97,7 @@ type ComplexityRoot struct {
 	}
 
 	Venue struct {
+		Admins              func(childComplexity int) int
 		ID                  func(childComplexity int) int
 		Name                func(childComplexity int) int
 		OpeningHours        func(childComplexity int) int
@@ -118,6 +119,7 @@ type QueryResolver interface {
 }
 type VenueResolver interface {
 	Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error)
+	Admins(ctx context.Context, obj *models.Venue) ([]string, error)
 }
 
 type executableSchema struct {
@@ -375,6 +377,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Table.Name(childComplexity), true
 
+	case "Venue.admins":
+		if e.complexity.Venue.Admins == nil {
+			break
+		}
+
+		return e.complexity.Venue.Admins(childComplexity), true
+
 	case "Venue.id":
 		if e.complexity.Venue.ID == nil {
 			break
@@ -582,6 +591,8 @@ type Venue {
   specialOpeningHours: [OpeningHoursSpecification!]!
   "tables at the venue"
   tables: [Table!]!
+  "email addresses of venue administrators"
+  admins: [String!]!
   "human readable identifier of the venue"
   slug: ID!
 }
@@ -2163,6 +2174,41 @@ func (ec *executionContext) _Venue_tables(ctx context.Context, field graphql.Col
 	res := resTmp.([]*models.Table)
 	fc.Result = res
 	return ec.marshalNTable2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_admins(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Venue().Admins(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Venue_slug(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
@@ -3895,6 +3941,20 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 				}
 				return res
 			})
+		case "admins":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Venue_admins(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "slug":
 			out.Values[i] = ec._Venue_slug(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4329,6 +4389,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNTable2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx context.Context, sel ast.SelectionSet, v models.Table) graphql.Marshaler {
