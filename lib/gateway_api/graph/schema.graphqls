@@ -198,6 +198,26 @@ type Query {
 }
 
 """
+Input to add an administrator to a venue.
+"""
+input AdminInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "email address of the administrator"
+  email: String!
+}
+
+"""
+Input to remove an administrator from a venue.
+"""
+input RemoveAdminInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "email address of the administrator"
+  email: String!
+}
+
+"""
 Booking mutations.
 """
 type Mutation {
@@ -207,4 +227,8 @@ type Mutation {
   addTable(input: TableInput!): Table!
   "remove a table from a venue"
   removeTable(input: RemoveTableInput!): Table!
+  "add an admin to a venue"
+  addAdmin(input: AdminInput!): String!
+  "remove an admin from a venue"
+  removeAdmin(input: RemoveAdminInput!): String!
 }

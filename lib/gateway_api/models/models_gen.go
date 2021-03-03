@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+// Input to add an administrator to a venue.
+type AdminInput struct {
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// email address of the administrator
+	Email string `json:"email"`
+}
+
 // Booking has now been confirmed.
 type Booking struct {
 	// unique identifier of the booking
@@ -68,6 +76,14 @@ type OpeningHoursSpecification struct {
 	ValidFrom *time.Time `json:"validFrom"`
 	// date the special opening hours ends at. only valid for special opening hours
 	ValidThrough *time.Time `json:"validThrough"`
+}
+
+// Input to remove an administrator from a venue.
+type RemoveAdminInput struct {
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// email address of the administrator
+	Email string `json:"email"`
 }
 
 // Input to remove a venue table

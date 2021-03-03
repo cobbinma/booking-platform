@@ -46,6 +46,26 @@ func (r *mutationResolver) RemoveTable(ctx context.Context, input models.RemoveT
 	return r.venueService.RemoveTable(ctx, input)
 }
 
+func (r *mutationResolver) AddAdmin(ctx context.Context, input models.AdminInput) (string, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		return "", err
+	}
+
+	return r.venueService.AddAdmin(ctx, input)
+}
+
+func (r *mutationResolver) RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		return "", err
+	}
+
+	return r.venueService.RemoveAdmin(ctx, input)
+}
+
 func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
 	if filter.ID == nil && filter.Slug == nil {
 		return nil, fmt.Errorf("at least one field must not be nil on filter")

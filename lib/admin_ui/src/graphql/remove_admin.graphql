@@ -1,0 +1,7 @@
+mutation RemoveTable($table: RemoveAd!) {
+    removeTable(input: $table) {
+        id
+        name
+        capacity
+    }
+}

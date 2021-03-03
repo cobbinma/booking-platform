@@ -1,0 +1,3 @@
+(struct { AddAdmin string "json:\"addAdmin\"" }) {
+  AddAdmin: (string) ""
+}

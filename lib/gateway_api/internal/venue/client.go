@@ -175,3 +175,27 @@ func (v venueClient) GetAdmins(ctx context.Context, venueID string) ([]string, e
 
 	return resp.Admins, nil
 }
+
+func (v venueClient) AddAdmin(ctx context.Context, input models.AdminInput) (string, error) {
+	resp, err := v.client.AddAdmin(ctx, &api.AddAdminRequest{
+		VenueId: input.VenueID,
+		Email:   input.Email,
+	})
+	if err != nil {
+		return "", fmt.Errorf("could not add admin using client : %w", err)
+	}
+
+	return resp.Email, nil
+}
+
+func (v venueClient) RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error) {
+	resp, err := v.client.RemoveAdmin(ctx, &api.RemoveAdminRequest{
+		VenueId: input.VenueID,
+		Email:   input.Email,
+	})
+	if err != nil {
+		return "", fmt.Errorf("could not remove admin using client : %w", err)
+	}
+
+	return resp.Email, nil
+}
