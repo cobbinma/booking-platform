@@ -418,6 +418,7 @@ mod tests {
                         valid_through: "".to_string(),
                     }],
                     special_opening_hours: vec![],
+                    slug: "".to_string()
                 })
             });
         let service = BookingService::new(
@@ -471,6 +472,7 @@ mod tests {
                         valid_through: "".to_string(),
                     }],
                     special_opening_hours: vec![],
+                    slug: "test-venue".to_string()
                 })
             });
 
@@ -575,6 +577,7 @@ mod tests {
                         valid_through: "".to_string(),
                     }],
                     special_opening_hours: vec![],
+                    slug: "test-venue".to_string()
                 })
             });
 
