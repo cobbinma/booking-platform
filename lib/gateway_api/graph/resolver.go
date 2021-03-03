@@ -28,6 +28,7 @@ type VenueService interface {
 	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
 	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)
 	IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error)
+	GetAdmins(ctx context.Context, venueID string) ([]string, error)
 }
 
 type BookingService interface {

@@ -81,7 +81,13 @@ func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*model
 }
 
 func (r *venueResolver) Admins(ctx context.Context, obj *models.Venue) ([]string, error) {
-	panic(fmt.Errorf("not implemented"))
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &obj.ID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.GetAdmins(ctx, obj.ID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -99,6 +99,19 @@ func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, input, email interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, input, email)
 }
 
+// GetAdmins mocks base method
+func (m *MockVenueService) GetAdmins(ctx context.Context, venueID string) ([]string, error) {
+	ret := m.ctrl.Call(m, "GetAdmins", ctx, venueID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAdmins indicates an expected call of GetAdmins
+func (mr *MockVenueServiceMockRecorder) GetAdmins(ctx, venueID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdmins", reflect.TypeOf((*MockVenueService)(nil).GetAdmins), ctx, venueID)
+}
+
 // MockBookingService is a mock of BookingService interface
 type MockBookingService struct {
 	ctrl     *gomock.Controller
