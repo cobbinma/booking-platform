@@ -18,7 +18,11 @@ type Resolver struct {
 }
 
 func NewResolver(userService models.UserService, venueService VenueService, bookingService BookingService) *Resolver {
-	return &Resolver{userService: userService, venueService: venueService, bookingService: bookingService}
+	return &Resolver{
+		userService:    userService,
+		venueService:   venueService,
+		bookingService: bookingService,
+	}
 }
 
 //go:generate mockgen -package=mock_resolver -destination=./mock/graph.go -source=resolver.go
@@ -39,14 +43,20 @@ type BookingService interface {
 }
 
 func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) error {
-	user, err := r.userService.GetUser(ctx)
-	if err != nil {
-		return status.Errorf(codes.Internal, "could not get user profile")
+	user := models.UserFromCtx(ctx)
+	if user == nil {
+		u, err := r.userService.GetUser(ctx)
+		if err != nil {
+			return status.Errorf(codes.Internal, "could not get user profile : %s", err)
+		}
+
+		models.AddUserToContext(ctx, *u)
+		user = u
 	}
 
 	isAdmin, err := r.venueService.IsAdmin(ctx, input, user.Email)
 	if err != nil {
-		return status.Errorf(codes.Internal, "could not determine is user is admin")
+		return status.Errorf(codes.Internal, "could not determine is user is admin : %s", err)
 	}
 
 	if isAdmin {

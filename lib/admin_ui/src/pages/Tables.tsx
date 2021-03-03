@@ -118,7 +118,7 @@ const DeleteTableModal: React.FC<{
             onClick={() => {
               removeTableMutation()
                 .then(() => {
-                  refetch();
+                  refetch().catch((e) => console.log(e));
                 })
                 .catch((e) => console.log(e));
               setDeleteIsOpen(false);
@@ -184,7 +184,7 @@ const AddTableModal: React.FC<{
             onClick={() => {
               addTableMutation()
                 .then(() => {
-                  refetch();
+                  refetch().catch((e) => console.log(e));
                   setName("");
                   setCapacity("");
                   setAddIsOpen(false);

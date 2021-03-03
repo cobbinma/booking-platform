@@ -45,7 +45,6 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
     variables: {
       slug: venueID,
     },
-    pollInterval: 5000,
   });
 
   if (loading)
@@ -91,7 +90,11 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
               />
             </Route>
             <Route path="/admins">
-              <Admins />
+              <Admins
+                admins={data?.getVenue?.admins || []}
+                venueId={data?.getVenue?.id}
+                refetch={refetch}
+              />
             </Route>
             <Route path="/bookings">
               <Bookings />

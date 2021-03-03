@@ -84,7 +84,7 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 
 	user, err := r.userService.GetUser(ctx)
 	if err != nil {
-		return false, status.Errorf(codes.Internal, "could not get user profile")
+		return false, status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}
 
 	return r.venueService.IsAdmin(ctx, input, user.Email)
