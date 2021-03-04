@@ -213,6 +213,129 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_GetVenueAdmins(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	slug := "test-venue"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	monday := &models.OpeningHoursSpecification{
+		DayOfWeek:    models.Monday,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+	tuesday := &models.OpeningHoursSpecification{
+		DayOfWeek:    2,
+		Opens:        "11:00",
+		Closes:       "20:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+
+	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
+		Slug: &slug,
+	}).Return(&models.Venue{
+		ID:                  venueID,
+		Name:                "hop and vine",
+		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		SpecialOpeningHours: nil,
+	}, nil)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+
+	venueSrv.EXPECT().GetAdmins(gomock.Any(), venueID).Return([]string{"test@test.com"}, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		GetVenue struct {
+			ID           string `json:"id"`
+			Name         string `json:"name"`
+			OpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHours"`
+			SpecialOpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"specialOpeningHours"`
+			Admins []string `json:"admins"`
+		} `json:"getVenue"`
+	}
+	c.MustPost(`{getVenue(filter:{slug:"test-venue"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},admins}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
+func Test_GetVenueAdminsNotAuthorised(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	monday := &models.OpeningHoursSpecification{
+		DayOfWeek:    models.Monday,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+	tuesday := &models.OpeningHoursSpecification{
+		DayOfWeek:    2,
+		Opens:        "11:00",
+		Closes:       "20:00",
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}
+
+	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
+		ID: &venueID,
+	}).Return(&models.Venue{
+		ID:                  venueID,
+		Name:                "hop and vine",
+		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		SpecialOpeningHours: nil,
+	}, nil)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		GetVenue struct {
+			ID           string `json:"id"`
+			Name         string `json:"name"`
+			OpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHours"`
+			SpecialOpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"specialOpeningHours"`
+			Admins []string `json:"admins"`
+		} `json:"getVenue"`
+	}
+
+	assert.Error(t, c.Post(`{getVenue(filter:{id:"a3291740-e89f-4cc0-845c-75c4c39842c9"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},admins}}`, &resp), "user is not admin")
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
 func Test_AddTableNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
@@ -311,6 +434,84 @@ func Test_RemoveTable(t *testing.T) {
 	}
 	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
 		MustPost(`mutation{removeTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",tableId:"bfcc0d78-83e7-4830-96ab-96cdbd0357c7"}) {id,name,capacity}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
+func Test_AddAdminNotAuthorised(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		AddAdmin string `json:"addAdmin"`
+	}
+	assert.Error(t, c.Post(`mutation{addAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp), "user is not admin")
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
+func Test_AddAdmin(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().AddAdmin(gomock.Any(), models.AdminInput{
+		VenueID: venueID,
+		Email:   "test@test.com",
+	}).Return("test@test.com", nil)
+
+	var resp struct {
+		AddAdmin string `json:"addAdmin"`
+	}
+	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
+		MustPost(`mutation{addAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
+func Test_RemoveAdminNotAuthorised(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+
+	var resp struct {
+		RemoveAdmin string `json:"removeAdmin"`
+	}
+	assert.Error(t, c.Post(`mutation{removeAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp), "user is not admin")
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
+func Test_RemoveAdmin(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().RemoveAdmin(gomock.Any(), models.RemoveAdminInput{
+		VenueID: venueID,
+		Email:   "test@test.com",
+	}).Return("test@test.com", nil)
+
+	var resp struct {
+		RemoveAdmin string `json:"removeAdmin"`
+	}
+	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
+		MustPost(`mutation{removeAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 	ctrl.Finish()

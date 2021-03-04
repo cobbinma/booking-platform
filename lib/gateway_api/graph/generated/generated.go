@@ -62,8 +62,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddAdmin      func(childComplexity int, input models.AdminInput) int
 		AddTable      func(childComplexity int, input models.TableInput) int
 		CreateBooking func(childComplexity int, input models.BookingInput) int
+		RemoveAdmin   func(childComplexity int, input models.RemoveAdminInput) int
 		RemoveTable   func(childComplexity int, input models.RemoveTableInput) int
 	}
 
@@ -97,6 +99,7 @@ type ComplexityRoot struct {
 	}
 
 	Venue struct {
+		Admins              func(childComplexity int) int
 		ID                  func(childComplexity int) int
 		Name                func(childComplexity int) int
 		OpeningHours        func(childComplexity int) int
@@ -110,6 +113,8 @@ type MutationResolver interface {
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
 	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
 	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)
+	AddAdmin(ctx context.Context, input models.AdminInput) (string, error)
+	RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error)
 }
 type QueryResolver interface {
 	GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error)
@@ -118,6 +123,7 @@ type QueryResolver interface {
 }
 type VenueResolver interface {
 	Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error)
+	Admins(ctx context.Context, obj *models.Venue) ([]string, error)
 }
 
 type executableSchema struct {
@@ -205,6 +211,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GetSlotResponse.OtherAvailableSlots(childComplexity), true
 
+	case "Mutation.addAdmin":
+		if e.complexity.Mutation.AddAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addAdmin_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddAdmin(childComplexity, args["input"].(models.AdminInput)), true
+
 	case "Mutation.addTable":
 		if e.complexity.Mutation.AddTable == nil {
 			break
@@ -228,6 +246,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateBooking(childComplexity, args["input"].(models.BookingInput)), true
+
+	case "Mutation.removeAdmin":
+		if e.complexity.Mutation.RemoveAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeAdmin_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveAdmin(childComplexity, args["input"].(models.RemoveAdminInput)), true
 
 	case "Mutation.removeTable":
 		if e.complexity.Mutation.RemoveTable == nil {
@@ -374,6 +404,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Table.Name(childComplexity), true
+
+	case "Venue.admins":
+		if e.complexity.Venue.Admins == nil {
+			break
+		}
+
+		return e.complexity.Venue.Admins(childComplexity), true
 
 	case "Venue.id":
 		if e.complexity.Venue.ID == nil {
@@ -582,6 +619,8 @@ type Venue {
   specialOpeningHours: [OpeningHoursSpecification!]!
   "tables at the venue"
   tables: [Table!]!
+  "email addresses of venue administrators"
+  admins: [String!]!
   "human readable identifier of the venue"
   slug: ID!
 }
@@ -679,6 +718,26 @@ type Query {
 }
 
 """
+Input to add an administrator to a venue.
+"""
+input AdminInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "email address of the administrator"
+  email: String!
+}
+
+"""
+Input to remove an administrator from a venue.
+"""
+input RemoveAdminInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "email address of the administrator"
+  email: String!
+}
+
+"""
 Booking mutations.
 """
 type Mutation {
@@ -688,6 +747,10 @@ type Mutation {
   addTable(input: TableInput!): Table!
   "remove a table from a venue"
   removeTable(input: RemoveTableInput!): Table!
+  "add an admin to a venue"
+  addAdmin(input: AdminInput!): String!
+  "remove an admin from a venue"
+  removeAdmin(input: RemoveAdminInput!): String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -695,6 +758,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addAdmin_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.AdminInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐAdminInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_addTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -718,6 +796,21 @@ func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Contex
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeAdmin_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.RemoveAdminInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNRemoveAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐRemoveAdminInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1307,6 +1400,90 @@ func (ec *executionContext) _Mutation_removeTable(ctx context.Context, field gra
 	res := resTmp.(*models.Table)
 	fc.Result = res
 	return ec.marshalNTable2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_addAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_addAdmin_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddAdmin(rctx, args["input"].(models.AdminInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_removeAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_removeAdmin_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveAdmin(rctx, args["input"].(models.RemoveAdminInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -2163,6 +2340,41 @@ func (ec *executionContext) _Venue_tables(ctx context.Context, field graphql.Col
 	res := resTmp.([]*models.Table)
 	fc.Result = res
 	return ec.marshalNTable2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_admins(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Venue().Admins(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Venue_slug(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
@@ -3287,6 +3499,34 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAdminInput(ctx context.Context, obj interface{}) (models.AdminInput, error) {
+	var it models.AdminInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj interface{}) (models.BookingInput, error) {
 	var it models.BookingInput
 	var asMap = obj.(map[string]interface{})
@@ -3358,6 +3598,34 @@ func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
 			it.Slug, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRemoveAdminInput(ctx context.Context, obj interface{}) (models.RemoveAdminInput, error) {
+	var it models.RemoveAdminInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3637,6 +3905,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "addAdmin":
+			out.Values[i] = ec._Mutation_addAdmin(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "removeAdmin":
+			out.Values[i] = ec._Mutation_removeAdmin(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3890,6 +4168,20 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Venue_tables(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "admins":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Venue_admins(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4156,6 +4448,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐAdminInput(ctx context.Context, v interface{}) (models.AdminInput, error) {
+	res, err := ec.unmarshalInputAdminInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNBooking2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx context.Context, sel ast.SelectionSet, v models.Booking) graphql.Marshaler {
 	return ec._Booking(ctx, sel, &v)
 }
@@ -4296,6 +4593,11 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋ
 	return ec._OpeningHoursSpecification(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNRemoveAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐRemoveAdminInput(ctx context.Context, v interface{}) (models.RemoveAdminInput, error) {
+	res, err := ec.unmarshalInputRemoveAdminInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNRemoveTableInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐRemoveTableInput(ctx context.Context, v interface{}) (models.RemoveTableInput, error) {
 	res, err := ec.unmarshalInputRemoveTableInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4329,6 +4631,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNTable2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTable(ctx context.Context, sel ast.SelectionSet, v models.Table) graphql.Marshaler {

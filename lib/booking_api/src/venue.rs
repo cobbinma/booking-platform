@@ -21,7 +21,7 @@ impl Client for VenueClient {
     async fn get_venue(&self, venue_id: String) -> Result<Venue, Status> {
         self.client
             .clone()
-            .get_venue(GetVenueRequest { id: venue_id })
+            .get_venue(GetVenueRequest { id: venue_id, slug: "".to_string() })
             .await
             .map(|v| v.into_inner())
     }

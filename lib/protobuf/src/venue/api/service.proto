@@ -16,6 +16,7 @@ service VenueAPI {
 
   rpc IsAdmin(IsAdminRequest) returns (IsAdminResponse);
   rpc AddAdmin(AddAdminRequest) returns (AddAdminResponse);
+  rpc GetAdmins(GetAdminsRequest) returns (GetAdminsResponse);
   rpc RemoveAdmin(RemoveAdminRequest) returns (RemoveAdminResponse);
 }
 
@@ -57,6 +58,14 @@ message IsAdminRequest {
 
 message IsAdminResponse {
   bool isAdmin = 1;
+}
+
+message GetAdminsRequest {
+  string venueId = 1;
+}
+
+message GetAdminsResponse {
+  repeated string admins = 1;
 }
 
 message AddAdminRequest {

@@ -1,6 +1,8 @@
 import React from "react";
-import { H2, H4 } from "baseui/typography";
+import { H2 } from "baseui/typography";
 import { FlexGrid, FlexGridItem } from "baseui/flex-grid";
+import { Input } from "baseui/input";
+import { FormControl } from "baseui/form-control";
 
 const Home: React.FC<{
   name: string | null | undefined;
@@ -13,10 +15,14 @@ const Home: React.FC<{
           <H2>Home</H2>
         </FlexGridItem>
         <FlexGridItem>
-          <H4>Name: {name || ""}</H4>
+          <FormControl label={() => "Name"}>
+            <Input value={name || ""} />
+          </FormControl>
         </FlexGridItem>
         <FlexGridItem>
-          <H4>Slug: {slug || ""}</H4>
+          <FormControl label={() => "Slug"}>
+            <Input value={slug || ""} />
+          </FormControl>
         </FlexGridItem>
       </FlexGrid>
     </div>

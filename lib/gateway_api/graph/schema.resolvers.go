@@ -46,6 +46,26 @@ func (r *mutationResolver) RemoveTable(ctx context.Context, input models.RemoveT
 	return r.venueService.RemoveTable(ctx, input)
 }
 
+func (r *mutationResolver) AddAdmin(ctx context.Context, input models.AdminInput) (string, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		return "", err
+	}
+
+	return r.venueService.AddAdmin(ctx, input)
+}
+
+func (r *mutationResolver) RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		return "", err
+	}
+
+	return r.venueService.RemoveAdmin(ctx, input)
+}
+
 func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
 	if filter.ID == nil && filter.Slug == nil {
 		return nil, fmt.Errorf("at least one field must not be nil on filter")
@@ -64,7 +84,7 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 
 	user, err := r.userService.GetUser(ctx)
 	if err != nil {
-		return false, status.Errorf(codes.Internal, "could not get user profile")
+		return false, status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}
 
 	return r.venueService.IsAdmin(ctx, input, user.Email)
@@ -78,6 +98,16 @@ func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*model
 	}
 
 	return r.venueService.GetTables(ctx, obj.ID)
+}
+
+func (r *venueResolver) Admins(ctx context.Context, obj *models.Venue) ([]string, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &obj.ID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.venueService.GetAdmins(ctx, obj.ID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

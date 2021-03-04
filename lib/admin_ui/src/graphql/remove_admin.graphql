@@ -1,0 +1,3 @@
+mutation RemoveAdmin($admin: RemoveAdminInput!) {
+    removeAdmin(input: $admin)
+}

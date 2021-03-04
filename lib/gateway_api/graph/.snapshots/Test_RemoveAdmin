@@ -1,0 +1,3 @@
+(struct { RemoveAdmin string "json:\"removeAdmin\"" }) {
+  RemoveAdmin: (string) (len=13) "test@test.com"
+}

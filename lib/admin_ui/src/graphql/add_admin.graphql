@@ -1,0 +1,3 @@
+mutation AddAdmin($admin: AdminInput!) {
+    addAdmin(input: $admin)
+}

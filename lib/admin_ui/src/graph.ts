@@ -101,6 +101,8 @@ export type Venue = {
   specialOpeningHours: Array<OpeningHoursSpecification>;
   /** tables at the venue */
   tables: Array<Table>;
+  /** email addresses of venue administrators */
+  admins: Array<Scalars['String']>;
   /** human readable identifier of the venue */
   slug: Scalars['ID'];
 };
@@ -203,6 +205,22 @@ export type QueryIsAdminArgs = {
   input: IsAdminInput;
 };
 
+/** Input to add an administrator to a venue. */
+export type AdminInput = {
+  /** unique identifier of the venue */
+  venueId: Scalars['ID'];
+  /** email address of the administrator */
+  email: Scalars['String'];
+};
+
+/** Input to remove an administrator from a venue. */
+export type RemoveAdminInput = {
+  /** unique identifier of the venue */
+  venueId: Scalars['ID'];
+  /** email address of the administrator */
+  email: Scalars['String'];
+};
+
 /** Booking mutations. */
 export type Mutation = {
   __typename?: 'Mutation';
@@ -212,6 +230,10 @@ export type Mutation = {
   addTable: Table;
   /** remove a table from a venue */
   removeTable: Table;
+  /** add an admin to a venue */
+  addAdmin: Scalars['String'];
+  /** remove an admin from a venue */
+  removeAdmin: Scalars['String'];
 };
 
 
@@ -231,6 +253,28 @@ export type MutationAddTableArgs = {
 export type MutationRemoveTableArgs = {
   input: RemoveTableInput;
 };
+
+
+/** Booking mutations. */
+export type MutationAddAdminArgs = {
+  input: AdminInput;
+};
+
+
+/** Booking mutations. */
+export type MutationRemoveAdminArgs = {
+  input: RemoveAdminInput;
+};
+
+export type AddAdminMutationVariables = Exact<{
+  admin: AdminInput;
+}>;
+
+
+export type AddAdminMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addAdmin'>
+);
 
 export type AddTableMutationVariables = Exact<{
   table: TableInput;
@@ -286,7 +330,7 @@ export type GetVenueQuery = (
   { __typename?: 'Query' }
   & { getVenue: (
     { __typename?: 'Venue' }
-    & Pick<Venue, 'id' | 'name' | 'slug'>
+    & Pick<Venue, 'id' | 'name' | 'admins' | 'slug'>
     & { openingHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
       & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
@@ -310,6 +354,16 @@ export type IsAdminQuery = (
   & Pick<Query, 'isAdmin'>
 );
 
+export type RemoveAdminMutationVariables = Exact<{
+  admin: RemoveAdminInput;
+}>;
+
+
+export type RemoveAdminMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'removeAdmin'>
+);
+
 export type RemoveTableMutationVariables = Exact<{
   table: RemoveTableInput;
 }>;
@@ -324,6 +378,36 @@ export type RemoveTableMutation = (
 );
 
 
+export const AddAdminDocument = gql`
+    mutation AddAdmin($admin: AdminInput!) {
+  addAdmin(input: $admin)
+}
+    `;
+export type AddAdminMutationFn = Apollo.MutationFunction<AddAdminMutation, AddAdminMutationVariables>;
+
+/**
+ * __useAddAdminMutation__
+ *
+ * To run a mutation, you first call `useAddAdminMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddAdminMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addAdminMutation, { data, loading, error }] = useAddAdminMutation({
+ *   variables: {
+ *      admin: // value for 'admin'
+ *   },
+ * });
+ */
+export function useAddAdminMutation(baseOptions?: Apollo.MutationHookOptions<AddAdminMutation, AddAdminMutationVariables>) {
+        return Apollo.useMutation<AddAdminMutation, AddAdminMutationVariables>(AddAdminDocument, baseOptions);
+      }
+export type AddAdminMutationHookResult = ReturnType<typeof useAddAdminMutation>;
+export type AddAdminMutationResult = Apollo.MutationResult<AddAdminMutation>;
+export type AddAdminMutationOptions = Apollo.BaseMutationOptions<AddAdminMutation, AddAdminMutationVariables>;
 export const AddTableDocument = gql`
     mutation AddTable($table: TableInput!) {
   addTable(input: $table) {
@@ -469,6 +553,7 @@ export const GetVenueDocument = gql`
       name
       capacity
     }
+    admins
     slug
   }
 }
@@ -530,6 +615,36 @@ export function useIsAdminLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Is
 export type IsAdminQueryHookResult = ReturnType<typeof useIsAdminQuery>;
 export type IsAdminLazyQueryHookResult = ReturnType<typeof useIsAdminLazyQuery>;
 export type IsAdminQueryResult = Apollo.QueryResult<IsAdminQuery, IsAdminQueryVariables>;
+export const RemoveAdminDocument = gql`
+    mutation RemoveAdmin($admin: RemoveAdminInput!) {
+  removeAdmin(input: $admin)
+}
+    `;
+export type RemoveAdminMutationFn = Apollo.MutationFunction<RemoveAdminMutation, RemoveAdminMutationVariables>;
+
+/**
+ * __useRemoveAdminMutation__
+ *
+ * To run a mutation, you first call `useRemoveAdminMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveAdminMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeAdminMutation, { data, loading, error }] = useRemoveAdminMutation({
+ *   variables: {
+ *      admin: // value for 'admin'
+ *   },
+ * });
+ */
+export function useRemoveAdminMutation(baseOptions?: Apollo.MutationHookOptions<RemoveAdminMutation, RemoveAdminMutationVariables>) {
+        return Apollo.useMutation<RemoveAdminMutation, RemoveAdminMutationVariables>(RemoveAdminDocument, baseOptions);
+      }
+export type RemoveAdminMutationHookResult = ReturnType<typeof useRemoveAdminMutation>;
+export type RemoveAdminMutationResult = Apollo.MutationResult<RemoveAdminMutation>;
+export type RemoveAdminMutationOptions = Apollo.BaseMutationOptions<RemoveAdminMutation, RemoveAdminMutationVariables>;
 export const RemoveTableDocument = gql`
     mutation RemoveTable($table: RemoveTableInput!) {
   removeTable(input: $table) {
