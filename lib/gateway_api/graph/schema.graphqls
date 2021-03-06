@@ -103,6 +103,8 @@ type Venue {
   admins: [String!]!
   "human readable identifier of the venue"
   slug: ID!
+  "paginated list of bookings for a venue"
+  bookings(filter: BookingsFilter, pageInfo: PageInfo): BookingsPage
 }
 
 """
@@ -186,6 +188,36 @@ input VenueFilter {
 }
 
 """
+Filter bookings.
+"""
+input BookingsFilter {
+  "specific date to query bookings for"
+  date: Time!
+}
+
+"""
+Information about the page being requested. Maximum page limit of 50.
+"""
+input PageInfo {
+  "page number"
+  page: Int!
+  "maximum amount of results per page"
+  limit: Int
+}
+
+"""
+A page with a list of bookings.
+"""
+type BookingsPage {
+  "list of bookings"
+  bookings: [Booking!]!
+  "is there a next page"
+  hasNextPage: Boolean!
+  "total number of pages"
+  pages: Int!
+}
+
+"""
 Booking queries.
 """
 type Query {
@@ -218,6 +250,16 @@ input RemoveAdminInput {
 }
 
 """
+Input to cancel an individual booking.
+"""
+input CancelBookingInput {
+  "unique identifier of the venue"
+  venueId: ID
+  "unique identifier of the booking"
+  id: ID!
+}
+
+"""
 Booking mutations.
 """
 type Mutation {
@@ -231,4 +273,6 @@ type Mutation {
   addAdmin(input: AdminInput!): String!
   "remove an admin from a venue"
   removeAdmin(input: RemoveAdminInput!): String!
+  "cancel an individual booking"
+  cancelBooking(input: CancelBookingInput!): Booking!
 }

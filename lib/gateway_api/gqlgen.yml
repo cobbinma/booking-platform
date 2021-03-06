@@ -66,3 +66,5 @@ models:
         resolver: true
       admins:
         resolver: true
+      bookings:
+        resolver: true

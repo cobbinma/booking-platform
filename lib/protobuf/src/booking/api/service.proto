@@ -9,10 +9,23 @@ import "src/booking/models/models.proto";
 service BookingAPI {
   rpc GetSlot(booking.models.SlotInput) returns (GetSlotResponse);
   rpc CreateBooking(booking.models.SlotInput) returns (booking.models.Booking);
+  rpc GetBookings(GetBookingsRequest) returns (GetBookingsResponse);
 }
 
 message GetSlotResponse {
   booking.models.Slot match = 1;
   repeated booking.models.Slot otherAvailableSlots = 2;
+}
+
+message GetBookingsRequest {
+  string date = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetBookingsResponse {
+  repeated booking.models.Booking bookings = 1;
+  bool hasNextPage = 2;
+  int32 pages = 3;
 }
 
