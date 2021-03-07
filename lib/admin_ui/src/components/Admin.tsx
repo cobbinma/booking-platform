@@ -97,7 +97,7 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
               />
             </Route>
             <Route path="/bookings">
-              <Bookings />
+              <Bookings venueId={data?.getVenue?.id} refetch={refetch} />
             </Route>
             <Route path="/">
               <Home name={data?.getVenue?.name} slug={data?.getVenue?.slug} />

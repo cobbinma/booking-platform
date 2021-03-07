@@ -20,6 +20,10 @@ import { FormControl } from "baseui/form-control";
 import { ApolloQueryResult } from "@apollo/client";
 import { TableBuilder, TableBuilderColumn } from "baseui/table-semantic";
 
+export const isEmailValid = (email: string): boolean => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 const Admins: React.FC<{
   admins: Array<string>;
   venueId: string | null | undefined;
@@ -161,9 +165,6 @@ const AddAdminModal: React.FC<{
     setEmail("");
     setAddIsOpen(false);
   };
-  function isEmailValid(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
 
   return (
     <Modal onClose={close} isOpen={addIsOpen}>

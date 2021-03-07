@@ -105,6 +105,15 @@ export type Venue = {
   admins: Array<Scalars['String']>;
   /** human readable identifier of the venue */
   slug: Scalars['ID'];
+  /** paginated list of bookings for a venue */
+  bookings?: Maybe<BookingsPage>;
+};
+
+
+/** Venue where a booking can take place. */
+export type VenueBookingsArgs = {
+  filter?: Maybe<BookingsFilter>;
+  pageInfo?: Maybe<PageInfo>;
 };
 
 /** An individual table at a venue. */
@@ -176,6 +185,33 @@ export type VenueFilter = {
   slug?: Maybe<Scalars['ID']>;
 };
 
+/** Filter bookings. */
+export type BookingsFilter = {
+  /** unique identifier of the venue */
+  venueId?: Maybe<Scalars['ID']>;
+  /** specific date to query bookings for */
+  date: Scalars['Time'];
+};
+
+/** Information about the page being requested. Maximum page limit of 50. */
+export type PageInfo = {
+  /** page number */
+  page: Scalars['Int'];
+  /** maximum amount of results per page */
+  limit?: Maybe<Scalars['Int']>;
+};
+
+/** A page with a list of bookings. */
+export type BookingsPage = {
+  __typename?: 'BookingsPage';
+  /** list of bookings */
+  bookings: Array<Booking>;
+  /** is there a next page */
+  hasNextPage: Scalars['Boolean'];
+  /** total number of pages */
+  pages: Scalars['Int'];
+};
+
 /** Booking queries. */
 export type Query = {
   __typename?: 'Query';
@@ -221,6 +257,14 @@ export type RemoveAdminInput = {
   email: Scalars['String'];
 };
 
+/** Input to cancel an individual booking. */
+export type CancelBookingInput = {
+  /** unique identifier of the venue */
+  venueId?: Maybe<Scalars['ID']>;
+  /** unique identifier of the booking */
+  id: Scalars['ID'];
+};
+
 /** Booking mutations. */
 export type Mutation = {
   __typename?: 'Mutation';
@@ -234,6 +278,8 @@ export type Mutation = {
   addAdmin: Scalars['String'];
   /** remove an admin from a venue */
   removeAdmin: Scalars['String'];
+  /** cancel an individual booking */
+  cancelBooking: Booking;
 };
 
 
@@ -264,6 +310,12 @@ export type MutationAddAdminArgs = {
 /** Booking mutations. */
 export type MutationRemoveAdminArgs = {
   input: RemoveAdminInput;
+};
+
+
+/** Booking mutations. */
+export type MutationCancelBookingArgs = {
+  input: CancelBookingInput;
 };
 
 export type AddAdminMutationVariables = Exact<{
