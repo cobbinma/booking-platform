@@ -18,9 +18,10 @@ message GetSlotResponse {
 }
 
 message GetBookingsRequest {
-  string date = 1;
-  int32 page = 2;
-  int32 limit = 3;
+  string venueId = 1;
+  string date = 2;
+  int32 page = 3;
+  int32 limit = 4;
 }
 
 message GetBookingsResponse {
