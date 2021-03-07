@@ -40,6 +40,7 @@ type VenueService interface {
 type BookingService interface {
 	GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error)
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
+	Bookings(ctx context.Context, filter models.BookingsFilter, pageInfo models.PageInfo) (*models.BookingsPage, error)
 }
 
 func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) error {

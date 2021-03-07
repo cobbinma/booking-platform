@@ -191,6 +191,8 @@ input VenueFilter {
 Filter bookings.
 """
 input BookingsFilter {
+  "unique identifier of the venue"
+  venueId: ID
   "specific date to query bookings for"
   date: Time!
 }
