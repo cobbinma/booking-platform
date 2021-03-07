@@ -20,7 +20,11 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 	}
 
 	if user.Email != input.Email {
-		return nil, fmt.Errorf("context email does not match given")
+		if err := r.authIsAdmin(ctx, models.IsAdminInput{
+			VenueID: &input.VenueID,
+		}); err != nil {
+			return nil, fmt.Errorf("context email does not match given : %w", err)
+		}
 	}
 
 	return r.bookingService.CreateBooking(ctx, input)
