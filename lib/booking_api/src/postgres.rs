@@ -2,13 +2,11 @@
 use crate::diesel::RunQueryDsl;
 
 use crate::models::Booking;
-use crate::service::Repository;
-use chrono::NaiveDate;
+use crate::service::{BookingsFilter, Repository};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{ExpressionMethods, PgConnection, QueryDsl};
 use std::env;
 use tonic::Status;
-use uuid::Uuid;
 
 embed_migrations!("./migrations");
 
@@ -29,17 +27,31 @@ impl Postgres {
 }
 
 impl Repository for Postgres {
-    fn get_bookings_by_date(&self, venue: &Uuid, day: &NaiveDate) -> Result<Vec<Booking>, Status> {
-        tracing::debug!(
-            "get bookings by date from postgres for venue '{}' on date '{}'",
-            &venue.to_string(),
-            &day.to_string()
-        );
+    fn get_bookings(
+        &self,
+        filter: BookingsFilter,
+        page: Option<i32>,
+        limit: Option<i32>,
+    ) -> Result<Vec<Booking>, Status> {
+        tracing::debug!("get bookings from postgres");
         use crate::schema::bookings::dsl::*;
 
-        let results: Vec<Booking> = bookings
-            .filter(venue_id.eq(&venue))
-            .filter(date.eq(&day))
+        let mut builder = bookings.into_boxed();
+
+        if let Some(uuid) = filter.venue {
+            builder = builder.filter(venue_id.eq(uuid))
+        };
+
+        if let Some(day) = filter.day {
+            builder = builder.filter(date.eq(day))
+        };
+
+        if let (Some(page), Some(limit)) = (page, limit) {
+            builder = builder.limit(limit as i64 + 1);
+            builder = builder.offset((limit * page) as i64);
+        };
+
+        builder
             .get_results(&self.pool.get().map_err(|e| {
                 log::error!("could not get database connection : {}", e);
                 Status::internal("could not get database connection")
@@ -47,9 +59,7 @@ impl Repository for Postgres {
             .map_err(|e| {
                 log::error!("could not get get bookings from database : {}", e);
                 Status::internal("could not get get bookings from database")
-            })?;
-
-        Ok(results)
+            })
     }
 
     fn create_booking(&self, new_booking: &Booking) -> Result<(), Status> {
@@ -75,5 +85,31 @@ impl Repository for Postgres {
             })?;
 
         Ok(())
+    }
+
+    fn count_bookings(&self, filter: &BookingsFilter) -> Result<i64, Status> {
+        tracing::debug!("counting bookings from postgres");
+        use crate::schema::bookings::dsl::*;
+
+        let mut builder = bookings.into_boxed();
+
+        if let Some(uuid) = filter.venue {
+            builder = builder.filter(venue_id.eq(uuid))
+        };
+
+        if let Some(day) = filter.day {
+            builder = builder.filter(date.eq(day))
+        };
+
+        builder
+            .count()
+            .get_result(&self.pool.get().map_err(|e| {
+                log::error!("could not get database connection : {}", e);
+                Status::internal("could not get database connection")
+            })?)
+            .map_err(|e| {
+                log::error!("could not get get bookings from database : {}", e);
+                Status::internal("could not get get bookings from database")
+            })
     }
 }

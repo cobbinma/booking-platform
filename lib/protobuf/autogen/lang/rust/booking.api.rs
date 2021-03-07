@@ -8,10 +8,12 @@ pub struct GetSlotResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetBookingsRequest {
     #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
     pub date: ::prost::alloc::string::String,
-    #[prost(int32, tag = "2")]
-    pub page: i32,
     #[prost(int32, tag = "3")]
+    pub page: i32,
+    #[prost(int32, tag = "4")]
     pub limit: i32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
