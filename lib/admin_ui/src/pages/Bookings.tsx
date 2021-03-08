@@ -88,8 +88,6 @@ const Bookings: React.FC<{
           <CreateBooking
             setCreateIsOpen={setCreateIsOpen}
             createIsOpen={createIsOpen}
-            day={date}
-            page={currentPage}
             venueId={venueId}
             refetch={refetch}
           />
@@ -167,8 +165,6 @@ const Bookings: React.FC<{
         cancelIsOpen={cancelIsOpen}
         selectedBooking={selectedBooking}
         setCancelIsOpen={setCancelIsOpen}
-        page={currentPage}
-        date={date}
         venueId={venueId}
         refetch={refetch}
       />
@@ -181,13 +177,11 @@ export default Bookings;
 const CreateBooking: React.FC<{
   setCreateIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   createIsOpen: boolean;
-  day: Date[];
-  page: number;
   venueId: string;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ setCreateIsOpen, createIsOpen, day, page, venueId, refetch }) => {
+}> = ({ setCreateIsOpen, createIsOpen, venueId, refetch }) => {
   const [email, setEmail] = useState<string>("");
   const [people, setPeople] = useState<number[]>([4]);
   const [date, setDate] = React.useState([new Date(Date.now())]);
@@ -275,13 +269,7 @@ const CreateBooking: React.FC<{
             onClick={() => {
               createBookingMutation()
                 .then(() => {
-                  refetch({
-                    venueID: venueId,
-                    filter: {
-                      date: day[0].toISOString(),
-                    },
-                    pageInfo: { page: page, limit: PAGE_LIMIT },
-                  }).catch((e) => console.log(e));
+                  refetch().catch((e) => console.log(e));
                   close();
                 })
                 .catch((e) => console.log(e));
@@ -299,21 +287,11 @@ const CancelBooking: React.FC<{
   cancelIsOpen: boolean;
   setCancelIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedBooking: Booking | null;
-  date: Date[];
-  page: number;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
   venueId: string;
-}> = ({
-  cancelIsOpen,
-  setCancelIsOpen,
-  selectedBooking,
-  date,
-  page,
-  venueId,
-  refetch,
-}) => {
+}> = ({ cancelIsOpen, setCancelIsOpen, selectedBooking, venueId, refetch }) => {
   const [cancelBookingMutation] = useCancelBookingMutation({
     variables: {
       input: { venueId: venueId, id: selectedBooking?.id || "" },
@@ -336,13 +314,7 @@ const CancelBooking: React.FC<{
             onClick={() => {
               cancelBookingMutation()
                 .then(() => {
-                  refetch({
-                    venueID: venueId,
-                    filter: {
-                      date: date[0].toISOString(),
-                    },
-                    pageInfo: { page: page, limit: PAGE_LIMIT },
-                  }).catch((e) => console.log(e));
+                  refetch().catch((e) => console.log(e));
                 })
                 .catch((e) => console.log(e));
               setCancelIsOpen(false);
