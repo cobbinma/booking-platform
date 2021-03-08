@@ -20,6 +20,7 @@ import {
   GetVenueQuery,
   GetVenueQueryVariables,
   Table,
+  useCancelBookingMutation,
   useCreateBookingMutation,
 } from "../graph";
 import { ApolloQueryResult } from "@apollo/client";
@@ -61,7 +62,11 @@ const Bookings: React.FC<{
     },
   };
 
+  const [selectedBooking, setSelectedBooking] = React.useState<Booking | null>(
+    null
+  );
   const [createIsOpen, setCreateIsOpen] = React.useState<boolean>(false);
+  const [cancelIsOpen, setCancelIsOpen] = React.useState<boolean>(false);
   const [date, setDate] = React.useState([new Date(Date.now())]);
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -83,6 +88,8 @@ const Bookings: React.FC<{
           <CreateBooking
             setCreateIsOpen={setCreateIsOpen}
             createIsOpen={createIsOpen}
+            day={date}
+            page={currentPage}
             venueId={venueId}
             refetch={refetch}
           />
@@ -142,11 +149,29 @@ const Bookings: React.FC<{
               {(row) => tableIdMap.get(row.tableId)}
             </TableBuilderColumn>
             <TableBuilderColumn>
-              {() => <Button>Cancel</Button>}
+              {(row) => (
+                <Button
+                  onClick={() => {
+                    setSelectedBooking(row);
+                    setCancelIsOpen(true);
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
             </TableBuilderColumn>
           </TableBuilder>
         </FlexGridItem>
       </FlexGrid>
+      <CancelBooking
+        cancelIsOpen={cancelIsOpen}
+        selectedBooking={selectedBooking}
+        setCancelIsOpen={setCancelIsOpen}
+        page={currentPage}
+        date={date}
+        venueId={venueId}
+        refetch={refetch}
+      />
     </div>
   );
 };
@@ -156,15 +181,17 @@ export default Bookings;
 const CreateBooking: React.FC<{
   setCreateIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   createIsOpen: boolean;
+  day: Date[];
+  page: number;
   venueId: string;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ setCreateIsOpen, createIsOpen, venueId, refetch }) => {
+}> = ({ setCreateIsOpen, createIsOpen, day, page, venueId, refetch }) => {
   const [email, setEmail] = useState<string>("");
   const [people, setPeople] = useState<number[]>([4]);
   const [date, setDate] = React.useState([new Date(Date.now())]);
-  const [time, setTime] = React.useState(new Date(Date.now()));
+  const [time, setTime] = React.useState<Date>(new Date(Date.now()));
   const [duration, setDuration] = React.useState<string>("1 hour");
   const close = (): void => {
     setCreateIsOpen(false);
@@ -248,7 +275,13 @@ const CreateBooking: React.FC<{
             onClick={() => {
               createBookingMutation()
                 .then(() => {
-                  refetch().catch((e) => console.log(e));
+                  refetch({
+                    venueID: venueId,
+                    filter: {
+                      date: day[0].toISOString(),
+                    },
+                    pageInfo: { page: page, limit: PAGE_LIMIT },
+                  }).catch((e) => console.log(e));
                   close();
                 })
                 .catch((e) => console.log(e));
@@ -259,5 +292,66 @@ const CreateBooking: React.FC<{
         ) : null}
       </ModalFooter>
     </Modal>
+  );
+};
+
+const CancelBooking: React.FC<{
+  cancelIsOpen: boolean;
+  setCancelIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedBooking: Booking | null;
+  date: Date[];
+  page: number;
+  refetch: (
+    variables?: GetVenueQueryVariables
+  ) => Promise<ApolloQueryResult<GetVenueQuery>>;
+  venueId: string;
+}> = ({
+  cancelIsOpen,
+  setCancelIsOpen,
+  selectedBooking,
+  date,
+  page,
+  venueId,
+  refetch,
+}) => {
+  const [cancelBookingMutation] = useCancelBookingMutation({
+    variables: {
+      input: { venueId: venueId, id: selectedBooking?.id || "" },
+    },
+  });
+
+  return (
+    <div>
+      <Modal onClose={() => setCancelIsOpen(false)} isOpen={cancelIsOpen}>
+        <ModalHeader>Cancel Booking</ModalHeader>
+        <ModalBody>
+          Cancel booking for {selectedBooking?.email} at{" "}
+          {new Date(Date.parse(selectedBooking?.startsAt)).toLocaleString()}
+        </ModalBody>
+        <ModalFooter>
+          <ModalButton kind="tertiary" onClick={() => setCancelIsOpen(false)}>
+            Cancel
+          </ModalButton>
+          <ModalButton
+            onClick={() => {
+              cancelBookingMutation()
+                .then(() => {
+                  refetch({
+                    venueID: venueId,
+                    filter: {
+                      date: date[0].toISOString(),
+                    },
+                    pageInfo: { page: page, limit: PAGE_LIMIT },
+                  }).catch((e) => console.log(e));
+                })
+                .catch((e) => console.log(e));
+              setCancelIsOpen(false);
+            }}
+          >
+            Okay
+          </ModalButton>
+        </ModalFooter>
+      </Modal>
+    </div>
   );
 };

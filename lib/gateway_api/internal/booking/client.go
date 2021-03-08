@@ -45,6 +45,34 @@ type bookingClient struct {
 	log    *zap.SugaredLogger
 }
 
+func (b bookingClient) CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error) {
+	cancelled, err := b.client.CancelBooking(ctx, &api.CancelBookingRequest{Id: input.ID})
+	if err != nil {
+		return nil, fmt.Errorf("could not cancel booking using client : %w", err)
+	}
+
+	startsAt, err := time.Parse(time.RFC3339, cancelled.StartsAt)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse start time : %w", err)
+	}
+
+	endsAt, err := time.Parse(time.RFC3339, cancelled.EndsAt)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse end time : %w", err)
+	}
+
+	return &models.Booking{
+		ID:       cancelled.Id,
+		VenueID:  cancelled.VenueId,
+		Email:    cancelled.Email,
+		People:   int(cancelled.People),
+		StartsAt: startsAt,
+		EndsAt:   endsAt,
+		Duration: int(cancelled.Duration),
+		TableID:  cancelled.TableId,
+	}, err
+}
+
 func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilter, pageInfo models.PageInfo) (*models.BookingsPage, error) {
 	if pageInfo.Limit == nil {
 		var max = 50

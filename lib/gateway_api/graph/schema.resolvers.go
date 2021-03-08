@@ -71,7 +71,16 @@ func (r *mutationResolver) RemoveAdmin(ctx context.Context, input models.RemoveA
 }
 
 func (r *mutationResolver) CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error) {
-	panic(fmt.Errorf("not implemented"))
+	if input.VenueID == nil {
+		return nil, fmt.Errorf("venue ID must be given")
+	}
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: input.VenueID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.bookingService.CancelBooking(ctx, input)
 }
 
 func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
