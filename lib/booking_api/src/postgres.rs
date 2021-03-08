@@ -7,6 +7,7 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{ExpressionMethods, PgConnection, QueryDsl};
 use std::env;
 use tonic::Status;
+use uuid::Uuid;
 
 embed_migrations!("./migrations");
 
@@ -86,6 +87,36 @@ impl Repository for Postgres {
             })?;
 
         Ok(())
+    }
+
+    fn cancel_booking(&self, booking_id: &Uuid) -> Result<Booking, Status> {
+        tracing::debug!(
+            "cancelling booking '{}' from postgres",
+            &booking_id.to_string()
+        );
+        use crate::schema::bookings::dsl::*;
+
+        let booking = bookings
+            .find(booking_id)
+            .first(&self.pool.get().map_err(|e| {
+                log::error!("could not get database connection : {}", e);
+                Status::internal("could not get database connection")
+            })?)
+            .map_err(|e| {
+                log::error!("could not get get booking from database : {}", e);
+                Status::internal("could not get get booking from database")
+            })?;
+
+        diesel::delete(bookings.filter(id.eq(booking_id))).execute(&self.pool.get().map_err(|e| {
+            log::error!("could not get database connection : {}", e);
+            Status::internal("could not get database connection")
+        })?)
+            .map_err(|e| {
+                log::error!("could not get delete booking from database : {}", e);
+                Status::internal("could not delete booking from database")
+            })?;
+
+        Ok(booking)
     }
 
     fn count_bookings(&self, filter: &BookingsFilter) -> Result<i64, Status> {

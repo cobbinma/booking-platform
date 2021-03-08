@@ -10,6 +10,7 @@ service BookingAPI {
   rpc GetSlot(booking.models.SlotInput) returns (GetSlotResponse);
   rpc CreateBooking(booking.models.SlotInput) returns (booking.models.Booking);
   rpc GetBookings(GetBookingsRequest) returns (GetBookingsResponse);
+  rpc CancelBooking(CancelBookingRequest) returns (booking.models.Booking);
 }
 
 message GetSlotResponse {
@@ -28,5 +29,9 @@ message GetBookingsResponse {
   repeated booking.models.Booking bookings = 1;
   bool hasNextPage = 2;
   int32 pages = 3;
+}
+
+message CancelBookingRequest {
+  string id = 1;
 }
 

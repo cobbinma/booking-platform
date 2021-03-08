@@ -25,6 +25,11 @@ pub struct GetBookingsResponse {
     #[prost(int32, tag = "3")]
     pub pages: i32,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CancelBookingRequest {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+}
 #[doc = r" Generated client implementations."]
 pub mod booking_api_client {
     #![allow(unused_variables, dead_code, missing_docs)]
@@ -101,6 +106,21 @@ pub mod booking_api_client {
             let path = http::uri::PathAndQuery::from_static("/booking.api.BookingAPI/GetBookings");
             self.inner.unary(request.into_request(), path, codec).await
         }
+        pub async fn cancel_booking(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CancelBookingRequest>,
+        ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path =
+                http::uri::PathAndQuery::from_static("/booking.api.BookingAPI/CancelBooking");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
     }
     impl<T: Clone> Clone for BookingApiClient<T> {
         fn clone(&self) -> Self {
@@ -134,6 +154,10 @@ pub mod booking_api_server {
             &self,
             request: tonic::Request<super::GetBookingsRequest>,
         ) -> Result<tonic::Response<super::GetBookingsResponse>, tonic::Status>;
+        async fn cancel_booking(
+            &self,
+            request: tonic::Request<super::CancelBookingRequest>,
+        ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status>;
     }
     #[derive(Debug)]
     pub struct BookingApiServer<T: BookingApi> {
@@ -251,6 +275,39 @@ pub mod booking_api_server {
                         let interceptor = inner.1.clone();
                         let inner = inner.0;
                         let method = GetBookingsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.api.BookingAPI/CancelBooking" => {
+                    #[allow(non_camel_case_types)]
+                    struct CancelBookingSvc<T: BookingApi>(pub Arc<T>);
+                    impl<T: BookingApi> tonic::server::UnaryService<super::CancelBookingRequest>
+                        for CancelBookingSvc<T>
+                    {
+                        type Response = super::super::models::Booking;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CancelBookingRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).cancel_booking(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = CancelBookingSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = if let Some(interceptor) = interceptor {
                             tonic::server::Grpc::with_interceptor(codec, interceptor)

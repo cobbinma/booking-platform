@@ -1,15 +1,17 @@
 use crate::models;
 use async_trait::async_trait;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
+use num::integer::Integer;
 use protobuf::booking::api::booking_api_server::BookingApi;
-use protobuf::booking::api::{GetBookingsRequest, GetBookingsResponse, GetSlotResponse};
+use protobuf::booking::api::{
+    CancelBookingRequest, GetBookingsRequest, GetBookingsResponse, GetSlotResponse,
+};
 use protobuf::booking::models::{Booking, Slot, SlotInput};
 use protobuf::venue::models::Venue;
 use std::collections::HashSet;
 use std::ops::Add;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
-use num::integer::Integer;
 
 #[cfg(test)]
 use mockall::automock;
@@ -24,7 +26,6 @@ pub trait VenueClient {
         capacity: u32,
     ) -> Result<Vec<String>, Status>;
 }
-
 
 #[derive(PartialEq, Debug)]
 pub struct BookingsFilter {
@@ -41,6 +42,7 @@ pub trait Repository {
         limit: Option<i32>,
     ) -> Result<Vec<models::Booking>, Status>;
     fn create_booking(&self, new_booking: &models::Booking) -> Result<(), Status>;
+    fn cancel_booking(&self, id: &Uuid) -> Result<models::Booking, Status>;
     fn count_bookings(&self, filter: &BookingsFilter) -> Result<i64, Status>;
 }
 
@@ -235,7 +237,11 @@ impl BookingApi for BookingService {
         request: Request<GetBookingsRequest>,
     ) -> Result<Response<GetBookingsResponse>, Status> {
         let req = request.into_inner();
-        tracing::info!("get bookings call for venue '{}', date '{}'", &req.venue_id, &req.date);
+        tracing::info!(
+            "get bookings call for venue '{}', date '{}'",
+            &req.venue_id,
+            &req.date
+        );
 
         let venue = match req.venue_id.is_empty() {
             true => None,
@@ -262,11 +268,9 @@ impl BookingApi for BookingService {
         let count = self.repository.count_bookings(&filter)?;
         tracing::debug!("found {} bookings", count);
 
-        let mut bookings = self.repository.get_bookings(
-            filter,
-            Some(req.page),
-            Some(req.limit),
-        )?;
+        let mut bookings = self
+            .repository
+            .get_bookings(filter, Some(req.page), Some(req.limit))?;
         tracing::debug!("got {} bookings", bookings.len());
 
         let has_next_page = bookings.len() >= req.limit as usize;
@@ -293,6 +297,33 @@ impl BookingApi for BookingService {
             has_next_page,
             pages: (count as i32).div_ceil(&req.limit),
         }))
+    }
+
+    async fn cancel_booking(
+        &self,
+        request: Request<CancelBookingRequest>,
+    ) -> Result<Response<Booking>, Status> {
+        let req = request.into_inner();
+        tracing::info!("cancel booking call for id '{}'", &req.id);
+
+        let removed = self
+            .repository
+            .cancel_booking(&Uuid::parse_str(&req.id).map_err(|e| {
+                log::error!("could not parse uuid : {}", e);
+                Status::invalid_argument("could not parse uuid")
+            })?)
+            .map(|b| Booking {
+                id: b.id.to_string(),
+                venue_id: b.venue_id.to_string(),
+                email: b.customer_email.clone(),
+                people: b.people as u32,
+                starts_at: b.starts_at.to_rfc3339(),
+                ends_at: b.ends_at.to_rfc3339(),
+                duration: b.duration as u32,
+                table_id: b.table_id.to_string(),
+            })?;
+
+        Ok(Response::new(removed))
     }
 }
 
@@ -559,8 +590,10 @@ mod tests {
         repository
             .expect_get_bookings()
             .with(
-                predicate::eq(BookingsFilter{
-                    venue: Some(Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid")),
+                predicate::eq(BookingsFilter {
+                    venue: Some(
+                        Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                    ),
                     day: Some(starts.naive_utc().date()),
                 }),
                 predicate::eq(None),
@@ -665,13 +698,13 @@ mod tests {
         repository
             .expect_get_bookings()
             .with(
-                predicate::eq(BookingsFilter{
-                    venue: Some(Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid")),
+                predicate::eq(BookingsFilter {
+                    venue: Some(
+                        Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                    ),
                     day: Some(starts.naive_utc().date()),
                 }),
-                predicate::eq(
-                    None,
-                ),
+                predicate::eq(None),
                 predicate::eq(None),
             )
             .times(1)
@@ -742,22 +775,22 @@ mod tests {
 
         let venue_id = "0441d2c0-458d-4f4a-81cc-92e44807365b".to_string();
 
-        mock
-            .expect_count_bookings()
-            .with(
-                predicate::eq(BookingsFilter{
-                    venue: Some(Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid")),
-                    day: Some(starts.naive_utc().date()),
-                }),
-            )
+        mock.expect_count_bookings()
+            .with(predicate::eq(BookingsFilter {
+                venue: Some(
+                    Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                ),
+                day: Some(starts.naive_utc().date()),
+            }))
             .times(1)
             .returning(|_| Ok(3));
 
-        mock
-            .expect_get_bookings()
+        mock.expect_get_bookings()
             .with(
-                predicate::eq(BookingsFilter{
-                    venue: Some(Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid")),
+                predicate::eq(BookingsFilter {
+                    venue: Some(
+                        Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                    ),
                     day: Some(starts.naive_utc().date()),
                 }),
                 predicate::eq(Some(0)),
@@ -765,10 +798,11 @@ mod tests {
             )
             .times(1)
             .returning(|filter, _, _| {
-                let starts = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704732400, 0), Utc);
+                let starts =
+                    DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704732400, 0), Utc);
                 let uuid = "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string();
                 Ok(vec![
-                    models::Booking{
+                    models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
                         customer_email: "test@test.com".to_string(),
                         venue_id: filter.venue.unwrap(),
@@ -779,7 +813,7 @@ mod tests {
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
                     },
-                    models::Booking{
+                    models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
                         customer_email: "test2@test.com".to_string(),
                         venue_id: filter.venue.unwrap(),
@@ -790,7 +824,7 @@ mod tests {
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
                     },
-                    models::Booking{
+                    models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
                         customer_email: "test3@test.com".to_string(),
                         venue_id: filter.venue.unwrap(),
@@ -800,26 +834,29 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
-                    }
+                    },
                 ])
             });
 
         let service = BookingService::new(Box::new(mock), Box::new(MockVenueClient::new()), None)
             .expect("could not construct booking service");
 
-        let result = service.get_bookings(Request::new(GetBookingsRequest{
-            venue_id: venue_id.clone(),
-            date: starts.to_rfc3339(),
-            page: 0,
-            limit: 2
-        })).await.map(|r| r.into_inner())
+        let result = service
+            .get_bookings(Request::new(GetBookingsRequest {
+                venue_id: venue_id.clone(),
+                date: starts.to_rfc3339(),
+                page: 0,
+                limit: 2,
+            }))
+            .await
+            .map(|r| r.into_inner())
             .expect("did not expect error from get bookings");
 
         assert_eq!(
             result,
-            GetBookingsResponse{
+            GetBookingsResponse {
                 bookings: vec![
-                    protobuf::booking::models::Booking{
+                    protobuf::booking::models::Booking {
                         id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
                         venue_id: venue_id.clone(),
                         email: "test@test.com".to_string(),
@@ -829,7 +866,7 @@ mod tests {
                         duration: 30,
                         table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string()
                     },
-                    protobuf::booking::models::Booking{
+                    protobuf::booking::models::Booking {
                         id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
                         venue_id: venue_id.clone(),
                         email: "test2@test.com".to_string(),
@@ -853,22 +890,22 @@ mod tests {
 
         let venue_id = "0441d2c0-458d-4f4a-81cc-92e44807365b".to_string();
 
-        mock
-            .expect_count_bookings()
-            .with(
-                predicate::eq(BookingsFilter{
-                    venue: Some(Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid")),
-                    day: Some(starts.naive_utc().date()),
-                }),
-            )
+        mock.expect_count_bookings()
+            .with(predicate::eq(BookingsFilter {
+                venue: Some(
+                    Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                ),
+                day: Some(starts.naive_utc().date()),
+            }))
             .times(1)
             .returning(|_| Ok(0));
 
-        mock
-            .expect_get_bookings()
+        mock.expect_get_bookings()
             .with(
-                predicate::eq(BookingsFilter{
-                    venue: Some(Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid")),
+                predicate::eq(BookingsFilter {
+                    venue: Some(
+                        Uuid::parse_str(&venue_id.clone()).expect("could not parse venue uuid"),
+                    ),
                     day: Some(starts.naive_utc().date()),
                 }),
                 predicate::eq(Some(0)),
@@ -880,17 +917,20 @@ mod tests {
         let service = BookingService::new(Box::new(mock), Box::new(MockVenueClient::new()), None)
             .expect("could not construct booking service");
 
-        let result = service.get_bookings(Request::new(GetBookingsRequest{
-            venue_id,
-            date: starts.to_rfc3339(),
-            page: 0,
-            limit: 5
-        })).await.map(|r| r.into_inner())
+        let result = service
+            .get_bookings(Request::new(GetBookingsRequest {
+                venue_id,
+                date: starts.to_rfc3339(),
+                page: 0,
+                limit: 5,
+            }))
+            .await
+            .map(|r| r.into_inner())
             .expect("did not expect error from get bookings");
 
         assert_eq!(
             result,
-            GetBookingsResponse{
+            GetBookingsResponse {
                 bookings: vec![],
                 has_next_page: false,
                 pages: 0
