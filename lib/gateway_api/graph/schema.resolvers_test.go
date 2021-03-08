@@ -879,6 +879,88 @@ func Test_IsAdminFalse(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_CancelBooking(t *testing.T) {
+	venueID := "8a18e89b-339b-4e51-ab53-825aae59a070"
+	bookingID := "47f4eaf4-7b5e-43dc-bc06-ebf8561c1fa9"
+	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
+	require.NoError(t, err)
+	ctrl := gomock.NewController(t)
+	venueService := mock_resolver.NewMockVenueService(ctrl)
+	bookingService := mock_resolver.NewMockBookingService(ctrl)
+
+	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+
+	bookingService.EXPECT().CancelBooking(gomock.Any(), models.CancelBookingInput{
+		VenueID: &venueID,
+		ID:      bookingID,
+	}).Return(&models.Booking{
+		ID:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+		Email:    "test@test.com",
+		People:   5,
+		StartsAt: startsAt,
+		EndsAt:   startsAt.Add(time.Minute * 60),
+		Duration: 60,
+		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+	}, nil)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, bookingService)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
+
+	var resp struct {
+		CancelBooking struct {
+			ID       string `json:"id"`
+			VenueID  string `json:"venueId"`
+			Email    string `json:"email"`
+			People   int    `json:"people"`
+			StartsAt string `json:"startsAt"`
+			EndsAt   string `json:"endsAt"`
+			Duration int    `json:"duration"`
+			TableID  string `json:"tableId"`
+		} `json:"cancelBooking"`
+	}
+	c.MustPost(fmt.Sprintf(`mutation{cancelBooking(input:{venueId:"%s",id:"%s"}){id,venueId,email,people,startsAt,endsAt,duration,tableId}}`, venueID, bookingID), &resp)
+
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
+func Test_CancelBookingNotAuthorised(t *testing.T) {
+	venueID := "8a18e89b-339b-4e51-ab53-825aae59a070"
+	bookingID := "47f4eaf4-7b5e-43dc-bc06-ebf8561c1fa9"
+	ctrl := gomock.NewController(t)
+	venueService := mock_resolver.NewMockVenueService(ctrl)
+	bookingService := mock_resolver.NewMockBookingService(ctrl)
+
+	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, bookingService)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
+
+	var resp struct {
+		CancelBooking struct {
+			ID       string `json:"id"`
+			VenueID  string `json:"venueId"`
+			Email    string `json:"email"`
+			People   int    `json:"people"`
+			StartsAt string `json:"startsAt"`
+			EndsAt   string `json:"endsAt"`
+			Duration int    `json:"duration"`
+			TableID  string `json:"tableId"`
+		} `json:"cancelBooking"`
+	}
+	assert.Error(t, c.Post(fmt.Sprintf(`mutation{cancelBooking(input:{venueId:"%s",id:"%s"}){id,venueId,email,people,startsAt,endsAt,duration,tableId}}`, venueID, bookingID), &resp), "user is not admin")
+
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
 var _ models.UserService = (*mockUserService)(nil)
 
 type mockUserService struct{}
