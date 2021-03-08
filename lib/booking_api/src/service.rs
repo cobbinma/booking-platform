@@ -85,7 +85,7 @@ impl BookingApi for BookingService {
             slot_starts_at.day(),
         );
 
-        let ((opens, closes), tables_with_capacity) = tokio::try_join!(
+        let ((opens, closes), mut tables_with_capacity) = tokio::try_join!(
             self.get_opening_times(slot.venue_id.clone(), slot_date),
             self.venue_client
                 .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
@@ -111,7 +111,7 @@ impl BookingApi for BookingService {
         while slot_time <= closes - Duration::minutes(slot.duration as i64) {
             let free_table_id = get_free_table(
                 slot.duration as i64,
-                &tables_with_capacity,
+                &mut tables_with_capacity,
                 &bookings,
                 &slot_time,
             );
@@ -170,7 +170,7 @@ impl BookingApi for BookingService {
             slot_starts_at.day(),
         );
 
-        let ((opens, closes), tables_with_capacity) = tokio::try_join!(
+        let ((opens, closes), mut tables_with_capacity) = tokio::try_join!(
             self.get_opening_times(slot.venue_id.clone(), slot_date),
             self.venue_client
                 .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
@@ -192,7 +192,7 @@ impl BookingApi for BookingService {
 
         let free_table_id = get_free_table(
             slot.duration as i64,
-            &tables_with_capacity,
+            &mut tables_with_capacity,
             &bookings,
             &slot_starts_at.with_timezone(&Utc),
         );
@@ -329,10 +329,11 @@ impl BookingApi for BookingService {
 
 fn get_free_table(
     duration: i64,
-    tables_with_capacity: &[String],
+    tables_with_capacity: &mut [String],
     bookings: &[models::Booking],
     starts_at: &DateTime<Utc>,
 ) -> Option<String> {
+    tables_with_capacity.sort_by(|a, b| bookings.iter().filter(|&booking| a == &booking.table_id.to_string()).count().cmp(&bookings.iter().filter(|&booking| b == &booking.table_id.to_string()).count()));
     tables_with_capacity
         .iter()
         .find(|table_id| {
@@ -439,7 +440,7 @@ mod tests {
     fn test_get_free_table_no_bookings() {
         let free_table = super::get_free_table(
             60,
-            &vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
+            &mut vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
             &vec![],
             &DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc),
         );
@@ -455,7 +456,7 @@ mod tests {
         let starts_at = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc);
         let free_table = super::get_free_table(
             60,
-            &vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
+            &mut vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
             &vec![Booking {
                 id: Default::default(),
                 customer_email: "".to_string(),
@@ -479,7 +480,7 @@ mod tests {
         let starts_at = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc);
         let free_table = super::get_free_table(
             60,
-            &vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
+            &mut vec!["3a3789ca-7174-4127-ae50-a644d69f1d27".to_string()],
             &vec![Booking {
                 id: Default::default(),
                 customer_email: "".to_string(),
@@ -501,7 +502,7 @@ mod tests {
     #[test]
     fn test_get_free_table_with_no_tables() {
         let starts_at = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(61, 0), Utc);
-        let free_table = super::get_free_table(60, &vec![], &vec![], &starts_at);
+        let free_table = super::get_free_table(60, &mut vec![], &vec![], &starts_at);
 
         assert_eq!(free_table, None)
     }
