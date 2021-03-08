@@ -17,9 +17,8 @@ type Resolver struct {
 	bookingService BookingService
 }
 
-func NewResolver(userService models.UserService, venueService VenueService, bookingService BookingService) *Resolver {
+func NewResolver(venueService VenueService, bookingService BookingService) *Resolver {
 	return &Resolver{
-		userService:    userService,
 		venueService:   venueService,
 		bookingService: bookingService,
 	}
@@ -45,7 +44,7 @@ type BookingService interface {
 }
 
 func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) error {
-	user, err := r.userService.GetUser(ctx)
+	user, err := models.GetUserFromContext(ctx)
 	if err != nil {
 		return status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}

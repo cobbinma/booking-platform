@@ -6,11 +6,13 @@ import (
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/bradleyjkemp/cupaloy"
+	"github.com/cobbinma/booking-platform/lib/gateway_api/cmd/api/middleware"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	mock_resolver "github.com/cobbinma/booking-platform/lib/gateway_api/graph/mock"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -46,7 +48,10 @@ func Test_GetVenue(t *testing.T) {
 		Slug:                "hop-and-vine",
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -115,7 +120,10 @@ func Test_GetVenueTables(t *testing.T) {
 		},
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -179,7 +187,10 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -246,7 +257,10 @@ func Test_GetVenueAdmins(t *testing.T) {
 
 	venueSrv.EXPECT().GetAdmins(gomock.Any(), venueID).Return([]string{"test@test.com"}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -306,7 +320,10 @@ func Test_GetVenueAdminsNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -390,7 +407,10 @@ func Test_GetVenueBookings(t *testing.T) {
 		Pages:       1,
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, bookingSrv)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, bookingSrv)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -464,7 +484,10 @@ func Test_GetVenueBookingsNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetVenue struct {
@@ -514,7 +537,10 @@ func Test_AddTableNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		AddTable struct {
@@ -552,8 +578,11 @@ func Test_AddTable(t *testing.T) {
 			Capacity int    `json:"capacity"`
 		} `json:"addTable"`
 	}
-	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
-		MustPost(`mutation{addTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",name:"test table",capacity:5}) {id,name,capacity}}`, &resp)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{addTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",name:"test table",capacity:5}) {id,name,capacity}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 	ctrl.Finish()
@@ -566,7 +595,10 @@ func Test_RemoveTableNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		AddTable struct {
@@ -603,8 +635,11 @@ func Test_RemoveTable(t *testing.T) {
 			Capacity int    `json:"capacity"`
 		} `json:"removeTable"`
 	}
-	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
-		MustPost(`mutation{removeTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",tableId:"bfcc0d78-83e7-4830-96ab-96cdbd0357c7"}) {id,name,capacity}}`, &resp)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{removeTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",tableId:"bfcc0d78-83e7-4830-96ab-96cdbd0357c7"}) {id,name,capacity}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 	ctrl.Finish()
@@ -617,7 +652,10 @@ func Test_AddAdminNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		AddAdmin string `json:"addAdmin"`
@@ -642,8 +680,11 @@ func Test_AddAdmin(t *testing.T) {
 	var resp struct {
 		AddAdmin string `json:"addAdmin"`
 	}
-	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
-		MustPost(`mutation{addAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{addAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 	ctrl.Finish()
@@ -656,7 +697,10 @@ func Test_RemoveAdminNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		RemoveAdmin string `json:"removeAdmin"`
@@ -681,8 +725,11 @@ func Test_RemoveAdmin(t *testing.T) {
 	var resp struct {
 		RemoveAdmin string `json:"removeAdmin"`
 	}
-	client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueSrv, nil)}))).
-		MustPost(`mutation{removeAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{removeAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 	ctrl.Finish()
@@ -712,7 +759,10 @@ func Test_GetSlot(t *testing.T) {
 		OtherAvailableSlots: nil,
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, bookingService)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, bookingService)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		GetSlot struct {
@@ -756,7 +806,10 @@ func Test_CreateBooking(t *testing.T) {
 		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 	}, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, nil, bookingService)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, bookingService)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		CreateBooking struct {
@@ -784,7 +837,10 @@ func Test_IsAdminTrue(t *testing.T) {
 
 	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueService, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueService, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		IsAdmin bool `json:"isAdmin"`
@@ -805,7 +861,10 @@ func Test_IsAdminFalse(t *testing.T) {
 
 	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(&mockUserService{}, venueService, nil)})))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueService, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
 
 	var resp struct {
 		IsAdmin bool `json:"isAdmin"`

@@ -14,9 +14,9 @@ import (
 )
 
 func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
-	user, err := r.userService.GetUser(ctx)
+	user, err := models.GetUserFromContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user from context : %w", err)
+		return nil, fmt.Errorf("could not get user profile : %w", err)
 	}
 
 	if user.Email != input.Email {
@@ -99,7 +99,7 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 		return false, fmt.Errorf("either venue id or slug must be given")
 	}
 
-	user, err := r.userService.GetUser(ctx)
+	user, err := models.GetUserFromContext(ctx)
 	if err != nil {
 		return false, status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}

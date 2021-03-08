@@ -193,6 +193,21 @@ func (mr *MockBookingServiceMockRecorder) Bookings(ctx, filter, pageInfo interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bookings", reflect.TypeOf((*MockBookingService)(nil).Bookings), ctx, filter, pageInfo)
 }
 
+// CancelBooking mocks base method.
+func (m *MockBookingService) CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CancelBooking", ctx, input)
+	ret0, _ := ret[0].(*models.Booking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CancelBooking indicates an expected call of CancelBooking.
+func (mr *MockBookingServiceMockRecorder) CancelBooking(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelBooking", reflect.TypeOf((*MockBookingService)(nil).CancelBooking), ctx, input)
+}
+
 // CreateBooking mocks base method.
 func (m *MockBookingService) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
 	m.ctrl.T.Helper()
