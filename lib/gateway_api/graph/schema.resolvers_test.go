@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"testing"
 	"time"
 )
@@ -48,7 +49,7 @@ func Test_GetVenue(t *testing.T) {
 		Slug:                "hop-and-vine",
 	}, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -120,7 +121,7 @@ func Test_GetVenueTables(t *testing.T) {
 		},
 	}, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -187,7 +188,7 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -257,7 +258,7 @@ func Test_GetVenueAdmins(t *testing.T) {
 
 	venueSrv.EXPECT().GetAdmins(gomock.Any(), venueID).Return([]string{"test@test.com"}, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -320,7 +321,7 @@ func Test_GetVenueAdminsNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -407,7 +408,7 @@ func Test_GetVenueBookings(t *testing.T) {
 		Pages:       1,
 	}, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, bookingSrv)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, bookingSrv)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -484,7 +485,7 @@ func Test_GetVenueBookingsNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -537,7 +538,7 @@ func Test_AddTableNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -579,7 +580,7 @@ func Test_AddTable(t *testing.T) {
 		} `json:"addTable"`
 	}
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	client.New(e).MustPost(`mutation{addTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",name:"test table",capacity:5}) {id,name,capacity}}`, &resp)
@@ -595,7 +596,7 @@ func Test_RemoveTableNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -636,7 +637,7 @@ func Test_RemoveTable(t *testing.T) {
 		} `json:"removeTable"`
 	}
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	client.New(e).MustPost(`mutation{removeTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",tableId:"bfcc0d78-83e7-4830-96ab-96cdbd0357c7"}) {id,name,capacity}}`, &resp)
@@ -652,7 +653,7 @@ func Test_AddAdminNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -681,7 +682,7 @@ func Test_AddAdmin(t *testing.T) {
 		AddAdmin string `json:"addAdmin"`
 	}
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	client.New(e).MustPost(`mutation{addAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
@@ -697,7 +698,7 @@ func Test_RemoveAdminNotAuthorised(t *testing.T) {
 
 	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -726,7 +727,7 @@ func Test_RemoveAdmin(t *testing.T) {
 		RemoveAdmin string `json:"removeAdmin"`
 	}
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueSrv, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	client.New(e).MustPost(`mutation{removeAdmin(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",email:"test@test.com"})}`, &resp)
@@ -759,7 +760,7 @@ func Test_GetSlot(t *testing.T) {
 		OtherAvailableSlots: nil,
 	}, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, bookingService)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), nil, bookingService)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -806,7 +807,7 @@ func Test_CreateBooking(t *testing.T) {
 		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 	}, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(nil, bookingService)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), nil, bookingService)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -837,7 +838,7 @@ func Test_IsAdminTrue(t *testing.T) {
 
 	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueService, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)
@@ -861,7 +862,7 @@ func Test_IsAdminFalse(t *testing.T) {
 
 	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(venueService, nil)}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, nil)}))
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	c := client.New(e)

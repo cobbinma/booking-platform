@@ -64,7 +64,7 @@ func main() {
 	defer closeBookingClient(log)
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
-		generated.Config{Resolvers: graph.NewResolver(venueClient, bookingClient)}))
+		generated.Config{Resolvers: graph.NewResolver(log, venueClient, bookingClient)}))
 	e := echo.New()
 	e.Use(mw.ZapLogger(logger))
 
