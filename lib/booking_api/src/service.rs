@@ -949,4 +949,57 @@ mod tests {
             }
         )
     }
+
+    #[tokio::test]
+    async fn test_cancel_booking() {
+        let starts = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704732400, 0), Utc);
+        let mut mock = MockRepository::new();
+
+        let venue_id = "0441d2c0-458d-4f4a-81cc-92e44807365b".to_string();
+        let table_id = "9dce92ae-1605-4045-8ec5-ba79ad2165b0".to_string();
+        let booking_id = "150dfddc-516f-443f-bb48-6add094e545d".to_string();
+
+        mock.expect_cancel_booking()
+            .with(
+                predicate::eq(Uuid::parse_str(&booking_id.clone()).expect("could not parse venue uuid")),
+            )
+            .times(1)
+            .returning(|_| {
+                let starts = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(704732400, 0), Utc);
+                Ok(models::Booking{
+                    id: Uuid::parse_str("150dfddc-516f-443f-bb48-6add094e545d").expect("could not parse venue uuid"),
+                    customer_email: "test@test.com".to_string(),
+                    venue_id: Uuid::parse_str("0441d2c0-458d-4f4a-81cc-92e44807365b").expect("could not parse venue uuid"),
+                    table_id: Uuid::parse_str("9dce92ae-1605-4045-8ec5-ba79ad2165b0").expect("could not parse venue uuid"),
+                    people: 4,
+                    date: starts.naive_utc().date(),
+                    starts_at: starts,
+                    ends_at: starts + Duration::minutes(60),
+                    duration: 60
+                })
+            });
+
+        let service = BookingService::new(Box::new(mock), Box::new(MockVenueClient::new()), None)
+            .expect("could not construct booking service");
+
+        let result = service
+            .cancel_booking(Request::new(CancelBookingRequest{ id: booking_id.clone() }))
+            .await
+            .map(|r| r.into_inner())
+            .expect("did not expect error from cancel booking");
+
+        assert_eq!(
+            result,
+            protobuf::booking::models::Booking{
+                id: booking_id,
+                venue_id,
+                email: "test@test.com".to_string(),
+                people: 4,
+                starts_at: starts.to_rfc3339(),
+                ends_at: (starts + Duration::minutes(60)).to_rfc3339(),
+                duration: 60,
+                table_id
+            }
+        )
+    }
 }
