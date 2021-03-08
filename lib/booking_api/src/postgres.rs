@@ -52,6 +52,7 @@ impl Repository for Postgres {
         };
 
         builder
+            .order(starts_at.asc())
             .get_results(&self.pool.get().map_err(|e| {
                 log::error!("could not get database connection : {}", e);
                 Status::internal("could not get database connection")
