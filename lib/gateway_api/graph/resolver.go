@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -12,14 +13,14 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
+	log            *zap.SugaredLogger
 	venueService   VenueService
-	userService    models.UserService
 	bookingService BookingService
 }
 
-func NewResolver(userService models.UserService, venueService VenueService, bookingService BookingService) *Resolver {
+func NewResolver(log *zap.SugaredLogger, venueService VenueService, bookingService BookingService) *Resolver {
 	return &Resolver{
-		userService:    userService,
+		log:            log,
 		venueService:   venueService,
 		bookingService: bookingService,
 	}
@@ -40,18 +41,14 @@ type VenueService interface {
 type BookingService interface {
 	GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error)
 	CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error)
+	Bookings(ctx context.Context, filter models.BookingsFilter, pageInfo models.PageInfo) (*models.BookingsPage, error)
+	CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error)
 }
 
 func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) error {
-	user := models.UserFromCtx(ctx)
-	if user == nil {
-		u, err := r.userService.GetUser(ctx)
-		if err != nil {
-			return status.Errorf(codes.Internal, "could not get user profile : %s", err)
-		}
-
-		models.AddUserToContext(ctx, *u)
-		user = u
+	user, err := models.GetUserFromContext(ctx)
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}
 
 	isAdmin, err := r.venueService.IsAdmin(ctx, input, user.Email)

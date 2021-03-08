@@ -105,6 +105,15 @@ export type Venue = {
   admins: Array<Scalars['String']>;
   /** human readable identifier of the venue */
   slug: Scalars['ID'];
+  /** paginated list of bookings for a venue */
+  bookings?: Maybe<BookingsPage>;
+};
+
+
+/** Venue where a booking can take place. */
+export type VenueBookingsArgs = {
+  filter?: Maybe<BookingsFilter>;
+  pageInfo?: Maybe<PageInfo>;
 };
 
 /** An individual table at a venue. */
@@ -176,6 +185,33 @@ export type VenueFilter = {
   slug?: Maybe<Scalars['ID']>;
 };
 
+/** Filter bookings. */
+export type BookingsFilter = {
+  /** unique identifier of the venue */
+  venueId?: Maybe<Scalars['ID']>;
+  /** specific date to query bookings for */
+  date: Scalars['Time'];
+};
+
+/** Information about the page being requested. Maximum page limit of 50. */
+export type PageInfo = {
+  /** page number */
+  page: Scalars['Int'];
+  /** maximum amount of results per page */
+  limit?: Maybe<Scalars['Int']>;
+};
+
+/** A page with a list of bookings. */
+export type BookingsPage = {
+  __typename?: 'BookingsPage';
+  /** list of bookings */
+  bookings: Array<Booking>;
+  /** is there a next page */
+  hasNextPage: Scalars['Boolean'];
+  /** total number of pages */
+  pages: Scalars['Int'];
+};
+
 /** Booking queries. */
 export type Query = {
   __typename?: 'Query';
@@ -221,6 +257,14 @@ export type RemoveAdminInput = {
   email: Scalars['String'];
 };
 
+/** Input to cancel an individual booking. */
+export type CancelBookingInput = {
+  /** unique identifier of the venue */
+  venueId?: Maybe<Scalars['ID']>;
+  /** unique identifier of the booking */
+  id: Scalars['ID'];
+};
+
 /** Booking mutations. */
 export type Mutation = {
   __typename?: 'Mutation';
@@ -234,6 +278,8 @@ export type Mutation = {
   addAdmin: Scalars['String'];
   /** remove an admin from a venue */
   removeAdmin: Scalars['String'];
+  /** cancel an individual booking */
+  cancelBooking: Booking;
 };
 
 
@@ -266,6 +312,12 @@ export type MutationRemoveAdminArgs = {
   input: RemoveAdminInput;
 };
 
+
+/** Booking mutations. */
+export type MutationCancelBookingArgs = {
+  input: CancelBookingInput;
+};
+
 export type AddAdminMutationVariables = Exact<{
   admin: AdminInput;
 }>;
@@ -286,6 +338,19 @@ export type AddTableMutation = (
   & { addTable: (
     { __typename?: 'Table' }
     & Pick<Table, 'id' | 'name' | 'capacity'>
+  ) }
+);
+
+export type CancelBookingMutationVariables = Exact<{
+  input: CancelBookingInput;
+}>;
+
+
+export type CancelBookingMutation = (
+  { __typename?: 'Mutation' }
+  & { cancelBooking: (
+    { __typename?: 'Booking' }
+    & Pick<Booking, 'id'>
   ) }
 );
 
@@ -322,7 +387,10 @@ export type GetSlotQuery = (
 );
 
 export type GetVenueQueryVariables = Exact<{
-  slug: Scalars['ID'];
+  slug?: Maybe<Scalars['ID']>;
+  venueID?: Maybe<Scalars['ID']>;
+  filter?: Maybe<BookingsFilter>;
+  pageInfo?: Maybe<PageInfo>;
 }>;
 
 
@@ -340,6 +408,13 @@ export type GetVenueQuery = (
     )>, tables: Array<(
       { __typename?: 'Table' }
       & Pick<Table, 'id' | 'name' | 'capacity'>
+    )>, bookings?: Maybe<(
+      { __typename?: 'BookingsPage' }
+      & Pick<BookingsPage, 'hasNextPage' | 'pages'>
+      & { bookings: Array<(
+        { __typename?: 'Booking' }
+        & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
+      )> }
     )> }
   ) }
 );
@@ -442,6 +517,38 @@ export function useAddTableMutation(baseOptions?: Apollo.MutationHookOptions<Add
 export type AddTableMutationHookResult = ReturnType<typeof useAddTableMutation>;
 export type AddTableMutationResult = Apollo.MutationResult<AddTableMutation>;
 export type AddTableMutationOptions = Apollo.BaseMutationOptions<AddTableMutation, AddTableMutationVariables>;
+export const CancelBookingDocument = gql`
+    mutation CancelBooking($input: CancelBookingInput!) {
+  cancelBooking(input: $input) {
+    id
+  }
+}
+    `;
+export type CancelBookingMutationFn = Apollo.MutationFunction<CancelBookingMutation, CancelBookingMutationVariables>;
+
+/**
+ * __useCancelBookingMutation__
+ *
+ * To run a mutation, you first call `useCancelBookingMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCancelBookingMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [cancelBookingMutation, { data, loading, error }] = useCancelBookingMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCancelBookingMutation(baseOptions?: Apollo.MutationHookOptions<CancelBookingMutation, CancelBookingMutationVariables>) {
+        return Apollo.useMutation<CancelBookingMutation, CancelBookingMutationVariables>(CancelBookingDocument, baseOptions);
+      }
+export type CancelBookingMutationHookResult = ReturnType<typeof useCancelBookingMutation>;
+export type CancelBookingMutationResult = Apollo.MutationResult<CancelBookingMutation>;
+export type CancelBookingMutationOptions = Apollo.BaseMutationOptions<CancelBookingMutation, CancelBookingMutationVariables>;
 export const CreateBookingDocument = gql`
     mutation CreateBooking($slot: BookingInput!) {
   createBooking(input: $slot) {
@@ -530,8 +637,8 @@ export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
 export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
 export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
-    query GetVenue($slug: ID!) {
-  getVenue(filter: {slug: $slug}) {
+    query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo) {
+  getVenue(filter: {slug: $slug, id: $venueID}) {
     id
     name
     openingHours {
@@ -555,6 +662,20 @@ export const GetVenueDocument = gql`
     }
     admins
     slug
+    bookings(filter: $filter, pageInfo: $pageInfo) {
+      bookings {
+        id
+        venueId
+        email
+        people
+        startsAt
+        endsAt
+        duration
+        tableId
+      }
+      hasNextPage
+      pages
+    }
   }
 }
     `;
@@ -572,10 +693,13 @@ export const GetVenueDocument = gql`
  * const { data, loading, error } = useGetVenueQuery({
  *   variables: {
  *      slug: // value for 'slug'
+ *      venueID: // value for 'venueID'
+ *      filter: // value for 'filter'
+ *      pageInfo: // value for 'pageInfo'
  *   },
  * });
  */
-export function useGetVenueQuery(baseOptions: Apollo.QueryHookOptions<GetVenueQuery, GetVenueQueryVariables>) {
+export function useGetVenueQuery(baseOptions?: Apollo.QueryHookOptions<GetVenueQuery, GetVenueQueryVariables>) {
         return Apollo.useQuery<GetVenueQuery, GetVenueQueryVariables>(GetVenueDocument, baseOptions);
       }
 export function useGetVenueLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetVenueQuery, GetVenueQueryVariables>) {

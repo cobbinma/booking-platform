@@ -5,6 +5,31 @@ pub struct GetSlotResponse {
     #[prost(message, repeated, tag = "2")]
     pub other_available_slots: ::prost::alloc::vec::Vec<super::models::Slot>,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetBookingsRequest {
+    #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub date: ::prost::alloc::string::String,
+    #[prost(int32, tag = "3")]
+    pub page: i32,
+    #[prost(int32, tag = "4")]
+    pub limit: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetBookingsResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub bookings: ::prost::alloc::vec::Vec<super::models::Booking>,
+    #[prost(bool, tag = "2")]
+    pub has_next_page: bool,
+    #[prost(int32, tag = "3")]
+    pub pages: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CancelBookingRequest {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+}
 #[doc = r" Generated client implementations."]
 pub mod booking_api_client {
     #![allow(unused_variables, dead_code, missing_docs)]
@@ -67,6 +92,35 @@ pub mod booking_api_client {
                 http::uri::PathAndQuery::from_static("/booking.api.BookingAPI/CreateBooking");
             self.inner.unary(request.into_request(), path, codec).await
         }
+        pub async fn get_bookings(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetBookingsRequest>,
+        ) -> Result<tonic::Response<super::GetBookingsResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/booking.api.BookingAPI/GetBookings");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn cancel_booking(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CancelBookingRequest>,
+        ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path =
+                http::uri::PathAndQuery::from_static("/booking.api.BookingAPI/CancelBooking");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
     }
     impl<T: Clone> Clone for BookingApiClient<T> {
         fn clone(&self) -> Self {
@@ -95,6 +149,14 @@ pub mod booking_api_server {
         async fn create_booking(
             &self,
             request: tonic::Request<super::super::models::SlotInput>,
+        ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status>;
+        async fn get_bookings(
+            &self,
+            request: tonic::Request<super::GetBookingsRequest>,
+        ) -> Result<tonic::Response<super::GetBookingsResponse>, tonic::Status>;
+        async fn cancel_booking(
+            &self,
+            request: tonic::Request<super::CancelBookingRequest>,
         ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status>;
     }
     #[derive(Debug)]
@@ -182,6 +244,70 @@ pub mod booking_api_server {
                         let interceptor = inner.1.clone();
                         let inner = inner.0;
                         let method = CreateBookingSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.api.BookingAPI/GetBookings" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetBookingsSvc<T: BookingApi>(pub Arc<T>);
+                    impl<T: BookingApi> tonic::server::UnaryService<super::GetBookingsRequest> for GetBookingsSvc<T> {
+                        type Response = super::GetBookingsResponse;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetBookingsRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).get_bookings(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = GetBookingsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.api.BookingAPI/CancelBooking" => {
+                    #[allow(non_camel_case_types)]
+                    struct CancelBookingSvc<T: BookingApi>(pub Arc<T>);
+                    impl<T: BookingApi> tonic::server::UnaryService<super::CancelBookingRequest>
+                        for CancelBookingSvc<T>
+                    {
+                        type Response = super::super::models::Booking;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CancelBookingRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).cancel_booking(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = CancelBookingSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = if let Some(interceptor) = interceptor {
                             tonic::server::Grpc::with_interceptor(codec, interceptor)

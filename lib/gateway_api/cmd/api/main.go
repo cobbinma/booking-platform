@@ -64,7 +64,7 @@ func main() {
 	defer closeBookingClient(log)
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
-		generated.Config{Resolvers: graph.NewResolver(auth0.NewUserService(c.authDomain), venueClient, bookingClient)}))
+		generated.Config{Resolvers: graph.NewResolver(log, venueClient, bookingClient)}))
 	e := echo.New()
 	e.Use(mw.ZapLogger(logger))
 
@@ -73,7 +73,7 @@ func main() {
 	}
 
 	e.GET("/", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")))
-	e.POST("/query", echo.WrapHandler(srv), mw.Auth(c.authDomain, c.authApiId))
+	e.POST("/query", echo.WrapHandler(srv), mw.Auth(c.authDomain, c.authApiId), mw.User(auth0.NewUserService(c.authDomain)))
 	e.OPTIONS("/query", func(c echo.Context) error {
 		headers := c.Request().Header
 		for key, value := range headers {

@@ -45,6 +45,82 @@ type bookingClient struct {
 	log    *zap.SugaredLogger
 }
 
+func (b bookingClient) CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error) {
+	cancelled, err := b.client.CancelBooking(ctx, &api.CancelBookingRequest{Id: input.ID})
+	if err != nil {
+		return nil, fmt.Errorf("could not cancel booking using client : %w", err)
+	}
+
+	startsAt, err := time.Parse(time.RFC3339, cancelled.StartsAt)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse start time : %w", err)
+	}
+
+	endsAt, err := time.Parse(time.RFC3339, cancelled.EndsAt)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse end time : %w", err)
+	}
+
+	return &models.Booking{
+		ID:       cancelled.Id,
+		VenueID:  cancelled.VenueId,
+		Email:    cancelled.Email,
+		People:   int(cancelled.People),
+		StartsAt: startsAt,
+		EndsAt:   endsAt,
+		Duration: int(cancelled.Duration),
+		TableID:  cancelled.TableId,
+	}, err
+}
+
+func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilter, pageInfo models.PageInfo) (*models.BookingsPage, error) {
+	if pageInfo.Limit == nil {
+		var max = 50
+		pageInfo.Limit = &max
+	}
+	if filter.VenueID == nil {
+		empty := ""
+		filter.VenueID = &empty
+	}
+	resp, err := b.client.GetBookings(ctx, &api.GetBookingsRequest{
+		VenueId: *filter.VenueID,
+		Date:    filter.Date.Format(time.RFC3339),
+		Page:    int32(pageInfo.Page),
+		Limit:   int32(*pageInfo.Limit),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not get bookings from client : %w", err)
+	}
+
+	bookings := make([]*models.Booking, len(resp.Bookings))
+	for i, b := range resp.Bookings {
+		startsAt, err := time.Parse(time.RFC3339, b.StartsAt)
+		if err != nil {
+			return nil, fmt.Errorf("incorrect time format returned from booking client : %w", err)
+		}
+		endsAt, err := time.Parse(time.RFC3339, b.EndsAt)
+		if err != nil {
+			return nil, fmt.Errorf("incorrect time format returned from booking client : %w", err)
+		}
+		bookings[i] = &models.Booking{
+			ID:       b.Id,
+			VenueID:  b.VenueId,
+			Email:    b.Email,
+			People:   int(b.People),
+			StartsAt: startsAt,
+			EndsAt:   endsAt,
+			Duration: int(b.Duration),
+			TableID:  b.TableId,
+		}
+	}
+
+	return &models.BookingsPage{
+		Bookings:    bookings,
+		HasNextPage: resp.HasNextPage,
+		Pages:       int(resp.Pages),
+	}, nil
+}
+
 func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
 	resp, err := b.client.GetSlot(ctx, &booking.SlotInput{
 		VenueId:  slot.VenueID,

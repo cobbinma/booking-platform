@@ -6,183 +6,234 @@ package mock_resolver
 
 import (
 	context "context"
+	reflect "reflect"
+
 	models "github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// MockVenueService is a mock of VenueService interface
+// MockVenueService is a mock of VenueService interface.
 type MockVenueService struct {
 	ctrl     *gomock.Controller
 	recorder *MockVenueServiceMockRecorder
 }
 
-// MockVenueServiceMockRecorder is the mock recorder for MockVenueService
+// MockVenueServiceMockRecorder is the mock recorder for MockVenueService.
 type MockVenueServiceMockRecorder struct {
 	mock *MockVenueService
 }
 
-// NewMockVenueService creates a new mock instance
+// NewMockVenueService creates a new mock instance.
 func NewMockVenueService(ctrl *gomock.Controller) *MockVenueService {
 	mock := &MockVenueService{ctrl: ctrl}
 	mock.recorder = &MockVenueServiceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockVenueService) EXPECT() *MockVenueServiceMockRecorder {
 	return m.recorder
 }
 
-// GetVenue mocks base method
-func (m *MockVenueService) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
-	ret := m.ctrl.Call(m, "GetVenue", ctx, filter)
-	ret0, _ := ret[0].(*models.Venue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetVenue indicates an expected call of GetVenue
-func (mr *MockVenueServiceMockRecorder) GetVenue(ctx, filter interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVenue", reflect.TypeOf((*MockVenueService)(nil).GetVenue), ctx, filter)
-}
-
-// GetTables mocks base method
-func (m *MockVenueService) GetTables(ctx context.Context, venueID string) ([]*models.Table, error) {
-	ret := m.ctrl.Call(m, "GetTables", ctx, venueID)
-	ret0, _ := ret[0].([]*models.Table)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetTables indicates an expected call of GetTables
-func (mr *MockVenueServiceMockRecorder) GetTables(ctx, venueID interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTables", reflect.TypeOf((*MockVenueService)(nil).GetTables), ctx, venueID)
-}
-
-// AddTable mocks base method
-func (m *MockVenueService) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
-	ret := m.ctrl.Call(m, "AddTable", ctx, input)
-	ret0, _ := ret[0].(*models.Table)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AddTable indicates an expected call of AddTable
-func (mr *MockVenueServiceMockRecorder) AddTable(ctx, input interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTable", reflect.TypeOf((*MockVenueService)(nil).AddTable), ctx, input)
-}
-
-// RemoveTable mocks base method
-func (m *MockVenueService) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
-	ret := m.ctrl.Call(m, "RemoveTable", ctx, input)
-	ret0, _ := ret[0].(*models.Table)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RemoveTable indicates an expected call of RemoveTable
-func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, input interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTable", reflect.TypeOf((*MockVenueService)(nil).RemoveTable), ctx, input)
-}
-
-// IsAdmin mocks base method
-func (m *MockVenueService) IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error) {
-	ret := m.ctrl.Call(m, "IsAdmin", ctx, input, email)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsAdmin indicates an expected call of IsAdmin
-func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, input, email interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, input, email)
-}
-
-// GetAdmins mocks base method
-func (m *MockVenueService) GetAdmins(ctx context.Context, venueID string) ([]string, error) {
-	ret := m.ctrl.Call(m, "GetAdmins", ctx, venueID)
-	ret0, _ := ret[0].([]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAdmins indicates an expected call of GetAdmins
-func (mr *MockVenueServiceMockRecorder) GetAdmins(ctx, venueID interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdmins", reflect.TypeOf((*MockVenueService)(nil).GetAdmins), ctx, venueID)
-}
-
-// AddAdmin mocks base method
+// AddAdmin mocks base method.
 func (m *MockVenueService) AddAdmin(ctx context.Context, input models.AdminInput) (string, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddAdmin", ctx, input)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddAdmin indicates an expected call of AddAdmin
+// AddAdmin indicates an expected call of AddAdmin.
 func (mr *MockVenueServiceMockRecorder) AddAdmin(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAdmin", reflect.TypeOf((*MockVenueService)(nil).AddAdmin), ctx, input)
 }
 
-// RemoveAdmin mocks base method
+// AddTable mocks base method.
+func (m *MockVenueService) AddTable(ctx context.Context, input models.TableInput) (*models.Table, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTable", ctx, input)
+	ret0, _ := ret[0].(*models.Table)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTable indicates an expected call of AddTable.
+func (mr *MockVenueServiceMockRecorder) AddTable(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTable", reflect.TypeOf((*MockVenueService)(nil).AddTable), ctx, input)
+}
+
+// GetAdmins mocks base method.
+func (m *MockVenueService) GetAdmins(ctx context.Context, venueID string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAdmins", ctx, venueID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAdmins indicates an expected call of GetAdmins.
+func (mr *MockVenueServiceMockRecorder) GetAdmins(ctx, venueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdmins", reflect.TypeOf((*MockVenueService)(nil).GetAdmins), ctx, venueID)
+}
+
+// GetTables mocks base method.
+func (m *MockVenueService) GetTables(ctx context.Context, venueID string) ([]*models.Table, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTables", ctx, venueID)
+	ret0, _ := ret[0].([]*models.Table)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTables indicates an expected call of GetTables.
+func (mr *MockVenueServiceMockRecorder) GetTables(ctx, venueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTables", reflect.TypeOf((*MockVenueService)(nil).GetTables), ctx, venueID)
+}
+
+// GetVenue mocks base method.
+func (m *MockVenueService) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVenue", ctx, filter)
+	ret0, _ := ret[0].(*models.Venue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVenue indicates an expected call of GetVenue.
+func (mr *MockVenueServiceMockRecorder) GetVenue(ctx, filter interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVenue", reflect.TypeOf((*MockVenueService)(nil).GetVenue), ctx, filter)
+}
+
+// IsAdmin mocks base method.
+func (m *MockVenueService) IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsAdmin", ctx, input, email)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsAdmin indicates an expected call of IsAdmin.
+func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, input, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, input, email)
+}
+
+// RemoveAdmin mocks base method.
 func (m *MockVenueService) RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveAdmin", ctx, input)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RemoveAdmin indicates an expected call of RemoveAdmin
+// RemoveAdmin indicates an expected call of RemoveAdmin.
 func (mr *MockVenueServiceMockRecorder) RemoveAdmin(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAdmin", reflect.TypeOf((*MockVenueService)(nil).RemoveAdmin), ctx, input)
 }
 
-// MockBookingService is a mock of BookingService interface
+// RemoveTable mocks base method.
+func (m *MockVenueService) RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTable", ctx, input)
+	ret0, _ := ret[0].(*models.Table)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveTable indicates an expected call of RemoveTable.
+func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTable", reflect.TypeOf((*MockVenueService)(nil).RemoveTable), ctx, input)
+}
+
+// MockBookingService is a mock of BookingService interface.
 type MockBookingService struct {
 	ctrl     *gomock.Controller
 	recorder *MockBookingServiceMockRecorder
 }
 
-// MockBookingServiceMockRecorder is the mock recorder for MockBookingService
+// MockBookingServiceMockRecorder is the mock recorder for MockBookingService.
 type MockBookingServiceMockRecorder struct {
 	mock *MockBookingService
 }
 
-// NewMockBookingService creates a new mock instance
+// NewMockBookingService creates a new mock instance.
 func NewMockBookingService(ctrl *gomock.Controller) *MockBookingService {
 	mock := &MockBookingService{ctrl: ctrl}
 	mock.recorder = &MockBookingServiceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockBookingService) EXPECT() *MockBookingServiceMockRecorder {
 	return m.recorder
 }
 
-// GetSlot mocks base method
-func (m *MockBookingService) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
-	ret := m.ctrl.Call(m, "GetSlot", ctx, slot)
-	ret0, _ := ret[0].(*models.GetSlotResponse)
+// Bookings mocks base method.
+func (m *MockBookingService) Bookings(ctx context.Context, filter models.BookingsFilter, pageInfo models.PageInfo) (*models.BookingsPage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Bookings", ctx, filter, pageInfo)
+	ret0, _ := ret[0].(*models.BookingsPage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSlot indicates an expected call of GetSlot
-func (mr *MockBookingServiceMockRecorder) GetSlot(ctx, slot interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSlot", reflect.TypeOf((*MockBookingService)(nil).GetSlot), ctx, slot)
+// Bookings indicates an expected call of Bookings.
+func (mr *MockBookingServiceMockRecorder) Bookings(ctx, filter, pageInfo interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bookings", reflect.TypeOf((*MockBookingService)(nil).Bookings), ctx, filter, pageInfo)
 }
 
-// CreateBooking mocks base method
+// CancelBooking mocks base method.
+func (m *MockBookingService) CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CancelBooking", ctx, input)
+	ret0, _ := ret[0].(*models.Booking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CancelBooking indicates an expected call of CancelBooking.
+func (mr *MockBookingServiceMockRecorder) CancelBooking(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelBooking", reflect.TypeOf((*MockBookingService)(nil).CancelBooking), ctx, input)
+}
+
+// CreateBooking mocks base method.
 func (m *MockBookingService) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateBooking", ctx, input)
 	ret0, _ := ret[0].(*models.Booking)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateBooking indicates an expected call of CreateBooking
+// CreateBooking indicates an expected call of CreateBooking.
 func (mr *MockBookingServiceMockRecorder) CreateBooking(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBooking", reflect.TypeOf((*MockBookingService)(nil).CreateBooking), ctx, input)
+}
+
+// GetSlot mocks base method.
+func (m *MockBookingService) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSlot", ctx, slot)
+	ret0, _ := ret[0].(*models.GetSlotResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSlot indicates an expected call of GetSlot.
+func (mr *MockBookingServiceMockRecorder) GetSlot(ctx, slot interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSlot", reflect.TypeOf((*MockBookingService)(nil).GetSlot), ctx, slot)
 }

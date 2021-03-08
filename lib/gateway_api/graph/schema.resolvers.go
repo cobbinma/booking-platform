@@ -14,13 +14,17 @@ import (
 )
 
 func (r *mutationResolver) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
-	user, err := r.userService.GetUser(ctx)
+	user, err := models.GetUserFromContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user from context : %w", err)
+		return nil, fmt.Errorf("could not get user profile : %w", err)
 	}
 
 	if user.Email != input.Email {
-		return nil, fmt.Errorf("context email does not match given")
+		if err := r.authIsAdmin(ctx, models.IsAdminInput{
+			VenueID: &input.VenueID,
+		}); err != nil {
+			return nil, fmt.Errorf("context email does not match given : %w", err)
+		}
 	}
 
 	return r.bookingService.CreateBooking(ctx, input)
@@ -66,6 +70,19 @@ func (r *mutationResolver) RemoveAdmin(ctx context.Context, input models.RemoveA
 	return r.venueService.RemoveAdmin(ctx, input)
 }
 
+func (r *mutationResolver) CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error) {
+	if input.VenueID == nil {
+		return nil, fmt.Errorf("venue ID must be given")
+	}
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: input.VenueID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.bookingService.CancelBooking(ctx, input)
+}
+
 func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
 	if filter.ID == nil && filter.Slug == nil {
 		return nil, fmt.Errorf("at least one field must not be nil on filter")
@@ -82,7 +99,7 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 		return false, fmt.Errorf("either venue id or slug must be given")
 	}
 
-	user, err := r.userService.GetUser(ctx)
+	user, err := models.GetUserFromContext(ctx)
 	if err != nil {
 		return false, status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}
@@ -108,6 +125,27 @@ func (r *venueResolver) Admins(ctx context.Context, obj *models.Venue) ([]string
 	}
 
 	return r.venueService.GetAdmins(ctx, obj.ID)
+}
+
+func (r *venueResolver) Bookings(ctx context.Context, obj *models.Venue, filter *models.BookingsFilter, pageInfo *models.PageInfo) (*models.BookingsPage, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &obj.ID,
+	}); err != nil {
+		return nil, err
+	}
+
+	if filter == nil || pageInfo == nil {
+		return nil, nil
+	}
+
+	if filter.VenueID != nil && *filter.VenueID != obj.ID {
+		return nil, fmt.Errorf("cannot query bookings for a different venue")
+	}
+
+	return r.bookingService.Bookings(ctx, models.BookingsFilter{
+		VenueID: &obj.ID,
+		Date:    filter.Date,
+	}, *pageInfo)
 }
 
 // Mutation returns generated.MutationResolver implementation.

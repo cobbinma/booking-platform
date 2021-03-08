@@ -1,7 +1,7 @@
 use crate::service::VenueClient as Client;
 use async_trait::async_trait;
 use protobuf::venue::api::venue_api_client::VenueApiClient;
-use protobuf::venue::api::{GetVenueRequest, GetTablesRequest};
+use protobuf::venue::api::{GetTablesRequest, GetVenueRequest};
 use protobuf::venue::models::Venue;
 use tonic::transport::Channel;
 use tonic::Status;
@@ -21,7 +21,10 @@ impl Client for VenueClient {
     async fn get_venue(&self, venue_id: String) -> Result<Venue, Status> {
         self.client
             .clone()
-            .get_venue(GetVenueRequest { id: venue_id, slug: "".to_string() })
+            .get_venue(GetVenueRequest {
+                id: venue_id,
+                slug: "".to_string(),
+            })
             .await
             .map(|v| v.into_inner())
     }

@@ -1,0 +1,12 @@
+(struct { CancelBooking struct { ID string "json:\"id\""; VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\"" } "json:\"cancelBooking\"" }) {
+  CancelBooking: (struct { ID string "json:\"id\""; VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\"" }) {
+    ID: (string) "",
+    VenueID: (string) "",
+    Email: (string) "",
+    People: (int) 0,
+    StartsAt: (string) "",
+    EndsAt: (string) "",
+    Duration: (int) 0,
+    TableID: (string) ""
+  }
+}

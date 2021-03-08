@@ -1,19 +1,22 @@
 package models
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 const userCtxKey ctxKey = "userKey"
 
-func UserFromCtx(ctx context.Context) *User {
+func GetUserFromContext(ctx context.Context) (*User, error) {
 	if user, ok := ctx.Value(userCtxKey).(User); ok {
-		return &user
+		return &user, nil
 	}
 
-	return nil
+	return nil, fmt.Errorf("user not found in context")
 }
 
-func AddUserToContext(ctx context.Context, user User) {
-	ctx = context.WithValue(ctx, userCtxKey, user)
+func AddUserToContext(ctx context.Context, user User) context.Context {
+	return context.WithValue(ctx, userCtxKey, user)
 }
 
 type UserService interface {

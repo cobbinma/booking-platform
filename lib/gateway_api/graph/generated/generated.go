@@ -56,6 +56,12 @@ type ComplexityRoot struct {
 		VenueID  func(childComplexity int) int
 	}
 
+	BookingsPage struct {
+		Bookings    func(childComplexity int) int
+		HasNextPage func(childComplexity int) int
+		Pages       func(childComplexity int) int
+	}
+
 	GetSlotResponse struct {
 		Match               func(childComplexity int) int
 		OtherAvailableSlots func(childComplexity int) int
@@ -64,6 +70,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddAdmin      func(childComplexity int, input models.AdminInput) int
 		AddTable      func(childComplexity int, input models.TableInput) int
+		CancelBooking func(childComplexity int, input models.CancelBookingInput) int
 		CreateBooking func(childComplexity int, input models.BookingInput) int
 		RemoveAdmin   func(childComplexity int, input models.RemoveAdminInput) int
 		RemoveTable   func(childComplexity int, input models.RemoveTableInput) int
@@ -100,6 +107,7 @@ type ComplexityRoot struct {
 
 	Venue struct {
 		Admins              func(childComplexity int) int
+		Bookings            func(childComplexity int, filter *models.BookingsFilter, pageInfo *models.PageInfo) int
 		ID                  func(childComplexity int) int
 		Name                func(childComplexity int) int
 		OpeningHours        func(childComplexity int) int
@@ -115,6 +123,7 @@ type MutationResolver interface {
 	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)
 	AddAdmin(ctx context.Context, input models.AdminInput) (string, error)
 	RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error)
+	CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error)
 }
 type QueryResolver interface {
 	GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error)
@@ -124,6 +133,8 @@ type QueryResolver interface {
 type VenueResolver interface {
 	Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error)
 	Admins(ctx context.Context, obj *models.Venue) ([]string, error)
+
+	Bookings(ctx context.Context, obj *models.Venue, filter *models.BookingsFilter, pageInfo *models.PageInfo) (*models.BookingsPage, error)
 }
 
 type executableSchema struct {
@@ -197,6 +208,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Booking.VenueID(childComplexity), true
 
+	case "BookingsPage.bookings":
+		if e.complexity.BookingsPage.Bookings == nil {
+			break
+		}
+
+		return e.complexity.BookingsPage.Bookings(childComplexity), true
+
+	case "BookingsPage.hasNextPage":
+		if e.complexity.BookingsPage.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.BookingsPage.HasNextPage(childComplexity), true
+
+	case "BookingsPage.pages":
+		if e.complexity.BookingsPage.Pages == nil {
+			break
+		}
+
+		return e.complexity.BookingsPage.Pages(childComplexity), true
+
 	case "GetSlotResponse.match":
 		if e.complexity.GetSlotResponse.Match == nil {
 			break
@@ -234,6 +266,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AddTable(childComplexity, args["input"].(models.TableInput)), true
+
+	case "Mutation.cancelBooking":
+		if e.complexity.Mutation.CancelBooking == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelBooking_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CancelBooking(childComplexity, args["input"].(models.CancelBookingInput)), true
 
 	case "Mutation.createBooking":
 		if e.complexity.Mutation.CreateBooking == nil {
@@ -411,6 +455,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Venue.Admins(childComplexity), true
+
+	case "Venue.bookings":
+		if e.complexity.Venue.Bookings == nil {
+			break
+		}
+
+		args, err := ec.field_Venue_bookings_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Venue.Bookings(childComplexity, args["filter"].(*models.BookingsFilter), args["pageInfo"].(*models.PageInfo)), true
 
 	case "Venue.id":
 		if e.complexity.Venue.ID == nil {
@@ -623,6 +679,8 @@ type Venue {
   admins: [String!]!
   "human readable identifier of the venue"
   slug: ID!
+  "paginated list of bookings for a venue"
+  bookings(filter: BookingsFilter, pageInfo: PageInfo): BookingsPage
 }
 
 """
@@ -706,6 +764,38 @@ input VenueFilter {
 }
 
 """
+Filter bookings.
+"""
+input BookingsFilter {
+  "unique identifier of the venue"
+  venueId: ID
+  "specific date to query bookings for"
+  date: Time!
+}
+
+"""
+Information about the page being requested. Maximum page limit of 50.
+"""
+input PageInfo {
+  "page number"
+  page: Int!
+  "maximum amount of results per page"
+  limit: Int
+}
+
+"""
+A page with a list of bookings.
+"""
+type BookingsPage {
+  "list of bookings"
+  bookings: [Booking!]!
+  "is there a next page"
+  hasNextPage: Boolean!
+  "total number of pages"
+  pages: Int!
+}
+
+"""
 Booking queries.
 """
 type Query {
@@ -738,6 +828,16 @@ input RemoveAdminInput {
 }
 
 """
+Input to cancel an individual booking.
+"""
+input CancelBookingInput {
+  "unique identifier of the venue"
+  venueId: ID
+  "unique identifier of the booking"
+  id: ID!
+}
+
+"""
 Booking mutations.
 """
 type Mutation {
@@ -751,6 +851,8 @@ type Mutation {
   addAdmin(input: AdminInput!): String!
   "remove an admin from a venue"
   removeAdmin(input: RemoveAdminInput!): String!
+  "cancel an individual booking"
+  cancelBooking(input: CancelBookingInput!): Booking!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -781,6 +883,21 @@ func (ec *executionContext) field_Mutation_addTable_args(ctx context.Context, ra
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNTableInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTableInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelBooking_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.CancelBookingInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCancelBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐCancelBookingInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -891,6 +1008,30 @@ func (ec *executionContext) field_Query_isAdmin_args(ctx context.Context, rawArg
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Venue_bookings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *models.BookingsFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOBookingsFilter2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingsFilter(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
+	var arg1 *models.PageInfo
+	if tmp, ok := rawArgs["pageInfo"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageInfo"))
+		arg1, err = ec.unmarshalOPageInfo2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐPageInfo(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pageInfo"] = arg1
 	return args, nil
 }
 
@@ -1212,6 +1353,111 @@ func (ec *executionContext) _Booking_tableId(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _BookingsPage_bookings(ctx context.Context, field graphql.CollectedField, obj *models.BookingsPage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BookingsPage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bookings, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Booking)
+	fc.Result = res
+	return ec.marshalNBooking2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BookingsPage_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *models.BookingsPage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BookingsPage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BookingsPage_pages(ctx context.Context, field graphql.CollectedField, obj *models.BookingsPage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BookingsPage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pages, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _GetSlotResponse_match(ctx context.Context, field graphql.CollectedField, obj *models.GetSlotResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1484,6 +1730,48 @@ func (ec *executionContext) _Mutation_removeAdmin(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_cancelBooking(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_cancelBooking_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelBooking(rctx, args["input"].(models.CancelBookingInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Booking)
+	fc.Result = res
+	return ec.marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -2410,6 +2698,45 @@ func (ec *executionContext) _Venue_slug(ctx context.Context, field graphql.Colle
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_bookings(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Venue_bookings_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Venue().Bookings(rctx, obj, args["filter"].(*models.BookingsFilter), args["pageInfo"].(*models.PageInfo))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.BookingsPage)
+	fc.Result = res
+	return ec.marshalOBookingsPage2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingsPage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -3579,6 +3906,62 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputBookingsFilter(ctx context.Context, obj interface{}) (models.BookingsFilter, error) {
+	var it models.BookingsFilter
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			it.Date, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCancelBookingInput(ctx context.Context, obj interface{}) (models.CancelBookingInput, error) {
+	var it models.CancelBookingInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj interface{}) (models.IsAdminInput, error) {
 	var it models.IsAdminInput
 	var asMap = obj.(map[string]interface{})
@@ -3598,6 +3981,34 @@ func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
 			it.Slug, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPageInfo(ctx context.Context, obj interface{}) (models.PageInfo, error) {
+	var it models.PageInfo
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "limit":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			it.Limit, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3849,6 +4260,43 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var bookingsPageImplementors = []string{"BookingsPage"}
+
+func (ec *executionContext) _BookingsPage(ctx context.Context, sel ast.SelectionSet, obj *models.BookingsPage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookingsPageImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookingsPage")
+		case "bookings":
+			out.Values[i] = ec._BookingsPage_bookings(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hasNextPage":
+			out.Values[i] = ec._BookingsPage_hasNextPage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pages":
+			out.Values[i] = ec._BookingsPage_pages(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var getSlotResponseImplementors = []string{"GetSlotResponse"}
 
 func (ec *executionContext) _GetSlotResponse(ctx context.Context, sel ast.SelectionSet, obj *models.GetSlotResponse) graphql.Marshaler {
@@ -3912,6 +4360,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "removeAdmin":
 			out.Values[i] = ec._Mutation_removeAdmin(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cancelBooking":
+			out.Values[i] = ec._Mutation_cancelBooking(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -4192,6 +4645,17 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "bookings":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Venue_bookings(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4457,6 +4921,43 @@ func (ec *executionContext) marshalNBooking2githubᚗcomᚋcobbinmaᚋbookingᚑ
 	return ec._Booking(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNBooking2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Booking) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx context.Context, sel ast.SelectionSet, v *models.Booking) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -4485,6 +4986,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNCancelBookingInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐCancelBookingInput(ctx context.Context, v interface{}) (models.CancelBookingInput, error) {
+	res, err := ec.unmarshalInputCancelBookingInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx context.Context, v interface{}) (models.DayOfWeek, error) {
@@ -4992,6 +5498,21 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOBookingsFilter2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingsFilter(ctx context.Context, v interface{}) (*models.BookingsFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBookingsFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOBookingsPage2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBookingsPage(ctx context.Context, sel ast.SelectionSet, v *models.BookingsPage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BookingsPage(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5029,6 +5550,29 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	return graphql.MarshalID(*v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
+}
+
+func (ec *executionContext) unmarshalOPageInfo2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐPageInfo(ctx context.Context, v interface{}) (*models.PageInfo, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPageInfo(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOSlot2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Slot) graphql.Marshaler {

@@ -48,6 +48,32 @@ type BookingInput struct {
 	Duration int `json:"duration"`
 }
 
+// Filter bookings.
+type BookingsFilter struct {
+	// unique identifier of the venue
+	VenueID *string `json:"venueId"`
+	// specific date to query bookings for
+	Date time.Time `json:"date"`
+}
+
+// A page with a list of bookings.
+type BookingsPage struct {
+	// list of bookings
+	Bookings []*Booking `json:"bookings"`
+	// is there a next page
+	HasNextPage bool `json:"hasNextPage"`
+	// total number of pages
+	Pages int `json:"pages"`
+}
+
+// Input to cancel an individual booking.
+type CancelBookingInput struct {
+	// unique identifier of the venue
+	VenueID *string `json:"venueId"`
+	// unique identifier of the booking
+	ID string `json:"id"`
+}
+
 // Booking Enquiry Response.
 type GetSlotResponse struct {
 	// slot matching the given enquiy
@@ -76,6 +102,14 @@ type OpeningHoursSpecification struct {
 	ValidFrom *time.Time `json:"validFrom"`
 	// date the special opening hours ends at. only valid for special opening hours
 	ValidThrough *time.Time `json:"validThrough"`
+}
+
+// Information about the page being requested. Maximum page limit of 50.
+type PageInfo struct {
+	// page number
+	Page int `json:"page"`
+	// maximum amount of results per page
+	Limit *int `json:"limit"`
 }
 
 // Input to remove an administrator from a venue.
@@ -160,6 +194,8 @@ type Venue struct {
 	Admins []string `json:"admins"`
 	// human readable identifier of the venue
 	Slug string `json:"slug"`
+	// paginated list of bookings for a venue
+	Bookings *BookingsPage `json:"bookings"`
 }
 
 // Filter get venue queries. Fields AND together.
