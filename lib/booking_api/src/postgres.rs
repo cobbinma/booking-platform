@@ -107,10 +107,11 @@ impl Repository for Postgres {
                 Status::internal("could not get get booking from database")
             })?;
 
-        diesel::delete(bookings.filter(id.eq(booking_id))).execute(&self.pool.get().map_err(|e| {
-            log::error!("could not get database connection : {}", e);
-            Status::internal("could not get database connection")
-        })?)
+        diesel::delete(bookings.filter(id.eq(booking_id)))
+            .execute(&self.pool.get().map_err(|e| {
+                log::error!("could not get database connection : {}", e);
+                Status::internal("could not get database connection")
+            })?)
             .map_err(|e| {
                 log::error!("could not get delete booking from database : {}", e);
                 Status::internal("could not delete booking from database")

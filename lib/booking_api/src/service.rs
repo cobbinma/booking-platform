@@ -333,7 +333,18 @@ fn get_free_table(
     bookings: &[models::Booking],
     starts_at: &DateTime<Utc>,
 ) -> Option<String> {
-    tables_with_capacity.sort_by(|a, b| bookings.iter().filter(|&booking| a == &booking.table_id.to_string()).count().cmp(&bookings.iter().filter(|&booking| b == &booking.table_id.to_string()).count()));
+    tables_with_capacity.sort_by(|a, b| {
+        bookings
+            .iter()
+            .filter(|&booking| a == &booking.table_id.to_string())
+            .count()
+            .cmp(
+                &bookings
+                    .iter()
+                    .filter(|&booking| b == &booking.table_id.to_string())
+                    .count(),
+            )
+    });
     tables_with_capacity
         .iter()
         .find(|table_id| {
