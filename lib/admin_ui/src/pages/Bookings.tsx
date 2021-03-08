@@ -170,10 +170,9 @@ const CreateBooking: React.FC<{
   const close = (): void => {
     setCreateIsOpen(false);
     setEmail("");
-    error = undefined;
   };
 
-  let [createBookingMutation, { loading, error }] = useCreateBookingMutation({
+  const [createBookingMutation, { loading, error }] = useCreateBookingMutation({
     variables: {
       slot: {
         venueId: venueId,
@@ -191,23 +190,15 @@ const CreateBooking: React.FC<{
     },
   });
 
-  if (loading)
-    return (
-      <Modal onClose={close} closeable isOpen={createIsOpen} animate autoFocus>
-        <StyledLoadingSpinner />
-      </Modal>
-    );
-
-  if (error)
-    return (
-      <Modal onClose={close} closeable isOpen={createIsOpen} animate autoFocus>
-        <H2>could not create booking</H2>
-      </Modal>
-    );
-
   return (
     <Modal onClose={close} closeable isOpen={createIsOpen} animate autoFocus>
       <ModalHeader>Create Booking</ModalHeader>
+      {loading && (
+        <ModalHeader>
+          <StyledLoadingSpinner />
+        </ModalHeader>
+      )}
+      {error && <ModalHeader>could not create booking</ModalHeader>}
       <ModalBody>
         <FormControl label="Email">
           <Input
