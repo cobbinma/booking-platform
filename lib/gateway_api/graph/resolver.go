@@ -44,15 +44,9 @@ type BookingService interface {
 }
 
 func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) error {
-	user := models.UserFromCtx(ctx)
-	if user == nil {
-		u, err := r.userService.GetUser(ctx)
-		if err != nil {
-			return status.Errorf(codes.Internal, "could not get user profile : %s", err)
-		}
-
-		models.AddUserToContext(ctx, *u)
-		user = u
+	user, err := r.userService.GetUser(ctx)
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}
 
 	isAdmin, err := r.venueService.IsAdmin(ctx, input, user.Email)

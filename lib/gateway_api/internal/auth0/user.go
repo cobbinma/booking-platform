@@ -57,10 +57,10 @@ func (us *userService) GetUser(ctx context.Context) (*models.User, error) {
 		return nil, fmt.Errorf("could not read response ; %w", err)
 	}
 
-	user := models.User{}
-	if err := json.Unmarshal(body, &user); err != nil {
+	user := &models.User{}
+	if err := json.Unmarshal(body, user); err != nil {
 		return nil, fmt.Errorf("could not unmarshall : %w", err)
 	}
 
-	return &user, nil
+	return user, nil
 }

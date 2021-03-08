@@ -41,13 +41,12 @@ const PAGE_LIMIT = 20;
 const Bookings: React.FC<{
   tables: Array<Table>;
   bookings: Array<Booking>;
-  slug: string;
   pages: number;
   venueId: string | null | undefined;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ tables, bookings, slug, pages, venueId, refetch }) => {
+}> = ({ tables, bookings, pages, venueId, refetch }) => {
   const overrides = {
     TableBodyRow: {
       style: ({ $theme, $rowIndex }: any) => ({
@@ -93,7 +92,7 @@ const Bookings: React.FC<{
             value={date}
             onChange={({ date }) => {
               refetch({
-                slug: slug,
+                venueID: venueId,
                 filter: {
                   date: Array.isArray(date)
                     ? date[0].toISOString()
@@ -112,7 +111,7 @@ const Bookings: React.FC<{
             currentPage={currentPage}
             onPageChange={({ nextPage }) => {
               refetch({
-                slug: slug,
+                venueID: venueId,
                 filter: {
                   date: date[0].toISOString(),
                 },

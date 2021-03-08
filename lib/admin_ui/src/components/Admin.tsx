@@ -100,7 +100,6 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
               <Bookings
                 tables={data?.getVenue?.tables || []}
                 bookings={data?.getVenue?.bookings?.bookings || []}
-                slug={venueID}
                 pages={data?.getVenue?.bookings?.pages || 0}
                 venueId={data?.getVenue?.id}
                 refetch={refetch}
