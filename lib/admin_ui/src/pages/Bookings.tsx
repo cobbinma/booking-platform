@@ -25,6 +25,7 @@ import {
 import { ApolloQueryResult } from "@apollo/client";
 import { DatePicker } from "baseui/datepicker";
 import { TableBuilder, TableBuilderColumn } from "baseui/table-semantic";
+import { Pagination } from "baseui/pagination";
 
 let durations = new Map<string, number>([
   ["30 mins", 30],
@@ -35,15 +36,18 @@ let durations = new Map<string, number>([
   ["3 hours", 180],
 ]);
 
+const PAGE_LIMIT = 20;
+
 const Bookings: React.FC<{
   tables: Array<Table>;
   bookings: Array<Booking>;
   slug: string;
+  pages: number;
   venueId: string | null | undefined;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ tables, bookings, slug, venueId, refetch }) => {
+}> = ({ tables, bookings, slug, pages, venueId, refetch }) => {
   const overrides = {
     TableBodyRow: {
       style: ({ $theme, $rowIndex }: any) => ({
@@ -60,6 +64,7 @@ const Bookings: React.FC<{
 
   const [createIsOpen, setCreateIsOpen] = React.useState<boolean>(false);
   const [date, setDate] = React.useState([new Date(Date.now())]);
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   if (!venueId) return <div>error</div>;
 
@@ -94,9 +99,26 @@ const Bookings: React.FC<{
                     ? date[0].toISOString()
                     : date.toISOString(),
                 },
-                pageInfo: { page: 0 },
+                pageInfo: { page: 0, limit: PAGE_LIMIT },
               }).catch((e) => console.log(e));
               setDate(Array.isArray(date) ? date : [date]);
+              setCurrentPage(1);
+            }}
+          />
+        </FlexGridItem>
+        <FlexGridItem>
+          <Pagination
+            numPages={pages}
+            currentPage={currentPage}
+            onPageChange={({ nextPage }) => {
+              refetch({
+                slug: slug,
+                filter: {
+                  date: date[0].toISOString(),
+                },
+                pageInfo: { page: nextPage - 1, limit: PAGE_LIMIT },
+              }).catch((e) => console.log(e));
+              setCurrentPage(Math.min(Math.max(nextPage, 1), pages));
             }}
           />
         </FlexGridItem>
