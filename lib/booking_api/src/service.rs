@@ -235,7 +235,7 @@ impl BookingApi for BookingService {
         request: Request<GetBookingsRequest>,
     ) -> Result<Response<GetBookingsResponse>, Status> {
         let req = request.into_inner();
-        tracing::info!("get bookings call for venue '{}'", &req.venue_id);
+        tracing::info!("get bookings call for venue '{}', date '{}'", &req.venue_id, &req.date);
 
         let venue = match req.venue_id.is_empty() {
             true => None,
@@ -260,16 +260,21 @@ impl BookingApi for BookingService {
         let filter = BookingsFilter { venue, day };
 
         let count = self.repository.count_bookings(&filter)?;
+        tracing::debug!("found {} bookings", count);
 
         let mut bookings = self.repository.get_bookings(
             filter,
             Some(req.page),
             Some(req.limit),
         )?;
+        tracing::debug!("got {} bookings", bookings.len());
 
         let has_next_page = bookings.len() >= req.limit as usize;
 
-        bookings.pop();
+        if bookings.len() > req.limit as usize {
+            tracing::debug!("removing extra booking");
+            bookings.pop();
+        }
 
         Ok(Response::new(GetBookingsResponse {
             bookings: bookings

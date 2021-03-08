@@ -47,9 +47,6 @@ type bookingClient struct {
 
 func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilter, pageInfo models.PageInfo) (*models.BookingsPage, error) {
 	if pageInfo.Limit == nil {
-		return nil, fmt.Errorf("limit cannot be nil")
-	}
-	if pageInfo.Limit == nil {
 		var max = 50
 		pageInfo.Limit = &max
 	}
@@ -90,7 +87,7 @@ func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilte
 	}
 
 	return &models.BookingsPage{
-		Bookings:    nil,
+		Bookings:    bookings,
 		HasNextPage: resp.HasNextPage,
 		Pages:       int(resp.Pages),
 	}, nil

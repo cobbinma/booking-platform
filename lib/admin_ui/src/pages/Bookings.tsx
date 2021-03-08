@@ -16,12 +16,15 @@ import { Slider } from "baseui/slider";
 import { TimePicker } from "baseui/timepicker";
 import { Combobox } from "baseui/combobox";
 import {
+  Booking,
   GetVenueQuery,
   GetVenueQueryVariables,
+  Table,
   useCreateBookingMutation,
 } from "../graph";
 import { ApolloQueryResult } from "@apollo/client";
 import { DatePicker } from "baseui/datepicker";
+import { TableBuilder, TableBuilderColumn } from "baseui/table-semantic";
 
 let durations = new Map<string, number>([
   ["30 mins", 30],
@@ -33,14 +36,37 @@ let durations = new Map<string, number>([
 ]);
 
 const Bookings: React.FC<{
+  tables: Array<Table>;
+  bookings: Array<Booking>;
+  slug: string;
   venueId: string | null | undefined;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ venueId, refetch }) => {
+}> = ({ tables, bookings, slug, venueId, refetch }) => {
+  const overrides = {
+    TableBodyRow: {
+      style: ({ $theme, $rowIndex }: any) => ({
+        backgroundColor:
+          $rowIndex % 2
+            ? $theme.colors.backgroundPrimary
+            : $theme.colors.backgroundSecondary,
+        ":hover": {
+          backgroundColor: $theme.colors.backgroundTertiary,
+        },
+      }),
+    },
+  };
+
   const [createIsOpen, setCreateIsOpen] = React.useState<boolean>(false);
+  const [date, setDate] = React.useState([new Date(Date.now())]);
 
   if (!venueId) return <div>error</div>;
+
+  const tableIdMap = tables.reduce((map, table) => {
+    map.set(table.id, table.name);
+    return map;
+  }, new Map());
 
   return (
     <div>
@@ -56,6 +82,48 @@ const Bookings: React.FC<{
             venueId={venueId}
             refetch={refetch}
           />
+        </FlexGridItem>
+        <FlexGridItem>
+          <DatePicker
+            value={date}
+            onChange={({ date }) => {
+              refetch({
+                slug: slug,
+                filter: {
+                  date: Array.isArray(date)
+                    ? date[0].toISOString()
+                    : date.toISOString(),
+                },
+                pageInfo: { page: 0 },
+              }).catch((e) => console.log(e));
+              setDate(Array.isArray(date) ? date : [date]);
+            }}
+          />
+        </FlexGridItem>
+        <FlexGridItem>
+          <TableBuilder data={bookings} overrides={overrides}>
+            <TableBuilderColumn header="Email">
+              {(row) => row.email}
+            </TableBuilderColumn>
+            <TableBuilderColumn header="People">
+              {(row) => row.people}
+            </TableBuilderColumn>
+            <TableBuilderColumn header="Starts At">
+              {(row) => new Date(Date.parse(row.startsAt)).toLocaleString()}
+            </TableBuilderColumn>
+            <TableBuilderColumn header="Ends At">
+              {(row) => new Date(Date.parse(row.endsAt)).toLocaleTimeString()}
+            </TableBuilderColumn>
+            <TableBuilderColumn header="Duration">
+              {(row) => row.duration}
+            </TableBuilderColumn>
+            <TableBuilderColumn header="Table">
+              {(row) => tableIdMap.get(row.tableId)}
+            </TableBuilderColumn>
+            <TableBuilderColumn>
+              {() => <Button>Cancel</Button>}
+            </TableBuilderColumn>
+          </TableBuilder>
         </FlexGridItem>
       </FlexGrid>
     </div>

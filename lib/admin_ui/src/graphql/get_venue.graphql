@@ -1,4 +1,4 @@
-query GetVenue($slug: ID!) {
+query GetVenue($slug: ID!, $filter: BookingsFilter, $pageInfo: PageInfo) {
     getVenue(filter: {slug: $slug}) {
         id
         name
@@ -23,5 +23,19 @@ query GetVenue($slug: ID!) {
         }
         admins
         slug
+        bookings(filter: $filter, pageInfo: $pageInfo) {
+            bookings {
+                id,
+                venueId,
+                email,
+                people,
+                startsAt,
+                endsAt,
+                duration,
+                tableId,
+            },
+            hasNextPage,
+            pages
+        }
     }
 }

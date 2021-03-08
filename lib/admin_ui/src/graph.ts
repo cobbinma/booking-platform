@@ -375,6 +375,8 @@ export type GetSlotQuery = (
 
 export type GetVenueQueryVariables = Exact<{
   slug: Scalars['ID'];
+  filter?: Maybe<BookingsFilter>;
+  pageInfo?: Maybe<PageInfo>;
 }>;
 
 
@@ -392,6 +394,13 @@ export type GetVenueQuery = (
     )>, tables: Array<(
       { __typename?: 'Table' }
       & Pick<Table, 'id' | 'name' | 'capacity'>
+    )>, bookings?: Maybe<(
+      { __typename?: 'BookingsPage' }
+      & Pick<BookingsPage, 'hasNextPage' | 'pages'>
+      & { bookings: Array<(
+        { __typename?: 'Booking' }
+        & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
+      )> }
     )> }
   ) }
 );
@@ -582,7 +591,7 @@ export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
 export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
 export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
-    query GetVenue($slug: ID!) {
+    query GetVenue($slug: ID!, $filter: BookingsFilter, $pageInfo: PageInfo) {
   getVenue(filter: {slug: $slug}) {
     id
     name
@@ -607,6 +616,20 @@ export const GetVenueDocument = gql`
     }
     admins
     slug
+    bookings(filter: $filter, pageInfo: $pageInfo) {
+      bookings {
+        id
+        venueId
+        email
+        people
+        startsAt
+        endsAt
+        duration
+        tableId
+      }
+      hasNextPage
+      pages
+    }
   }
 }
     `;
@@ -624,6 +647,8 @@ export const GetVenueDocument = gql`
  * const { data, loading, error } = useGetVenueQuery({
  *   variables: {
  *      slug: // value for 'slug'
+ *      filter: // value for 'filter'
+ *      pageInfo: // value for 'pageInfo'
  *   },
  * });
  */
