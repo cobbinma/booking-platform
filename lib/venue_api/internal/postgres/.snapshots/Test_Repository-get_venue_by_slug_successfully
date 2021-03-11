@@ -1,1 +1,1 @@
-(*models.Venue)(id:"b31a9f99-3f64-4ee9-af27-45b2acd36d86"  name:"Test Venue"  openingHours:{dayOfWeek:1  opens:"10:00"  closes:"20:00"}  openingHours:{dayOfWeek:2  opens:"10:00"  closes:"22:00"}  slug:"test-venue")
+(*models.Venue)(id:"b31a9f99-3f64-4ee9-af27-45b2acd36d86" name:"Test Venue" openingHours:{dayOfWeek:1 opens:"10:00" closes:"20:00"} openingHours:{dayOfWeek:2 opens:"10:00" closes:"22:00"} slug:"test-venue")

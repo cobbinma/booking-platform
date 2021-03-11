@@ -1,1 +1,1 @@
-(*api.GetTablesResponse)(tables:{id:"b31a9f99-3f64-4ee9-af27-45b2acd36d86"  name:"test table"  capacity:4})
+(*api.GetTablesResponse)(tables:{id:"b31a9f99-3f64-4ee9-af27-45b2acd36d86" name:"test table" capacity:4})

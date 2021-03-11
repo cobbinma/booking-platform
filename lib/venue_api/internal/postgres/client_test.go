@@ -144,6 +144,31 @@ func suite(repository api.VenueAPIServer) []test {
 			},
 		},
 		{
+			name: "update venue opening hours",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				venues, err := repository.UpdateOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: []*models.OpeningHoursSpecification{
+					{
+						DayOfWeek:    2,
+						Opens:        "11:00",
+						Closes:       "22:00",
+						ValidFrom:    "",
+						ValidThrough: "",
+					},
+					{
+						DayOfWeek:    3,
+						Opens:        "10:30",
+						Closes:       "23:00",
+						ValidFrom:    "",
+						ValidThrough: "",
+					},
+				}})
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, venues)
+			},
+		},
+		{
 			name: "add table successfully",
 			test: func(t *testing.T) {
 				ctx := context.Background()

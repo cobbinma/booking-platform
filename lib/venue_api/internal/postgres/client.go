@@ -294,6 +294,58 @@ func (c client) CreateVenue(ctx context.Context, req *api.CreateVenueRequest) (*
 	}, nil
 }
 
+func (c client) GetOpeningHoursSpecification(ctx context.Context, request *api.GetOpeningHoursSpecificationRequest) (*api.GetOpeningHoursSpecificationResponse, error) {
+	panic("implement me")
+}
+
+func (c client) UpdateOpeningHours(ctx context.Context, req *api.UpdateOpeningHoursRequest) (*api.UpdateOpeningHoursResponse, error) {
+	c.log.Infof("updating opening hours for venue '%s'", req.VenueId)
+
+	tx, err := c.db.Beginx()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not begin transaction : %s", err)
+	}
+
+	sql, args, err := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete(OpeningHoursTable).
+		Where(sq.Eq{"venue_id": req.VenueId}).ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not build delete sql : %s", err)
+	}
+
+	if _, err := tx.Exec(sql, args...); err != nil {
+		return nil, status.Errorf(codes.Internal, "could not delete venue opening hours : %s", err)
+	}
+
+	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Insert(OpeningHoursTable).
+		Columns("venue_id", "day_of_week", "opens", "closes")
+
+	for _, hours := range req.OpeningHours {
+		builder = builder.Values(
+			req.VenueId,
+			hours.DayOfWeek,
+			hours.Opens,
+			hours.Closes,
+		)
+	}
+
+	sql, args, err = builder.ToSql()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not build opening_hours sql : %s", err)
+	}
+
+	if _, err := tx.Exec(sql, args...); err != nil {
+		return nil, status.Errorf(codes.Internal, "could not insert opening hours : %s", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, status.Errorf(codes.Internal, "could not commit transaction : %s", err)
+	}
+
+	return &api.UpdateOpeningHoursResponse{OpeningHours: req.OpeningHours}, nil
+}
+
 func (c client) IsAdmin(ctx context.Context, req *api.IsAdminRequest) (*api.IsAdminResponse, error) {
 	var venueID string
 	if req.VenueId != "" {
