@@ -68,3 +68,5 @@ models:
         resolver: true
       bookings:
         resolver: true
+      openingHoursSpecification:
+        resolver: true

@@ -99,6 +99,8 @@ export type Venue = {
   openingHours: Array<OpeningHoursSpecification>;
   /** special operating hours of the venue */
   specialOpeningHours: Array<OpeningHoursSpecification>;
+  /** operating hours of the venue for a specific date */
+  openingHoursSpecification?: Maybe<OpeningHoursSpecification>;
   /** tables at the venue */
   tables: Array<Table>;
   /** email addresses of venue administrators */
@@ -107,6 +109,12 @@ export type Venue = {
   slug: Scalars['ID'];
   /** paginated list of bookings for a venue */
   bookings?: Maybe<BookingsPage>;
+};
+
+
+/** Venue where a booking can take place. */
+export type VenueOpeningHoursSpecificationArgs = {
+  date?: Maybe<Scalars['Time']>;
 };
 
 
@@ -148,6 +156,30 @@ export type Table = {
 /** Day specific operating hours. */
 export type OpeningHoursSpecification = {
   __typename?: 'OpeningHoursSpecification';
+  /** the day of the week for which these opening hours are valid */
+  dayOfWeek: Scalars['DayOfWeek'];
+  /** the opening time of the place or service on the given day(s) of the week */
+  opens: Scalars['TimeOfDay'];
+  /** the closing time of the place or service on the given day(s) of the week */
+  closes: Scalars['TimeOfDay'];
+  /** date the special opening hours starts at. only valid for special opening hours */
+  validFrom?: Maybe<Scalars['Time']>;
+  /** date the special opening hours ends at. only valid for special opening hours */
+  validThrough?: Maybe<Scalars['Time']>;
+};
+
+/** Day specific operating hours. */
+export type OpeningHoursSpecificationInput = {
+  /** the day of the week for which these opening hours are valid */
+  dayOfWeek: Scalars['DayOfWeek'];
+  /** the opening time of the place or service on the given day(s) of the week */
+  opens: Scalars['TimeOfDay'];
+  /** the closing time of the place or service on the given day(s) of the week */
+  closes: Scalars['TimeOfDay'];
+};
+
+/** Day specific special operating hours. */
+export type SpecialOpeningHoursSpecificationInput = {
   /** the day of the week for which these opening hours are valid */
   dayOfWeek: Scalars['DayOfWeek'];
   /** the opening time of the place or service on the given day(s) of the week */
@@ -265,6 +297,22 @@ export type CancelBookingInput = {
   id: Scalars['ID'];
 };
 
+/** Input to update a venue's operating hours. */
+export type UpdateOpeningHoursInput = {
+  /** unique identifier of the venue */
+  venueId: Scalars['ID'];
+  /** operating hours of the venue */
+  openingHours: Array<OpeningHoursSpecificationInput>;
+};
+
+/** Input to update a venue's special operating hours. */
+export type UpdateSpecialOpeningHoursInput = {
+  /** unique identifier of the venue */
+  venueId: Scalars['ID'];
+  /** special operating hours of the venue */
+  specialOpeningHours: Array<SpecialOpeningHoursSpecificationInput>;
+};
+
 /** Booking mutations. */
 export type Mutation = {
   __typename?: 'Mutation';
@@ -280,6 +328,10 @@ export type Mutation = {
   removeAdmin: Scalars['String'];
   /** cancel an individual booking */
   cancelBooking: Booking;
+  /** update the venue's opening hours */
+  updateOpeningHours: Array<OpeningHoursSpecification>;
+  /** update the venue's special opening hours */
+  updateSpecialOpeningHours: Array<OpeningHoursSpecification>;
 };
 
 
@@ -316,6 +368,18 @@ export type MutationRemoveAdminArgs = {
 /** Booking mutations. */
 export type MutationCancelBookingArgs = {
   input: CancelBookingInput;
+};
+
+
+/** Booking mutations. */
+export type MutationUpdateOpeningHoursArgs = {
+  input: UpdateOpeningHoursInput;
+};
+
+
+/** Booking mutations. */
+export type MutationUpdateSpecialOpeningHoursArgs = {
+  input: UpdateSpecialOpeningHoursInput;
 };
 
 export type AddAdminMutationVariables = Exact<{

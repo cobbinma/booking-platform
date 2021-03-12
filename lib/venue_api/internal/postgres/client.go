@@ -437,7 +437,7 @@ func (c client) UpdateOpeningHours(ctx context.Context, req *api.UpdateOpeningHo
 	return &api.UpdateOpeningHoursResponse{OpeningHours: req.OpeningHours}, nil
 }
 
-func (c client) UpdateSpecialOpeningHours(ctx context.Context, req *api.UpdateSpecialOpeningHoursRequest) (*api.UpdateSpecialOpeningHoursResponse, error) {
+func (c client) UpdateSpecialOpeningHours(ctx context.Context, req *api.UpdateOpeningHoursRequest) (*api.UpdateOpeningHoursResponse, error) {
 	c.log.Infof("updating special opening hours for venue '%s'", req.VenueId)
 
 	tx, err := c.db.Beginx()
@@ -492,7 +492,7 @@ func (c client) UpdateSpecialOpeningHours(ctx context.Context, req *api.UpdateSp
 		return nil, status.Errorf(codes.Internal, "could not commit transaction : %s", err)
 	}
 
-	return &api.UpdateSpecialOpeningHoursResponse{OpeningHours: req.OpeningHours}, nil
+	return &api.UpdateOpeningHoursResponse{OpeningHours: req.OpeningHours}, nil
 }
 
 func (c client) IsAdmin(ctx context.Context, req *api.IsAdminRequest) (*api.IsAdminResponse, error) {

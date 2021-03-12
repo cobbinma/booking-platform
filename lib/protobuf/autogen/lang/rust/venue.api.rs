@@ -114,18 +114,6 @@ pub struct UpdateOpeningHoursResponse {
     #[prost(message, repeated, tag = "1")]
     pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct UpdateSpecialOpeningHoursRequest {
-    #[prost(string, tag = "1")]
-    pub venue_id: ::prost::alloc::string::String,
-    #[prost(message, repeated, tag = "2")]
-    pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct UpdateSpecialOpeningHoursResponse {
-    #[prost(message, repeated, tag = "1")]
-    pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
-}
 #[doc = r" Generated client implementations."]
 pub mod venue_api_client {
     #![allow(unused_variables, dead_code, missing_docs)]
@@ -204,9 +192,8 @@ pub mod venue_api_client {
         }
         pub async fn update_special_opening_hours(
             &mut self,
-            request: impl tonic::IntoRequest<super::UpdateSpecialOpeningHoursRequest>,
-        ) -> Result<tonic::Response<super::UpdateSpecialOpeningHoursResponse>, tonic::Status>
-        {
+            request: impl tonic::IntoRequest<super::UpdateOpeningHoursRequest>,
+        ) -> Result<tonic::Response<super::UpdateOpeningHoursResponse>, tonic::Status> {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -369,8 +356,8 @@ pub mod venue_api_server {
         ) -> Result<tonic::Response<super::UpdateOpeningHoursResponse>, tonic::Status>;
         async fn update_special_opening_hours(
             &self,
-            request: tonic::Request<super::UpdateSpecialOpeningHoursRequest>,
-        ) -> Result<tonic::Response<super::UpdateSpecialOpeningHoursResponse>, tonic::Status>;
+            request: tonic::Request<super::UpdateOpeningHoursRequest>,
+        ) -> Result<tonic::Response<super::UpdateOpeningHoursResponse>, tonic::Status>;
         async fn get_opening_hours_specification(
             &self,
             request: tonic::Request<super::GetOpeningHoursSpecificationRequest>,
@@ -534,15 +521,14 @@ pub mod venue_api_server {
                 "/venue.api.VenueAPI/UpdateSpecialOpeningHours" => {
                     #[allow(non_camel_case_types)]
                     struct UpdateSpecialOpeningHoursSvc<T: VenueApi>(pub Arc<T>);
-                    impl<T: VenueApi>
-                        tonic::server::UnaryService<super::UpdateSpecialOpeningHoursRequest>
+                    impl<T: VenueApi> tonic::server::UnaryService<super::UpdateOpeningHoursRequest>
                         for UpdateSpecialOpeningHoursSvc<T>
                     {
-                        type Response = super::UpdateSpecialOpeningHoursResponse;
+                        type Response = super::UpdateOpeningHoursResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::UpdateSpecialOpeningHoursRequest>,
+                            request: tonic::Request<super::UpdateOpeningHoursRequest>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut =

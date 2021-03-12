@@ -175,7 +175,7 @@ func suite(repository api.VenueAPIServer) []test {
 			name: "update venue special opening hours",
 			test: func(t *testing.T) {
 				ctx := context.Background()
-				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateSpecialOpeningHoursRequest{VenueId: UUID, OpeningHours: []*models.OpeningHoursSpecification{
+				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: []*models.OpeningHoursSpecification{
 					{
 						DayOfWeek:    2,
 						Opens:        "11:00",

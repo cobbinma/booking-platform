@@ -104,6 +104,16 @@ type OpeningHoursSpecification struct {
 	ValidThrough *time.Time `json:"validThrough"`
 }
 
+// Day specific operating hours.
+type OpeningHoursSpecificationInput struct {
+	// the day of the week for which these opening hours are valid
+	DayOfWeek DayOfWeek `json:"dayOfWeek"`
+	// the opening time of the place or service on the given day(s) of the week
+	Opens TimeOfDay `json:"opens"`
+	// the closing time of the place or service on the given day(s) of the week
+	Closes TimeOfDay `json:"closes"`
+}
+
 // Information about the page being requested. Maximum page limit of 50.
 type PageInfo struct {
 	// page number
@@ -158,6 +168,20 @@ type SlotInput struct {
 	Duration int `json:"duration"`
 }
 
+// Day specific special operating hours.
+type SpecialOpeningHoursSpecificationInput struct {
+	// the day of the week for which these opening hours are valid
+	DayOfWeek DayOfWeek `json:"dayOfWeek"`
+	// the opening time of the place or service on the given day(s) of the week
+	Opens TimeOfDay `json:"opens"`
+	// the closing time of the place or service on the given day(s) of the week
+	Closes TimeOfDay `json:"closes"`
+	// date the special opening hours starts at. only valid for special opening hours
+	ValidFrom *time.Time `json:"validFrom"`
+	// date the special opening hours ends at. only valid for special opening hours
+	ValidThrough *time.Time `json:"validThrough"`
+}
+
 // An individual table at a venue.
 type Table struct {
 	// unique identifier of the table
@@ -178,6 +202,22 @@ type TableInput struct {
 	Capacity int `json:"capacity"`
 }
 
+// Input to update a venue's operating hours.
+type UpdateOpeningHoursInput struct {
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// operating hours of the venue
+	OpeningHours []*OpeningHoursSpecificationInput `json:"openingHours"`
+}
+
+// Input to update a venue's special operating hours.
+type UpdateSpecialOpeningHoursInput struct {
+	// unique identifier of the venue
+	VenueID string `json:"venueId"`
+	// special operating hours of the venue
+	SpecialOpeningHours []*SpecialOpeningHoursSpecificationInput `json:"specialOpeningHours"`
+}
+
 // Venue where a booking can take place.
 type Venue struct {
 	// unique identifier of the venue
@@ -188,6 +228,8 @@ type Venue struct {
 	OpeningHours []*OpeningHoursSpecification `json:"openingHours"`
 	// special operating hours of the venue
 	SpecialOpeningHours []*OpeningHoursSpecification `json:"specialOpeningHours"`
+	// operating hours of the venue for a specific date
+	OpeningHoursSpecification *OpeningHoursSpecification `json:"openingHoursSpecification"`
 	// tables at the venue
 	Tables []*Table `json:"tables"`
 	// email addresses of venue administrators

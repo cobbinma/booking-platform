@@ -6,6 +6,7 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
+	venue "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
@@ -145,6 +146,121 @@ func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*
 		SpecialOpeningHours: specialHours,
 		Slug:                venue.Slug,
 	}, nil
+}
+
+func (v venueClient) OpeningHoursSpecification(ctx context.Context, venueID string, date time.Time) (*models.OpeningHoursSpecification, error) {
+	resp, err := v.client.GetOpeningHoursSpecification(ctx, &api.GetOpeningHoursSpecificationRequest{
+		VenueId: venueID,
+		Date:    date.Format(time.RFC3339),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not get specification from client : %w", err)
+	}
+
+	opens, err := time.Parse(time.RFC3339, resp.Specification.Opens)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse opening time : %w", err)
+	}
+
+	closes, err := time.Parse(time.RFC3339, resp.Specification.Closes)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse closing time : %w", err)
+	}
+
+	var validFrom, validThrough *time.Time
+	if resp.Specification.ValidFrom != "" && resp.Specification.ValidThrough != "" {
+		f, err := time.Parse(time.RFC3339, resp.Specification.ValidFrom)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse valid from time : %w", err)
+		}
+		validFrom = &f
+
+		t, err := time.Parse(time.RFC3339, resp.Specification.ValidThrough)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse valid through time : %w", err)
+		}
+		validThrough = &t
+	}
+
+	return &models.OpeningHoursSpecification{
+		DayOfWeek:    models.DayOfWeek(resp.Specification.DayOfWeek),
+		Opens:        models.NewTimeOfDay(opens),
+		Closes:       models.NewTimeOfDay(closes),
+		ValidFrom:    validFrom,
+		ValidThrough: validThrough,
+	}, nil
+}
+
+func (v venueClient) UpdateOpeningHours(ctx context.Context, input models.UpdateOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	hours := make([]*venue.OpeningHoursSpecification, len(input.OpeningHours))
+	for i := range input.OpeningHours {
+		hours[i] = &venue.OpeningHoursSpecification{
+			DayOfWeek: uint32(input.OpeningHours[i].DayOfWeek),
+			Opens:     string(input.OpeningHours[i].Opens),
+			Closes:    string(input.OpeningHours[i].Closes),
+		}
+	}
+
+	resp, err := v.client.UpdateOpeningHours(ctx, &api.UpdateOpeningHoursRequest{
+		VenueId:      input.VenueID,
+		OpeningHours: hours,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not update opening hours in client : %w", err)
+	}
+
+	updated := make([]*models.OpeningHoursSpecification, len(resp.OpeningHours))
+	for i := range resp.OpeningHours {
+		updated[i] = &models.OpeningHoursSpecification{
+			DayOfWeek: updated[i].DayOfWeek,
+			Opens:     updated[i].Opens,
+			Closes:    updated[i].Closes,
+		}
+	}
+
+	return updated, nil
+}
+
+func (v venueClient) UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	hours := make([]*venue.OpeningHoursSpecification, len(input.SpecialOpeningHours))
+	for i := range input.SpecialOpeningHours {
+		hours[i] = &venue.OpeningHoursSpecification{
+			DayOfWeek:    uint32(input.SpecialOpeningHours[i].DayOfWeek),
+			Opens:        string(input.SpecialOpeningHours[i].Opens),
+			Closes:       string(input.SpecialOpeningHours[i].Closes),
+			ValidFrom:    input.SpecialOpeningHours[i].ValidFrom.Format(time.RFC3339),
+			ValidThrough: input.SpecialOpeningHours[i].ValidThrough.Format(time.RFC3339),
+		}
+	}
+
+	resp, err := v.client.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{
+		VenueId:      input.VenueID,
+		OpeningHours: hours,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not update special opening hours in client : %w", err)
+	}
+
+	updated := make([]*models.OpeningHoursSpecification, len(resp.OpeningHours))
+	for i := range resp.OpeningHours {
+		from, err := time.Parse(time.RFC3339, resp.OpeningHours[i].ValidFrom)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse valid from : %w", err)
+		}
+		through, err := time.Parse(time.RFC3339, resp.OpeningHours[i].ValidThrough)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse valid through : %w", err)
+		}
+		updated[i] = &models.OpeningHoursSpecification{
+			DayOfWeek:    models.DayOfWeek(resp.OpeningHours[i].DayOfWeek),
+			Opens:        models.TimeOfDay(resp.OpeningHours[i].Opens),
+			Closes:       models.TimeOfDay(resp.OpeningHours[i].Closes),
+			ValidFrom:    &from,
+			ValidThrough: &through,
+		}
+	}
+
+	return updated, nil
 }
 
 func (v venueClient) IsAdmin(ctx context.Context, input models.IsAdminInput, email string) (bool, error) {
