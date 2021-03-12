@@ -190,10 +190,28 @@ const CreateBooking: React.FC<{
   const [people, setPeople] = useState<number[]>([4]);
   const [date, setDate] = React.useState<Date[] | null>(null);
   const [time, setTime] = React.useState<Date>(new Date(Date.now()));
-  const [duration, setDuration] = React.useState<string>("1 hour");
+  const [duration, setDuration] = React.useState<string | null>(null);
   const close = (): void => {
     setCreateIsOpen(false);
     setEmail("");
+  };
+
+  const isTimeOfDayBeforeDate = (
+    timeOfDay: string,
+    date: Date,
+    addMinutes?: number
+  ): boolean => {
+    const splitTime = timeOfDay.split(":");
+    if (splitTime.length !== 2) return false;
+    const day = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      parseInt(splitTime[0]),
+      parseInt(splitTime[1])
+    );
+    if (addMinutes) date = new Date(date.getTime() + addMinutes * 60000);
+    return day >= date;
   };
 
   const [createBookingMutation, { loading, error }] = useCreateBookingMutation({
@@ -212,7 +230,7 @@ const CreateBooking: React.FC<{
                 time.getMinutes()
               )
             : undefined,
-        duration: durations.get(duration) || 60,
+        duration: durations.get(duration || "") || 60,
       },
     },
   });
@@ -261,19 +279,46 @@ const CreateBooking: React.FC<{
         </FormControl>
         {openHours && (
           <div>
-            <FormControl label="Start Time">
+            <FormControl
+              label="Start Time"
+              caption={() =>
+                isTimeOfDayBeforeDate(openHours.opens, time) ||
+                !isTimeOfDayBeforeDate(openHours.closes, time)
+                  ? "venue is closed"
+                  : ""
+              }
+            >
               <TimePicker
                 value={time}
                 step={1800}
-                onChange={(date) => setTime(date)}
+                onChange={(date) => {
+                  setDuration(null);
+                  setTime(date);
+                }}
+                disabled={!openHours.opens}
+                error={
+                  isTimeOfDayBeforeDate(openHours.opens, time) ||
+                  !isTimeOfDayBeforeDate(openHours.closes, time)
+                }
               />
             </FormControl>
             <FormControl label="Duration">
               <Combobox
-                value={duration}
+                value={duration || ""}
                 onChange={(nextValue) => setDuration(nextValue)}
-                options={Array.from(durations.keys())}
+                options={Array.from(durations.keys()).filter((k) => {
+                  const duration = durations.get(k);
+                  return (
+                    duration &&
+                    isTimeOfDayBeforeDate(openHours.closes, time, duration)
+                  );
+                })}
                 mapOptionToString={(option) => option}
+                disabled={
+                  isTimeOfDayBeforeDate(openHours.opens, time) ||
+                  !isTimeOfDayBeforeDate(openHours.closes, time) ||
+                  !openHours.closes
+                }
               />
             </FormControl>
           </div>
@@ -283,7 +328,11 @@ const CreateBooking: React.FC<{
         <ModalButton kind="tertiary" onClick={close}>
           Cancel
         </ModalButton>
-        {isEmailValid(email) && durations.get(duration) && openHours ? (
+        {isEmailValid(email) &&
+        durations.get(duration || "") &&
+        openHours &&
+        !isTimeOfDayBeforeDate(openHours.opens, time) &&
+        isTimeOfDayBeforeDate(openHours.closes, time) ? (
           <ModalButton
             onClick={() => {
               createBookingMutation()
