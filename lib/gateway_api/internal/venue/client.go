@@ -10,8 +10,10 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/oauth"
+	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -154,17 +156,10 @@ func (v venueClient) OpeningHoursSpecification(ctx context.Context, venueID stri
 		Date:    date.Format(time.RFC3339),
 	})
 	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("could not get specification from client : %w", err)
-	}
-
-	opens, err := time.Parse(time.RFC3339, resp.Specification.Opens)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse opening time : %w", err)
-	}
-
-	closes, err := time.Parse(time.RFC3339, resp.Specification.Closes)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse closing time : %w", err)
 	}
 
 	var validFrom, validThrough *time.Time
@@ -184,8 +179,8 @@ func (v venueClient) OpeningHoursSpecification(ctx context.Context, venueID stri
 
 	return &models.OpeningHoursSpecification{
 		DayOfWeek:    models.DayOfWeek(resp.Specification.DayOfWeek),
-		Opens:        models.NewTimeOfDay(opens),
-		Closes:       models.NewTimeOfDay(closes),
+		Opens:        models.TimeOfDay(resp.Specification.Opens),
+		Closes:       models.TimeOfDay(resp.Specification.Closes),
 		ValidFrom:    validFrom,
 		ValidThrough: validThrough,
 	}, nil

@@ -102,6 +102,7 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
                 bookings={data?.getVenue?.bookings?.bookings || []}
                 pages={data?.getVenue?.bookings?.pages || 0}
                 venueId={data?.getVenue?.id}
+                openHours={data?.getVenue?.openingHoursSpecification}
                 refetch={refetch}
               />
             </Route>

@@ -455,6 +455,7 @@ export type GetVenueQueryVariables = Exact<{
   venueID?: Maybe<Scalars['ID']>;
   filter?: Maybe<BookingsFilter>;
   pageInfo?: Maybe<PageInfo>;
+  date?: Maybe<Scalars['Time']>;
 }>;
 
 
@@ -465,10 +466,13 @@ export type GetVenueQuery = (
     & Pick<Venue, 'id' | 'name' | 'admins' | 'slug'>
     & { openingHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
-      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes'>
     )>, specialOpeningHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
       & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+    )>, openingHoursSpecification?: Maybe<(
+      { __typename?: 'OpeningHoursSpecification' }
+      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes'>
     )>, tables: Array<(
       { __typename?: 'Table' }
       & Pick<Table, 'id' | 'name' | 'capacity'>
@@ -701,7 +705,7 @@ export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
 export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
 export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
-    query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo) {
+    query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo, $date: Time) {
   getVenue(filter: {slug: $slug, id: $venueID}) {
     id
     name
@@ -709,8 +713,6 @@ export const GetVenueDocument = gql`
       dayOfWeek
       opens
       closes
-      validFrom
-      validThrough
     }
     specialOpeningHours {
       dayOfWeek
@@ -718,6 +720,11 @@ export const GetVenueDocument = gql`
       closes
       validFrom
       validThrough
+    }
+    openingHoursSpecification(date: $date) {
+      dayOfWeek
+      opens
+      closes
     }
     tables {
       id
@@ -760,6 +767,7 @@ export const GetVenueDocument = gql`
  *      venueID: // value for 'venueID'
  *      filter: // value for 'filter'
  *      pageInfo: // value for 'pageInfo'
+ *      date: // value for 'date'
  *   },
  * });
  */
