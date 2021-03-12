@@ -114,6 +114,18 @@ pub struct UpdateOpeningHoursResponse {
     #[prost(message, repeated, tag = "1")]
     pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct UpdateSpecialOpeningHoursRequest {
+    #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "2")]
+    pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct UpdateSpecialOpeningHoursResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub opening_hours: ::prost::alloc::vec::Vec<super::models::OpeningHoursSpecification>,
+}
 #[doc = r" Generated client implementations."]
 pub mod venue_api_client {
     #![allow(unused_variables, dead_code, missing_docs)]
@@ -188,6 +200,23 @@ pub mod venue_api_client {
             let codec = tonic::codec::ProstCodec::default();
             let path =
                 http::uri::PathAndQuery::from_static("/venue.api.VenueAPI/UpdateOpeningHours");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn update_special_opening_hours(
+            &mut self,
+            request: impl tonic::IntoRequest<super::UpdateSpecialOpeningHoursRequest>,
+        ) -> Result<tonic::Response<super::UpdateSpecialOpeningHoursResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/venue.api.VenueAPI/UpdateSpecialOpeningHours",
+            );
             self.inner.unary(request.into_request(), path, codec).await
         }
         pub async fn get_opening_hours_specification(
@@ -338,6 +367,10 @@ pub mod venue_api_server {
             &self,
             request: tonic::Request<super::UpdateOpeningHoursRequest>,
         ) -> Result<tonic::Response<super::UpdateOpeningHoursResponse>, tonic::Status>;
+        async fn update_special_opening_hours(
+            &self,
+            request: tonic::Request<super::UpdateSpecialOpeningHoursRequest>,
+        ) -> Result<tonic::Response<super::UpdateSpecialOpeningHoursResponse>, tonic::Status>;
         async fn get_opening_hours_specification(
             &self,
             request: tonic::Request<super::GetOpeningHoursSpecificationRequest>,
@@ -487,6 +520,41 @@ pub mod venue_api_server {
                         let interceptor = inner.1.clone();
                         let inner = inner.0;
                         let method = UpdateOpeningHoursSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = if let Some(interceptor) = interceptor {
+                            tonic::server::Grpc::with_interceptor(codec, interceptor)
+                        } else {
+                            tonic::server::Grpc::new(codec)
+                        };
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/venue.api.VenueAPI/UpdateSpecialOpeningHours" => {
+                    #[allow(non_camel_case_types)]
+                    struct UpdateSpecialOpeningHoursSvc<T: VenueApi>(pub Arc<T>);
+                    impl<T: VenueApi>
+                        tonic::server::UnaryService<super::UpdateSpecialOpeningHoursRequest>
+                        for UpdateSpecialOpeningHoursSvc<T>
+                    {
+                        type Response = super::UpdateSpecialOpeningHoursResponse;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::UpdateSpecialOpeningHoursRequest>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut =
+                                async move { (*inner).update_special_opening_hours(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let interceptor = inner.1.clone();
+                        let inner = inner.0;
+                        let method = UpdateSpecialOpeningHoursSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = if let Some(interceptor) = interceptor {
                             tonic::server::Grpc::with_interceptor(codec, interceptor)

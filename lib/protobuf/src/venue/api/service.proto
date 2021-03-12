@@ -10,6 +10,7 @@ service VenueAPI {
   rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
   rpc CreateVenue(CreateVenueRequest) returns (venue.models.Venue);
   rpc UpdateOpeningHours(UpdateOpeningHoursRequest) returns (UpdateOpeningHoursResponse);
+  rpc UpdateSpecialOpeningHours(UpdateSpecialOpeningHoursRequest) returns (UpdateSpecialOpeningHoursResponse);
   rpc GetOpeningHoursSpecification(GetOpeningHoursSpecificationRequest) returns (GetOpeningHoursSpecificationResponse);
 
   rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
@@ -104,6 +105,15 @@ message UpdateOpeningHoursRequest {
 }
 
 message UpdateOpeningHoursResponse {
+  repeated venue.models.OpeningHoursSpecification openingHours = 1;
+}
+
+message UpdateSpecialOpeningHoursRequest {
+  string venueId = 1;
+  repeated venue.models.OpeningHoursSpecification openingHours = 2;
+}
+
+message UpdateSpecialOpeningHoursResponse {
   repeated venue.models.OpeningHoursSpecification openingHours = 1;
 }
 

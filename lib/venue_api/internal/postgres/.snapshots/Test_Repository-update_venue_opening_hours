@@ -1,1 +1,0 @@
-(*api.UpdateOpeningHoursResponse)(openingHours:{dayOfWeek:2 opens:"11:00" closes:"22:00"} openingHours:{dayOfWeek:3 opens:"10:30" closes:"23:00"})
