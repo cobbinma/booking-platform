@@ -150,9 +150,9 @@ type OpeningHoursSpecification {
   "the day of the week for which these opening hours are valid"
   dayOfWeek: DayOfWeek!,
   "the opening time of the place or service on the given day(s) of the week"
-  opens: TimeOfDay!,
+  opens: TimeOfDay,
   "the closing time of the place or service on the given day(s) of the week"
-  closes: TimeOfDay!,
+  closes: TimeOfDay,
   "date the special opening hours starts at. only valid for special opening hours"
   validFrom: Time,
   "date the special opening hours ends at. only valid for special opening hours"
@@ -178,13 +178,13 @@ input SpecialOpeningHoursSpecificationInput {
   "the day of the week for which these opening hours are valid"
   dayOfWeek: DayOfWeek!,
   "the opening time of the place or service on the given day(s) of the week"
-  opens: TimeOfDay!,
+  opens: TimeOfDay,
   "the closing time of the place or service on the given day(s) of the week"
-  closes: TimeOfDay!,
+  closes: TimeOfDay,
   "date the special opening hours starts at. only valid for special opening hours"
-  validFrom: Time,
+  validFrom: Time!,
   "date the special opening hours ends at. only valid for special opening hours"
-  validThrough: Time,
+  validThrough: Time!,
 }
 
 """

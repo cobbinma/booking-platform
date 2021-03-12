@@ -95,9 +95,9 @@ type OpeningHoursSpecification struct {
 	// the day of the week for which these opening hours are valid
 	DayOfWeek DayOfWeek `json:"dayOfWeek"`
 	// the opening time of the place or service on the given day(s) of the week
-	Opens TimeOfDay `json:"opens"`
+	Opens *TimeOfDay `json:"opens"`
 	// the closing time of the place or service on the given day(s) of the week
-	Closes TimeOfDay `json:"closes"`
+	Closes *TimeOfDay `json:"closes"`
 	// date the special opening hours starts at. only valid for special opening hours
 	ValidFrom *time.Time `json:"validFrom"`
 	// date the special opening hours ends at. only valid for special opening hours
@@ -173,13 +173,13 @@ type SpecialOpeningHoursSpecificationInput struct {
 	// the day of the week for which these opening hours are valid
 	DayOfWeek DayOfWeek `json:"dayOfWeek"`
 	// the opening time of the place or service on the given day(s) of the week
-	Opens TimeOfDay `json:"opens"`
+	Opens *TimeOfDay `json:"opens"`
 	// the closing time of the place or service on the given day(s) of the week
-	Closes TimeOfDay `json:"closes"`
+	Closes *TimeOfDay `json:"closes"`
 	// date the special opening hours starts at. only valid for special opening hours
-	ValidFrom *time.Time `json:"validFrom"`
+	ValidFrom time.Time `json:"validFrom"`
 	// date the special opening hours ends at. only valid for special opening hours
-	ValidThrough *time.Time `json:"validThrough"`
+	ValidThrough time.Time `json:"validThrough"`
 }
 
 // An individual table at a venue.

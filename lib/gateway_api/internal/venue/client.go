@@ -115,8 +115,8 @@ func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*
 	for _, hours := range venue.OpeningHours {
 		openingHours = append(openingHours, &models.OpeningHoursSpecification{
 			DayOfWeek:    (models.DayOfWeek)(hours.DayOfWeek),
-			Opens:        (models.TimeOfDay)(hours.Opens),
-			Closes:       (models.TimeOfDay)(hours.Closes),
+			Opens:        (*models.TimeOfDay)(&hours.Opens),
+			Closes:       (*models.TimeOfDay)(&hours.Closes),
 			ValidFrom:    nil,
 			ValidThrough: nil,
 		})
@@ -124,6 +124,13 @@ func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*
 
 	specialHours := []*models.OpeningHoursSpecification{}
 	for _, hours := range venue.SpecialOpeningHours {
+		var opens, closes *models.TimeOfDay
+		if hours.Opens != "" {
+			opens = (*models.TimeOfDay)(&hours.Opens)
+		}
+		if hours.Closes != "" {
+			closes = (*models.TimeOfDay)(&hours.Closes)
+		}
 		from, err := time.Parse(time.RFC3339, hours.ValidFrom)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse valid from '%s'", err)
@@ -134,8 +141,8 @@ func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*
 		}
 		openingHours = append(specialHours, &models.OpeningHoursSpecification{
 			DayOfWeek:    (models.DayOfWeek)(hours.DayOfWeek),
-			Opens:        (models.TimeOfDay)(hours.Opens),
-			Closes:       (models.TimeOfDay)(hours.Closes),
+			Opens:        opens,
+			Closes:       closes,
 			ValidFrom:    &from,
 			ValidThrough: &through,
 		})
@@ -162,6 +169,14 @@ func (v venueClient) OpeningHoursSpecification(ctx context.Context, venueID stri
 		return nil, fmt.Errorf("could not get specification from client : %w", err)
 	}
 
+	var opens, closes *models.TimeOfDay
+	if resp.Specification.Opens != "" {
+		opens = (*models.TimeOfDay)(&resp.Specification.Opens)
+	}
+	if resp.Specification.Closes != "" {
+		closes = (*models.TimeOfDay)(&resp.Specification.Closes)
+	}
+
 	var validFrom, validThrough *time.Time
 	if resp.Specification.ValidFrom != "" && resp.Specification.ValidThrough != "" {
 		f, err := time.Parse(time.RFC3339, resp.Specification.ValidFrom)
@@ -179,8 +194,8 @@ func (v venueClient) OpeningHoursSpecification(ctx context.Context, venueID stri
 
 	return &models.OpeningHoursSpecification{
 		DayOfWeek:    models.DayOfWeek(resp.Specification.DayOfWeek),
-		Opens:        models.TimeOfDay(resp.Specification.Opens),
-		Closes:       models.TimeOfDay(resp.Specification.Closes),
+		Opens:        opens,
+		Closes:       closes,
 		ValidFrom:    validFrom,
 		ValidThrough: validThrough,
 	}, nil
@@ -219,10 +234,17 @@ func (v venueClient) UpdateOpeningHours(ctx context.Context, input models.Update
 func (v venueClient) UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
 	hours := make([]*venue.OpeningHoursSpecification, len(input.SpecialOpeningHours))
 	for i := range input.SpecialOpeningHours {
+		var opens, closes string
+		if input.SpecialOpeningHours[i].Opens != nil {
+			opens = string(*input.SpecialOpeningHours[i].Opens)
+		}
+		if input.SpecialOpeningHours[i].Closes != nil {
+			closes = string(*input.SpecialOpeningHours[i].Closes)
+		}
 		hours[i] = &venue.OpeningHoursSpecification{
 			DayOfWeek:    uint32(input.SpecialOpeningHours[i].DayOfWeek),
-			Opens:        string(input.SpecialOpeningHours[i].Opens),
-			Closes:       string(input.SpecialOpeningHours[i].Closes),
+			Opens:        opens,
+			Closes:       closes,
 			ValidFrom:    input.SpecialOpeningHours[i].ValidFrom.Format(time.RFC3339),
 			ValidThrough: input.SpecialOpeningHours[i].ValidThrough.Format(time.RFC3339),
 		}
@@ -238,6 +260,13 @@ func (v venueClient) UpdateSpecialOpeningHours(ctx context.Context, input models
 
 	updated := make([]*models.OpeningHoursSpecification, len(resp.OpeningHours))
 	for i := range resp.OpeningHours {
+		var opens, closes *models.TimeOfDay
+		if resp.OpeningHours[i].Opens != "" {
+			opens = (*models.TimeOfDay)(&resp.OpeningHours[i].Opens)
+		}
+		if resp.OpeningHours[i].Closes != "" {
+			closes = (*models.TimeOfDay)(&resp.OpeningHours[i].Closes)
+		}
 		from, err := time.Parse(time.RFC3339, resp.OpeningHours[i].ValidFrom)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse valid from : %w", err)
@@ -248,8 +277,8 @@ func (v venueClient) UpdateSpecialOpeningHours(ctx context.Context, input models
 		}
 		updated[i] = &models.OpeningHoursSpecification{
 			DayOfWeek:    models.DayOfWeek(resp.OpeningHours[i].DayOfWeek),
-			Opens:        models.TimeOfDay(resp.OpeningHours[i].Opens),
-			Closes:       models.TimeOfDay(resp.OpeningHours[i].Closes),
+			Opens:        opens,
+			Closes:       closes,
 			ValidFrom:    &from,
 			ValidThrough: &through,
 		}

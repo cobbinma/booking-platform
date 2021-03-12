@@ -134,7 +134,6 @@ func (r *venueResolver) OpeningHoursSpecification(ctx context.Context, obj *mode
 	}
 
 	return r.venueService.OpeningHoursSpecification(ctx, obj.ID, *date)
-
 }
 
 func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error) {
