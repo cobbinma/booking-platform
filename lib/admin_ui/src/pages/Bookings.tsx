@@ -261,7 +261,16 @@ const CreateBooking: React.FC<{
             max={20}
           />
         </FormControl>
-        <FormControl label="Date">
+        <FormControl
+          label="Date"
+          caption={() =>
+            (date && !openHours) ||
+            (openHours && !openHours.opens) ||
+            (openHours && !openHours.closes)
+              ? "venue is closed"
+              : ""
+          }
+        >
           <DatePicker
             value={date}
             onChange={({ date }) => {
@@ -274,7 +283,13 @@ const CreateBooking: React.FC<{
                 }).catch((e) => console.log(e));
               }
             }}
-            error={!!(date && !openHours)}
+            error={
+              !!(
+                (date && !openHours) ||
+                (openHours && !openHours.opens) ||
+                (openHours && !openHours.closes)
+              )
+            }
           />
         </FormControl>
         {openHours && (
@@ -331,6 +346,8 @@ const CreateBooking: React.FC<{
         {isEmailValid(email) &&
         durations.get(duration || "") &&
         openHours &&
+        openHours.opens &&
+        openHours.closes &&
         !isTimeOfDayBeforeDate(openHours.opens, time) &&
         isTimeOfDayBeforeDate(openHours.closes, time) ? (
           <ModalButton
