@@ -221,10 +221,12 @@ func (v venueClient) UpdateOpeningHours(ctx context.Context, input models.Update
 
 	updated := make([]*models.OpeningHoursSpecification, len(resp.OpeningHours))
 	for i := range resp.OpeningHours {
+		opens := models.TimeOfDay(resp.OpeningHours[i].Opens)
+		closes := models.TimeOfDay(resp.OpeningHours[i].Closes)
 		updated[i] = &models.OpeningHoursSpecification{
-			DayOfWeek: updated[i].DayOfWeek,
-			Opens:     updated[i].Opens,
-			Closes:    updated[i].Closes,
+			DayOfWeek: models.DayOfWeek(resp.OpeningHours[i].DayOfWeek),
+			Opens:     &opens,
+			Closes:    &closes,
 		}
 	}
 

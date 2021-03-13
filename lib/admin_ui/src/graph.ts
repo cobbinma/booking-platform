@@ -159,9 +159,9 @@ export type OpeningHoursSpecification = {
   /** the day of the week for which these opening hours are valid */
   dayOfWeek: Scalars['DayOfWeek'];
   /** the opening time of the place or service on the given day(s) of the week */
-  opens: Scalars['TimeOfDay'];
+  opens?: Maybe<Scalars['TimeOfDay']>;
   /** the closing time of the place or service on the given day(s) of the week */
-  closes: Scalars['TimeOfDay'];
+  closes?: Maybe<Scalars['TimeOfDay']>;
   /** date the special opening hours starts at. only valid for special opening hours */
   validFrom?: Maybe<Scalars['Time']>;
   /** date the special opening hours ends at. only valid for special opening hours */
@@ -183,13 +183,13 @@ export type SpecialOpeningHoursSpecificationInput = {
   /** the day of the week for which these opening hours are valid */
   dayOfWeek: Scalars['DayOfWeek'];
   /** the opening time of the place or service on the given day(s) of the week */
-  opens: Scalars['TimeOfDay'];
+  opens?: Maybe<Scalars['TimeOfDay']>;
   /** the closing time of the place or service on the given day(s) of the week */
-  closes: Scalars['TimeOfDay'];
+  closes?: Maybe<Scalars['TimeOfDay']>;
   /** date the special opening hours starts at. only valid for special opening hours */
-  validFrom?: Maybe<Scalars['Time']>;
+  validFrom: Scalars['Time'];
   /** date the special opening hours ends at. only valid for special opening hours */
-  validThrough?: Maybe<Scalars['Time']>;
+  validThrough: Scalars['Time'];
 };
 
 /** Booking Enquiry Response. */
@@ -518,6 +518,32 @@ export type RemoveTableMutation = (
     { __typename?: 'Table' }
     & Pick<Table, 'id' | 'name' | 'capacity'>
   ) }
+);
+
+export type UpdateOpeningHoursMutationVariables = Exact<{
+  input: UpdateOpeningHoursInput;
+}>;
+
+
+export type UpdateOpeningHoursMutation = (
+  { __typename?: 'Mutation' }
+  & { updateOpeningHours: Array<(
+    { __typename?: 'OpeningHoursSpecification' }
+    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'validFrom' | 'validThrough'>
+  )> }
+);
+
+export type UpdateSpecialOpeningHoursMutationVariables = Exact<{
+  input: UpdateSpecialOpeningHoursInput;
+}>;
+
+
+export type UpdateSpecialOpeningHoursMutation = (
+  { __typename?: 'Mutation' }
+  & { updateSpecialOpeningHours: Array<(
+    { __typename?: 'OpeningHoursSpecification' }
+    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'validFrom' | 'validThrough'>
+  )> }
 );
 
 
@@ -875,3 +901,71 @@ export function useRemoveTableMutation(baseOptions?: Apollo.MutationHookOptions<
 export type RemoveTableMutationHookResult = ReturnType<typeof useRemoveTableMutation>;
 export type RemoveTableMutationResult = Apollo.MutationResult<RemoveTableMutation>;
 export type RemoveTableMutationOptions = Apollo.BaseMutationOptions<RemoveTableMutation, RemoveTableMutationVariables>;
+export const UpdateOpeningHoursDocument = gql`
+    mutation UpdateOpeningHours($input: UpdateOpeningHoursInput!) {
+  updateOpeningHours(input: $input) {
+    dayOfWeek
+    validFrom
+    validThrough
+  }
+}
+    `;
+export type UpdateOpeningHoursMutationFn = Apollo.MutationFunction<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>;
+
+/**
+ * __useUpdateOpeningHoursMutation__
+ *
+ * To run a mutation, you first call `useUpdateOpeningHoursMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateOpeningHoursMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateOpeningHoursMutation, { data, loading, error }] = useUpdateOpeningHoursMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateOpeningHoursMutation(baseOptions?: Apollo.MutationHookOptions<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>) {
+        return Apollo.useMutation<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>(UpdateOpeningHoursDocument, baseOptions);
+      }
+export type UpdateOpeningHoursMutationHookResult = ReturnType<typeof useUpdateOpeningHoursMutation>;
+export type UpdateOpeningHoursMutationResult = Apollo.MutationResult<UpdateOpeningHoursMutation>;
+export type UpdateOpeningHoursMutationOptions = Apollo.BaseMutationOptions<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>;
+export const UpdateSpecialOpeningHoursDocument = gql`
+    mutation UpdateSpecialOpeningHours($input: UpdateSpecialOpeningHoursInput!) {
+  updateSpecialOpeningHours(input: $input) {
+    dayOfWeek
+    validFrom
+    validThrough
+  }
+}
+    `;
+export type UpdateSpecialOpeningHoursMutationFn = Apollo.MutationFunction<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>;
+
+/**
+ * __useUpdateSpecialOpeningHoursMutation__
+ *
+ * To run a mutation, you first call `useUpdateSpecialOpeningHoursMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateSpecialOpeningHoursMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateSpecialOpeningHoursMutation, { data, loading, error }] = useUpdateSpecialOpeningHoursMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateSpecialOpeningHoursMutation(baseOptions?: Apollo.MutationHookOptions<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>) {
+        return Apollo.useMutation<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>(UpdateSpecialOpeningHoursDocument, baseOptions);
+      }
+export type UpdateSpecialOpeningHoursMutationHookResult = ReturnType<typeof useUpdateSpecialOpeningHoursMutation>;
+export type UpdateSpecialOpeningHoursMutationResult = Apollo.MutationResult<UpdateSpecialOpeningHoursMutation>;
+export type UpdateSpecialOpeningHoursMutationOptions = Apollo.BaseMutationOptions<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>;

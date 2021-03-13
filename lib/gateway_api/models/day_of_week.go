@@ -19,9 +19,9 @@ const (
 )
 
 func (i *DayOfWeek) UnmarshalGQL(v interface{}) error {
-	dow, ok := v.(int)
-	if !ok {
-		return fmt.Errorf("day of week must be an integer")
+	dow, err := strconv.Atoi(fmt.Sprintf("%s", v))
+	if err != nil {
+		return fmt.Errorf("could not parse day of week")
 	}
 
 	if dow < 1 || dow > 7 {
@@ -33,5 +33,5 @@ func (i *DayOfWeek) UnmarshalGQL(v interface{}) error {
 }
 
 func (i DayOfWeek) MarshalGQL(w io.Writer) {
-	_, _ = w.Write([]byte(strconv.Itoa((int)(i))))
+	_, _ = w.Write([]byte(fmt.Sprintf("%v", i)))
 }

@@ -85,13 +85,21 @@ func (r *mutationResolver) CancelBooking(ctx context.Context, input models.Cance
 }
 
 func (r *mutationResolver) UpdateOpeningHours(ctx context.Context, input models.UpdateOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	r.log.Infof("updating opening hours : %v", input)
 	if err := r.authIsAdmin(ctx, models.IsAdminInput{
 		VenueID: &input.VenueID,
 	}); err != nil {
+		r.log.Errorf("user is not admin")
 		return nil, err
 	}
 
-	return r.venueService.UpdateOpeningHours(ctx, input)
+	hours, err := r.venueService.UpdateOpeningHours(ctx, input)
+	if err != nil {
+		r.log.Errorf("could not update opening hours : %s", err)
+		return nil, fmt.Errorf("could not update opening hours : %w", err)
+	}
+
+	return hours, nil
 }
 
 func (r *mutationResolver) UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
