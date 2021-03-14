@@ -355,6 +355,11 @@ func (c client) GetOpeningHoursSpecification(ctx context.Context, req *api.GetOp
 		return nil, status.Errorf(codes.InvalidArgument, "could not parse date. should be in format '%s'", time.RFC3339)
 	}
 
+	weekday := date.Weekday()
+	if weekday == 0 {
+		weekday = 7
+	}
+
 	specialHours, err := c.getSpecialOpeningHours(req.VenueId)
 	if err != nil {
 		return nil, fmt.Errorf("could not get special opening hours : %w", err)
@@ -370,7 +375,7 @@ func (c client) GetOpeningHoursSpecification(ctx context.Context, req *api.GetOp
 			return nil, status.Errorf(codes.Internal, "could not parse valid through")
 		}
 
-		if from.Before(date) && through.After(date) && uint32(date.Weekday()) == hours.DayOfWeek {
+		if from.Before(date) && through.After(date) && uint32(weekday) == hours.DayOfWeek {
 			return &api.GetOpeningHoursSpecificationResponse{Specification: hours}, nil
 		}
 	}
@@ -381,7 +386,7 @@ func (c client) GetOpeningHoursSpecification(ctx context.Context, req *api.GetOp
 	}
 
 	for _, hours := range openHours {
-		if uint32(date.Weekday()) == hours.DayOfWeek {
+		if uint32(weekday) == hours.DayOfWeek {
 			return &api.GetOpeningHoursSpecificationResponse{Specification: hours}, nil
 		}
 	}
@@ -408,26 +413,28 @@ func (c client) UpdateOpeningHours(ctx context.Context, req *api.UpdateOpeningHo
 		return nil, status.Errorf(codes.Internal, "could not delete venue opening hours : %s", err)
 	}
 
-	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Insert(OpeningHoursTable).
-		Columns("venue_id", "day_of_week", "opens", "closes")
+	if len(req.OpeningHours) > 0 {
+		builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+			Insert(OpeningHoursTable).
+			Columns("venue_id", "day_of_week", "opens", "closes")
 
-	for _, hours := range req.OpeningHours {
-		builder = builder.Values(
-			req.VenueId,
-			hours.DayOfWeek,
-			hours.Opens,
-			hours.Closes,
-		)
-	}
+		for _, hours := range req.OpeningHours {
+			builder = builder.Values(
+				req.VenueId,
+				hours.DayOfWeek,
+				hours.Opens,
+				hours.Closes,
+			)
+		}
 
-	sql, args, err = builder.ToSql()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not build opening_hours sql : %s", err)
-	}
+		sql, args, err = builder.ToSql()
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not build opening_hours sql : %s", err)
+		}
 
-	if _, err := tx.Exec(sql, args...); err != nil {
-		return nil, status.Errorf(codes.Internal, "could not insert opening hours : %s", err)
+		if _, err := tx.Exec(sql, args...); err != nil {
+			return nil, status.Errorf(codes.Internal, "could not insert opening hours : %s", err)
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -456,36 +463,38 @@ func (c client) UpdateSpecialOpeningHours(ctx context.Context, req *api.UpdateOp
 		return nil, status.Errorf(codes.Internal, "could not delete venue special opening hours : %s", err)
 	}
 
-	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Insert(SpecialOpeningHoursTable).
-		Columns("venue_id", "day_of_week", "opens", "closes", "valid_from", "valid_through")
+	if len(req.OpeningHours) > 0 {
+		builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+			Insert(SpecialOpeningHoursTable).
+			Columns("venue_id", "day_of_week", "opens", "closes", "valid_from", "valid_through")
 
-	for _, hours := range req.OpeningHours {
-		from, err := time.Parse(time.RFC3339, hours.ValidFrom)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "could not parse valid from : %s", err)
+		for _, hours := range req.OpeningHours {
+			from, err := time.Parse(time.RFC3339, hours.ValidFrom)
+			if err != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "could not parse valid from : %s", err)
+			}
+			through, err := time.Parse(time.RFC3339, hours.ValidThrough)
+			if err != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "could not parse valid through : %s", err)
+			}
+			builder = builder.Values(
+				req.VenueId,
+				hours.DayOfWeek,
+				hours.Opens,
+				hours.Closes,
+				from,
+				through,
+			)
 		}
-		through, err := time.Parse(time.RFC3339, hours.ValidThrough)
+
+		sql, args, err = builder.ToSql()
 		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "could not parse valid through : %s", err)
+			return nil, status.Errorf(codes.Internal, "could not build opening_hours sql : %s", err)
 		}
-		builder = builder.Values(
-			req.VenueId,
-			hours.DayOfWeek,
-			hours.Opens,
-			hours.Closes,
-			from,
-			through,
-		)
-	}
 
-	sql, args, err = builder.ToSql()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not build opening_hours sql : %s", err)
-	}
-
-	if _, err := tx.Exec(sql, args...); err != nil {
-		return nil, status.Errorf(codes.Internal, "could not insert special opening hours : %s", err)
+		if _, err := tx.Exec(sql, args...); err != nil {
+			return nil, status.Errorf(codes.Internal, "could not insert special opening hours : %s", err)
+		}
 	}
 
 	if err := tx.Commit(); err != nil {

@@ -150,18 +150,16 @@ const Home: React.FC<{
               {(row) => row.closes}
             </TableBuilderColumn>
             <TableBuilderColumn header="Valid From">
-              {(row) => row.validFrom}
+              {(row) => row.validFrom.toString()}
             </TableBuilderColumn>
             <TableBuilderColumn header="Valid Through">
-              {(row) => row.validThrough}
+              {(row) => row.validThrough.toString()}
             </TableBuilderColumn>
             <TableBuilderColumn>
               {(row) => (
                 <EditSpecialOpeningHours
                   venueId={venueId}
-                  openingHours={specialOpeningHours.filter(
-                    (o) => o.dayOfWeek !== row.dayOfWeek
-                  )}
+                  openingHours={specialOpeningHours.filter((o) => o !== row)}
                   text="Remove"
                   refetch={refetch}
                 />
@@ -500,14 +498,17 @@ const EditSpecialOpeningHours: React.FC<{
   return (
     <Button
       onClick={() => {
+        console.log("HELLO");
+        console.log(openingHours);
         updateSpecialOpeningHoursMutation()
-          .then(() =>
+          .then(() => {
+            console.log("HERE 2");
             refetch()
               .then(() => {
                 if (close) close();
               })
-              .catch((e) => console.log(e))
-          )
+              .catch((e) => console.log(e));
+          })
           .catch((e) => console.log(e));
       }}
     >

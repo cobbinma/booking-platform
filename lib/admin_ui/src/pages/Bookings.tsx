@@ -214,6 +214,8 @@ const CreateBooking: React.FC<{
     return day >= date;
   };
 
+  console.log(openHours);
+
   const [createBookingMutation, { loading, error }] = useCreateBookingMutation({
     variables: {
       slot: {
