@@ -1,6 +1,8 @@
 mutation UpdateSpecialOpeningHours($input: UpdateSpecialOpeningHoursInput!) {
     updateSpecialOpeningHours(input: $input) {
         dayOfWeek
+        opens
+        closes
         validFrom
         validThrough
     }

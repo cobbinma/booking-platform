@@ -139,7 +139,7 @@ func (v venueClient) GetVenue(ctx context.Context, filter models.VenueFilter) (*
 		if err != nil {
 			return nil, fmt.Errorf("could not parse valid through '%s'", err)
 		}
-		openingHours = append(specialHours, &models.OpeningHoursSpecification{
+		specialHours = append(specialHours, &models.OpeningHoursSpecification{
 			DayOfWeek:    (models.DayOfWeek)(hours.DayOfWeek),
 			Opens:        opens,
 			Closes:       closes,

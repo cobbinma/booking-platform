@@ -529,7 +529,7 @@ export type UpdateOpeningHoursMutation = (
   { __typename?: 'Mutation' }
   & { updateOpeningHours: Array<(
     { __typename?: 'OpeningHoursSpecification' }
-    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'validFrom' | 'validThrough'>
+    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
   )> }
 );
 
@@ -542,7 +542,7 @@ export type UpdateSpecialOpeningHoursMutation = (
   { __typename?: 'Mutation' }
   & { updateSpecialOpeningHours: Array<(
     { __typename?: 'OpeningHoursSpecification' }
-    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'validFrom' | 'validThrough'>
+    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
   )> }
 );
 
@@ -905,6 +905,8 @@ export const UpdateOpeningHoursDocument = gql`
     mutation UpdateOpeningHours($input: UpdateOpeningHoursInput!) {
   updateOpeningHours(input: $input) {
     dayOfWeek
+    opens
+    closes
     validFrom
     validThrough
   }
@@ -939,6 +941,8 @@ export const UpdateSpecialOpeningHoursDocument = gql`
     mutation UpdateSpecialOpeningHours($input: UpdateSpecialOpeningHoursInput!) {
   updateSpecialOpeningHours(input: $input) {
     dayOfWeek
+    opens
+    closes
     validFrom
     validThrough
   }

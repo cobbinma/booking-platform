@@ -106,10 +106,17 @@ func (r *mutationResolver) UpdateSpecialOpeningHours(ctx context.Context, input 
 	if err := r.authIsAdmin(ctx, models.IsAdminInput{
 		VenueID: &input.VenueID,
 	}); err != nil {
+		r.log.Errorf("user is not admin")
 		return nil, err
 	}
 
-	return r.venueService.UpdateSpecialOpeningHours(ctx, input)
+	hours, err := r.venueService.UpdateSpecialOpeningHours(ctx, input)
+	if err != nil {
+		r.log.Errorf("could not update special opening hours : %s", err)
+		return nil, fmt.Errorf("could not update special opening hours : %w", err)
+	}
+
+	return hours, nil
 }
 
 func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
