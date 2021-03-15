@@ -224,6 +224,59 @@ func suite(repository api.VenueAPIServer) []test {
 			},
 		},
 		{
+			name: "update venue opening hours",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: nil})
+				require.NoError(t, err)
+
+				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				assert.Equal(t, 0, len(venue.OpeningHours))
+			},
+		},
+		{
+			name: "update venue special opening hours with no entries",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: nil})
+				require.NoError(t, err)
+
+				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				assert.Equal(t, 0, len(venue.SpecialOpeningHours))
+			},
+		},
+		{
+			name: "get opening hours on a sunday",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{
+					VenueId: UUID,
+					OpeningHours: []*models.OpeningHoursSpecification{
+						{
+							DayOfWeek:    7,
+							Opens:        "11:00",
+							Closes:       "22:00",
+							ValidFrom:    "3000-11-01T00:00:00Z",
+							ValidThrough: "3000-12-01T00:00:00Z",
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				hours, err := repository.GetOpeningHoursSpecification(ctx, &api.GetOpeningHoursSpecificationRequest{
+					VenueId: UUID,
+					Date:    "3000-11-16T00:00:00Z",
+				})
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, hours)
+			},
+		},
+		{
 			name: "add table successfully",
 			test: func(t *testing.T) {
 				ctx := context.Background()

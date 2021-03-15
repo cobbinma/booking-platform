@@ -1,0 +1,1 @@
+(*api.GetOpeningHoursSpecificationResponse)(specification:{dayOfWeek:7  opens:"11:00"  closes:"22:00"  validFrom:"3000-11-01T00:00:00Z"  validThrough:"3000-12-01T00:00:00Z"})
