@@ -19,7 +19,7 @@ const (
 )
 
 func (i *DayOfWeek) UnmarshalGQL(v interface{}) error {
-	dow, err := strconv.Atoi(fmt.Sprintf("%s", v))
+	dow, err := strconv.Atoi(fmt.Sprintf("%v", v))
 	if err != nil {
 		return fmt.Errorf("could not parse day of week")
 	}
