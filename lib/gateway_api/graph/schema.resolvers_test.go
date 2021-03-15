@@ -527,6 +527,93 @@ func Test_AddTable(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_UpdateOpeningHours(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	ten := models.TimeOfDay("10:00")
+	tenAgain := models.TimeOfDay("22:00")
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().UpdateOpeningHours(gomock.Any(), models.UpdateOpeningHoursInput{
+		VenueID: venueID,
+		OpeningHours: []*models.OpeningHoursSpecificationInput{
+			{
+				DayOfWeek: 1,
+				Opens:     "10:00",
+				Closes:    "22:00",
+			},
+		},
+	}).Return([]*models.OpeningHoursSpecification{
+		{
+			DayOfWeek: 1,
+			Opens:     &ten,
+			Closes:    &tenAgain,
+		},
+	}, nil)
+
+	var resp struct {
+		UpdateOpeningHours []struct {
+			DayOfWeek int    `json:"dayOfWeek"`
+			Opens     string `json:"opens"`
+			Closes    string `json:"closes"`
+		} `json:"updateOpeningHours"`
+	}
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{updateOpeningHours(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",openingHours:[{dayOfWeek:1,opens:"10:00",closes:"22:00"}]}) {dayOfWeek,opens,closes}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
+func Test_UpdateSpecialOpeningHours(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().UpdateSpecialOpeningHours(gomock.Any(), models.UpdateSpecialOpeningHoursInput{
+		VenueID: venueID,
+		SpecialOpeningHours: []*models.SpecialOpeningHoursSpecificationInput{
+			{
+				DayOfWeek:    1,
+				Opens:        nil,
+				Closes:       nil,
+				ValidFrom:    date,
+				ValidThrough: date,
+			},
+		},
+	}).Return([]*models.OpeningHoursSpecification{
+		{
+			DayOfWeek:    1,
+			ValidFrom:    &date,
+			ValidThrough: &date,
+		},
+	}, nil)
+
+	var resp struct {
+		UpdateSpecialOpeningHours []struct {
+			DayOfWeek    int    `json:"dayOfWeek"`
+			Opens        string `json:"opens"`
+			Closes       string `json:"closes"`
+			ValidFrom    string `json:"validFrom"`
+			ValidThrough string `json:"validThrough"`
+		} `json:"updateSpecialOpeningHours"`
+	}
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{updateSpecialOpeningHours(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",specialOpeningHours:[{dayOfWeek:1,validFrom:"3000-01-01T00:00:00Z",validThrough:"3000-01-01T00:00:00Z"}]}) {dayOfWeek,opens,closes,validFrom,validThrough}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
 func Test_RemoveTableNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)

@@ -1,0 +1,11 @@
+(struct { UpdateSpecialOpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" } "json:\"updateSpecialOpeningHours\"" }) {
+  UpdateSpecialOpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) (len=1) {
+    (struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\""; ValidFrom string "json:\"validFrom\""; ValidThrough string "json:\"validThrough\"" }) {
+      DayOfWeek: (int) 1,
+      Opens: (string) "",
+      Closes: (string) "",
+      ValidFrom: (string) (len=20) "3000-01-01T00:00:00Z",
+      ValidThrough: (string) (len=20) "3000-01-01T00:00:00Z"
+    }
+  }
+}
