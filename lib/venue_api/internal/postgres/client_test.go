@@ -4,9 +4,7 @@ package postgres_test
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"github.com/bradleyjkemp/cupaloy"
+	"github.com/bradleyjkemp/cupaloy/v2"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"github.com/cobbinma/booking-platform/lib/venue_api/internal/postgres"
@@ -17,8 +15,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"net"
 	"net/url"
 	"runtime"
@@ -124,10 +120,7 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				output, err := protoToString(venue)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, venue)
 			},
 		},
 		{
@@ -137,10 +130,7 @@ func suite(repository api.VenueAPIServer) []test {
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				output, err := protoToString(venues)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, venues)
 			},
 		},
 		{
@@ -150,10 +140,7 @@ func suite(repository api.VenueAPIServer) []test {
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Slug: Slug})
 				require.NoError(t, err)
 
-				output, err := protoToString(venues)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, venues)
 			},
 		},
 		{
@@ -181,10 +168,7 @@ func suite(repository api.VenueAPIServer) []test {
 				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				output, err := protoToString(venue)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, venue)
 			},
 		},
 		{
@@ -212,10 +196,7 @@ func suite(repository api.VenueAPIServer) []test {
 				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				output, err := protoToString(venue)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, venue)
 			},
 		},
 		{
@@ -239,10 +220,7 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				output, err := protoToString(hours)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, hours)
 			},
 		},
 		{
@@ -295,10 +273,7 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				output, err := protoToString(hours)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, hours)
 			},
 		},
 		{
@@ -312,10 +287,7 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				output, err := protoToString(table)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, table)
 			},
 		},
 		{
@@ -326,10 +298,7 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: UUID})
 				require.NoError(t, err)
 
-				output, err := protoToString(table)
-				require.NoError(t, err)
-
-				cupaloy.SnapshotT(t, output)
+				cupaloy.New(cupaloy.UseStringerMethods(false)).SnapshotT(t, table)
 			},
 		},
 		{
@@ -452,23 +421,4 @@ func suite(repository api.VenueAPIServer) []test {
 			},
 		},
 	}
-}
-
-func protoToString(message proto.Message) (string, error) {
-	marshaller := protojson.MarshalOptions{
-		EmitUnpopulated: true,
-		Indent:          "",
-		UseProtoNames:   true}
-	data, err := marshaller.Marshal(message)
-	if err != nil {
-		return "", fmt.Errorf("could not marshall proto message : %w", err)
-	}
-
-	var rm json.RawMessage = data
-	j, err := json.MarshalIndent(rm, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("could not marshal indent json : %w", err)
-	}
-
-	return string(j), nil
 }
