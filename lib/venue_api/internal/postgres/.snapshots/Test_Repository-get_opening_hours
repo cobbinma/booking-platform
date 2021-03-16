@@ -1,1 +1,1 @@
-(string) (len=139) "{\"specification\":{\"dayOfWeek\":2,\"opens\":\"11:00\",\"closes\":\"22:00\",\"validFrom\":\"3000-11-01T00:00:00Z\",\"validThrough\":\"3000-12-01T00:00:00Z\"}}"
+(string) (len=177) "{\n  \"specification\": {\n    \"dayOfWeek\": 2,\n    \"opens\": \"11:00\",\n    \"closes\": \"22:00\",\n    \"validFrom\": \"3000-11-01T00:00:00Z\",\n    \"validThrough\": \"3000-12-01T00:00:00Z\"\n  }\n}"
