@@ -181,7 +181,6 @@ func (c client) RemoveTable(ctx context.Context, req *api.RemoveTableRequest) (*
 }
 
 func (c client) GetVenue(ctx context.Context, req *api.GetVenueRequest) (*models.Venue, error) {
-	fmt.Println("input: ", req)
 	where := sq.And{}
 	if req.Id != "" {
 		where = append(where, sq.Eq{"id": req.Id})

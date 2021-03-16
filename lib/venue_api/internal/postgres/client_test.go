@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"net"
 	"net/url"
 	"runtime"
@@ -120,7 +121,10 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venue)
+				output, err := protojson.Marshal(venue)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -130,7 +134,10 @@ func suite(repository api.VenueAPIServer) []test {
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venues)
+				output, err := protojson.Marshal(venues)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -140,7 +147,10 @@ func suite(repository api.VenueAPIServer) []test {
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Slug: Slug})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venues)
+				output, err := protojson.Marshal(venues)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -168,7 +178,10 @@ func suite(repository api.VenueAPIServer) []test {
 				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venue)
+				output, err := protojson.Marshal(venue)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -196,7 +209,10 @@ func suite(repository api.VenueAPIServer) []test {
 				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venue)
+				output, err := protojson.Marshal(venue)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -220,7 +236,10 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, hours)
+				output, err := protojson.Marshal(hours)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -273,7 +292,10 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, hours)
+				output, err := protojson.Marshal(hours)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -287,7 +309,10 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, table)
+				output, err := protojson.Marshal(table)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
@@ -298,7 +323,10 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: UUID})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, table)
+				output, err := protojson.Marshal(table)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, string(output))
 			},
 		},
 		{
