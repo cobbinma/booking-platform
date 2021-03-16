@@ -68,12 +68,14 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddAdmin      func(childComplexity int, input models.AdminInput) int
-		AddTable      func(childComplexity int, input models.TableInput) int
-		CancelBooking func(childComplexity int, input models.CancelBookingInput) int
-		CreateBooking func(childComplexity int, input models.BookingInput) int
-		RemoveAdmin   func(childComplexity int, input models.RemoveAdminInput) int
-		RemoveTable   func(childComplexity int, input models.RemoveTableInput) int
+		AddAdmin                  func(childComplexity int, input models.AdminInput) int
+		AddTable                  func(childComplexity int, input models.TableInput) int
+		CancelBooking             func(childComplexity int, input models.CancelBookingInput) int
+		CreateBooking             func(childComplexity int, input models.BookingInput) int
+		RemoveAdmin               func(childComplexity int, input models.RemoveAdminInput) int
+		RemoveTable               func(childComplexity int, input models.RemoveTableInput) int
+		UpdateOpeningHours        func(childComplexity int, input models.UpdateOpeningHoursInput) int
+		UpdateSpecialOpeningHours func(childComplexity int, input models.UpdateSpecialOpeningHoursInput) int
 	}
 
 	OpeningHoursSpecification struct {
@@ -106,14 +108,15 @@ type ComplexityRoot struct {
 	}
 
 	Venue struct {
-		Admins              func(childComplexity int) int
-		Bookings            func(childComplexity int, filter *models.BookingsFilter, pageInfo *models.PageInfo) int
-		ID                  func(childComplexity int) int
-		Name                func(childComplexity int) int
-		OpeningHours        func(childComplexity int) int
-		Slug                func(childComplexity int) int
-		SpecialOpeningHours func(childComplexity int) int
-		Tables              func(childComplexity int) int
+		Admins                    func(childComplexity int) int
+		Bookings                  func(childComplexity int, filter *models.BookingsFilter, pageInfo *models.PageInfo) int
+		ID                        func(childComplexity int) int
+		Name                      func(childComplexity int) int
+		OpeningHours              func(childComplexity int) int
+		OpeningHoursSpecification func(childComplexity int, date *time.Time) int
+		Slug                      func(childComplexity int) int
+		SpecialOpeningHours       func(childComplexity int) int
+		Tables                    func(childComplexity int) int
 	}
 }
 
@@ -124,6 +127,8 @@ type MutationResolver interface {
 	AddAdmin(ctx context.Context, input models.AdminInput) (string, error)
 	RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error)
 	CancelBooking(ctx context.Context, input models.CancelBookingInput) (*models.Booking, error)
+	UpdateOpeningHours(ctx context.Context, input models.UpdateOpeningHoursInput) ([]*models.OpeningHoursSpecification, error)
+	UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error)
 }
 type QueryResolver interface {
 	GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error)
@@ -131,6 +136,7 @@ type QueryResolver interface {
 	IsAdmin(ctx context.Context, input models.IsAdminInput) (bool, error)
 }
 type VenueResolver interface {
+	OpeningHoursSpecification(ctx context.Context, obj *models.Venue, date *time.Time) (*models.OpeningHoursSpecification, error)
 	Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error)
 	Admins(ctx context.Context, obj *models.Venue) ([]string, error)
 
@@ -315,6 +321,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RemoveTable(childComplexity, args["input"].(models.RemoveTableInput)), true
 
+	case "Mutation.updateOpeningHours":
+		if e.complexity.Mutation.UpdateOpeningHours == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateOpeningHours_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateOpeningHours(childComplexity, args["input"].(models.UpdateOpeningHoursInput)), true
+
+	case "Mutation.updateSpecialOpeningHours":
+		if e.complexity.Mutation.UpdateSpecialOpeningHours == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSpecialOpeningHours_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSpecialOpeningHours(childComplexity, args["input"].(models.UpdateSpecialOpeningHoursInput)), true
+
 	case "OpeningHoursSpecification.closes":
 		if e.complexity.OpeningHoursSpecification.Closes == nil {
 			break
@@ -488,6 +518,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Venue.OpeningHours(childComplexity), true
+
+	case "Venue.openingHoursSpecification":
+		if e.complexity.Venue.OpeningHoursSpecification == nil {
+			break
+		}
+
+		args, err := ec.field_Venue_openingHoursSpecification_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Venue.OpeningHoursSpecification(childComplexity, args["date"].(*time.Time)), true
 
 	case "Venue.slug":
 		if e.complexity.Venue.Slug == nil {
@@ -673,6 +715,8 @@ type Venue {
   openingHours: [OpeningHoursSpecification!]!
   "special operating hours of the venue"
   specialOpeningHours: [OpeningHoursSpecification!]!
+  "operating hours of the venue for a specific date"
+  openingHoursSpecification(date: Time): OpeningHoursSpecification
   "tables at the venue"
   tables: [Table!]!
   "email addresses of venue administrators"
@@ -724,13 +768,41 @@ type OpeningHoursSpecification {
   "the day of the week for which these opening hours are valid"
   dayOfWeek: DayOfWeek!,
   "the opening time of the place or service on the given day(s) of the week"
-  opens: TimeOfDay!,
+  opens: TimeOfDay,
   "the closing time of the place or service on the given day(s) of the week"
-  closes: TimeOfDay!,
+  closes: TimeOfDay,
   "date the special opening hours starts at. only valid for special opening hours"
   validFrom: Time,
   "date the special opening hours ends at. only valid for special opening hours"
   validThrough: Time,
+}
+
+"""
+Day specific operating hours.
+"""
+input OpeningHoursSpecificationInput {
+  "the day of the week for which these opening hours are valid"
+  dayOfWeek: DayOfWeek!,
+  "the opening time of the place or service on the given day(s) of the week"
+  opens: TimeOfDay!,
+  "the closing time of the place or service on the given day(s) of the week"
+  closes: TimeOfDay!,
+}
+
+"""
+Day specific special operating hours.
+"""
+input SpecialOpeningHoursSpecificationInput {
+  "the day of the week for which these opening hours are valid"
+  dayOfWeek: DayOfWeek!,
+  "the opening time of the place or service on the given day(s) of the week"
+  opens: TimeOfDay,
+  "the closing time of the place or service on the given day(s) of the week"
+  closes: TimeOfDay,
+  "date the special opening hours starts at. only valid for special opening hours"
+  validFrom: Time!,
+  "date the special opening hours ends at. only valid for special opening hours"
+  validThrough: Time!,
 }
 
 """
@@ -838,6 +910,26 @@ input CancelBookingInput {
 }
 
 """
+Input to update a venue's operating hours.
+"""
+input UpdateOpeningHoursInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "operating hours of the venue"
+  openingHours: [OpeningHoursSpecificationInput!]!
+}
+
+"""
+Input to update a venue's special operating hours.
+"""
+input UpdateSpecialOpeningHoursInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "special operating hours of the venue"
+  specialOpeningHours: [SpecialOpeningHoursSpecificationInput!]!
+}
+
+"""
 Booking mutations.
 """
 type Mutation {
@@ -853,6 +945,10 @@ type Mutation {
   removeAdmin(input: RemoveAdminInput!): String!
   "cancel an individual booking"
   cancelBooking(input: CancelBookingInput!): Booking!
+  "update the venue's opening hours"
+  updateOpeningHours(input: UpdateOpeningHoursInput!): [OpeningHoursSpecification!]!
+  "update the venue's special opening hours"
+  updateSpecialOpeningHours(input: UpdateSpecialOpeningHoursInput!): [OpeningHoursSpecification!]!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -951,6 +1047,36 @@ func (ec *executionContext) field_Mutation_removeTable_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateOpeningHours_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.UpdateOpeningHoursInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateOpeningHoursInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐUpdateOpeningHoursInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSpecialOpeningHours_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.UpdateSpecialOpeningHoursInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateSpecialOpeningHoursInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐUpdateSpecialOpeningHoursInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1032,6 +1158,21 @@ func (ec *executionContext) field_Venue_bookings_args(ctx context.Context, rawAr
 		}
 	}
 	args["pageInfo"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Venue_openingHoursSpecification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *time.Time
+	if tmp, ok := rawArgs["date"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+		arg0, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["date"] = arg0
 	return args, nil
 }
 
@@ -1774,6 +1915,90 @@ func (ec *executionContext) _Mutation_cancelBooking(ctx context.Context, field g
 	return ec.marshalNBooking2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐBooking(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateOpeningHours(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateOpeningHours_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateOpeningHours(rctx, args["input"].(models.UpdateOpeningHoursInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.OpeningHoursSpecification)
+	fc.Result = res
+	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateSpecialOpeningHours(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateSpecialOpeningHours_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSpecialOpeningHours(rctx, args["input"].(models.UpdateSpecialOpeningHoursInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.OpeningHoursSpecification)
+	fc.Result = res
+	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _OpeningHoursSpecification_dayOfWeek(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1834,14 +2059,11 @@ func (ec *executionContext) _OpeningHoursSpecification_opens(ctx context.Context
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TimeOfDay)
+	res := resTmp.(*models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalOTimeOfDay2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_closes(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -1869,14 +2091,11 @@ func (ec *executionContext) _OpeningHoursSpecification_closes(ctx context.Contex
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(models.TimeOfDay)
+	res := resTmp.(*models.TimeOfDay)
 	fc.Result = res
-	return ec.marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
+	return ec.marshalOTimeOfDay2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningHoursSpecification_validFrom(ctx context.Context, field graphql.CollectedField, obj *models.OpeningHoursSpecification) (ret graphql.Marshaler) {
@@ -2593,6 +2812,45 @@ func (ec *executionContext) _Venue_specialOpeningHours(ctx context.Context, fiel
 	res := resTmp.([]*models.OpeningHoursSpecification)
 	fc.Result = res
 	return ec.marshalNOpeningHoursSpecification2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Venue_openingHoursSpecification(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Venue",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Venue_openingHoursSpecification_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Venue().OpeningHoursSpecification(rctx, obj, args["date"].(*time.Time))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.OpeningHoursSpecification)
+	fc.Result = res
+	return ec.marshalOOpeningHoursSpecification2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecification(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Venue_tables(ctx context.Context, field graphql.CollectedField, obj *models.Venue) (ret graphql.Marshaler) {
@@ -3990,6 +4248,42 @@ func (ec *executionContext) unmarshalInputIsAdminInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputOpeningHoursSpecificationInput(ctx context.Context, obj interface{}) (models.OpeningHoursSpecificationInput, error) {
+	var it models.OpeningHoursSpecificationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "dayOfWeek":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dayOfWeek"))
+			it.DayOfWeek, err = ec.unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "opens":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("opens"))
+			it.Opens, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "closes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("closes"))
+			it.Closes, err = ec.unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPageInfo(ctx context.Context, obj interface{}) (models.PageInfo, error) {
 	var it models.PageInfo
 	var asMap = obj.(map[string]interface{})
@@ -4126,6 +4420,58 @@ func (ec *executionContext) unmarshalInputSlotInput(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSpecialOpeningHoursSpecificationInput(ctx context.Context, obj interface{}) (models.SpecialOpeningHoursSpecificationInput, error) {
+	var it models.SpecialOpeningHoursSpecificationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "dayOfWeek":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dayOfWeek"))
+			it.DayOfWeek, err = ec.unmarshalNDayOfWeek2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐDayOfWeek(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "opens":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("opens"))
+			it.Opens, err = ec.unmarshalOTimeOfDay2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "closes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("closes"))
+			it.Closes, err = ec.unmarshalOTimeOfDay2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "validFrom":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("validFrom"))
+			it.ValidFrom, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "validThrough":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("validThrough"))
+			it.ValidThrough, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTableInput(ctx context.Context, obj interface{}) (models.TableInput, error) {
 	var it models.TableInput
 	var asMap = obj.(map[string]interface{})
@@ -4153,6 +4499,62 @@ func (ec *executionContext) unmarshalInputTableInput(ctx context.Context, obj in
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("capacity"))
 			it.Capacity, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateOpeningHoursInput(ctx context.Context, obj interface{}) (models.UpdateOpeningHoursInput, error) {
+	var it models.UpdateOpeningHoursInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "openingHours":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("openingHours"))
+			it.OpeningHours, err = ec.unmarshalNOpeningHoursSpecificationInput2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateSpecialOpeningHoursInput(ctx context.Context, obj interface{}) (models.UpdateSpecialOpeningHoursInput, error) {
+	var it models.UpdateSpecialOpeningHoursInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "venueId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("venueId"))
+			it.VenueID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "specialOpeningHours":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("specialOpeningHours"))
+			it.SpecialOpeningHours, err = ec.unmarshalNSpecialOpeningHoursSpecificationInput2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSpecialOpeningHoursSpecificationInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4368,6 +4770,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateOpeningHours":
+			out.Values[i] = ec._Mutation_updateOpeningHours(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateSpecialOpeningHours":
+			out.Values[i] = ec._Mutation_updateSpecialOpeningHours(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4397,14 +4809,8 @@ func (ec *executionContext) _OpeningHoursSpecification(ctx context.Context, sel 
 			}
 		case "opens":
 			out.Values[i] = ec._OpeningHoursSpecification_opens(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "closes":
 			out.Values[i] = ec._OpeningHoursSpecification_closes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "validFrom":
 			out.Values[i] = ec._OpeningHoursSpecification_validFrom(ctx, field, obj)
 		case "validThrough":
@@ -4612,6 +5018,17 @@ func (ec *executionContext) _Venue(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "openingHoursSpecification":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Venue_openingHoursSpecification(ctx, field, obj)
+				return res
+			})
 		case "tables":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5099,6 +5516,32 @@ func (ec *executionContext) marshalNOpeningHoursSpecification2ᚖgithubᚗcomᚋ
 	return ec._OpeningHoursSpecification(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNOpeningHoursSpecificationInput2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationInputᚄ(ctx context.Context, v interface{}) ([]*models.OpeningHoursSpecificationInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*models.OpeningHoursSpecificationInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNOpeningHoursSpecificationInput2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNOpeningHoursSpecificationInput2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecificationInput(ctx context.Context, v interface{}) (*models.OpeningHoursSpecificationInput, error) {
+	res, err := ec.unmarshalInputOpeningHoursSpecificationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNRemoveAdminInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐRemoveAdminInput(ctx context.Context, v interface{}) (models.RemoveAdminInput, error) {
 	res, err := ec.unmarshalInputRemoveAdminInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5122,6 +5565,32 @@ func (ec *executionContext) marshalNSlot2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑ
 func (ec *executionContext) unmarshalNSlotInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSlotInput(ctx context.Context, v interface{}) (models.SlotInput, error) {
 	res, err := ec.unmarshalInputSlotInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSpecialOpeningHoursSpecificationInput2ᚕᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSpecialOpeningHoursSpecificationInputᚄ(ctx context.Context, v interface{}) ([]*models.SpecialOpeningHoursSpecificationInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*models.SpecialOpeningHoursSpecificationInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNSpecialOpeningHoursSpecificationInput2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSpecialOpeningHoursSpecificationInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNSpecialOpeningHoursSpecificationInput2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐSpecialOpeningHoursSpecificationInput(ctx context.Context, v interface{}) (*models.SpecialOpeningHoursSpecificationInput, error) {
+	res, err := ec.unmarshalInputSpecialOpeningHoursSpecificationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -5248,6 +5717,16 @@ func (ec *executionContext) unmarshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookin
 
 func (ec *executionContext) marshalNTimeOfDay2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, sel ast.SelectionSet, v models.TimeOfDay) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalNUpdateOpeningHoursInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐUpdateOpeningHoursInput(ctx context.Context, v interface{}) (models.UpdateOpeningHoursInput, error) {
+	res, err := ec.unmarshalInputUpdateOpeningHoursInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateSpecialOpeningHoursInput2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐUpdateSpecialOpeningHoursInput(ctx context.Context, v interface{}) (models.UpdateSpecialOpeningHoursInput, error) {
+	res, err := ec.unmarshalInputUpdateSpecialOpeningHoursInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNVenue2githubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐVenue(ctx context.Context, sel ast.SelectionSet, v models.Venue) graphql.Marshaler {
@@ -5567,6 +6046,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return graphql.MarshalInt(*v)
 }
 
+func (ec *executionContext) marshalOOpeningHoursSpecification2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐOpeningHoursSpecification(ctx context.Context, sel ast.SelectionSet, v *models.OpeningHoursSpecification) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._OpeningHoursSpecification(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOPageInfo2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐPageInfo(ctx context.Context, v interface{}) (*models.PageInfo, error) {
 	if v == nil {
 		return nil, nil
@@ -5659,6 +6145,22 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 		return graphql.Null
 	}
 	return graphql.MarshalTime(*v)
+}
+
+func (ec *executionContext) unmarshalOTimeOfDay2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, v interface{}) (*models.TimeOfDay, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(models.TimeOfDay)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTimeOfDay2ᚖgithubᚗcomᚋcobbinmaᚋbookingᚑplatformᚋlibᚋgateway_apiᚋmodelsᚐTimeOfDay(ctx context.Context, sel ast.SelectionSet, v *models.TimeOfDay) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

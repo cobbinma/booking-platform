@@ -7,6 +7,7 @@ package mock_resolver
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	models "github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	gomock "github.com/golang/mock/gomock"
@@ -125,6 +126,21 @@ func (mr *MockVenueServiceMockRecorder) IsAdmin(ctx, input, email interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdmin", reflect.TypeOf((*MockVenueService)(nil).IsAdmin), ctx, input, email)
 }
 
+// OpeningHoursSpecification mocks base method.
+func (m *MockVenueService) OpeningHoursSpecification(ctx context.Context, venueID string, date time.Time) (*models.OpeningHoursSpecification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OpeningHoursSpecification", ctx, venueID, date)
+	ret0, _ := ret[0].(*models.OpeningHoursSpecification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OpeningHoursSpecification indicates an expected call of OpeningHoursSpecification.
+func (mr *MockVenueServiceMockRecorder) OpeningHoursSpecification(ctx, venueID, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpeningHoursSpecification", reflect.TypeOf((*MockVenueService)(nil).OpeningHoursSpecification), ctx, venueID, date)
+}
+
 // RemoveAdmin mocks base method.
 func (m *MockVenueService) RemoveAdmin(ctx context.Context, input models.RemoveAdminInput) (string, error) {
 	m.ctrl.T.Helper()
@@ -153,6 +169,36 @@ func (m *MockVenueService) RemoveTable(ctx context.Context, input models.RemoveT
 func (mr *MockVenueServiceMockRecorder) RemoveTable(ctx, input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTable", reflect.TypeOf((*MockVenueService)(nil).RemoveTable), ctx, input)
+}
+
+// UpdateOpeningHours mocks base method.
+func (m *MockVenueService) UpdateOpeningHours(ctx context.Context, input models.UpdateOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateOpeningHours", ctx, input)
+	ret0, _ := ret[0].([]*models.OpeningHoursSpecification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateOpeningHours indicates an expected call of UpdateOpeningHours.
+func (mr *MockVenueServiceMockRecorder) UpdateOpeningHours(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOpeningHours", reflect.TypeOf((*MockVenueService)(nil).UpdateOpeningHours), ctx, input)
+}
+
+// UpdateSpecialOpeningHours mocks base method.
+func (m *MockVenueService) UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSpecialOpeningHours", ctx, input)
+	ret0, _ := ret[0].([]*models.OpeningHoursSpecification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateSpecialOpeningHours indicates an expected call of UpdateSpecialOpeningHours.
+func (mr *MockVenueServiceMockRecorder) UpdateSpecialOpeningHours(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSpecialOpeningHours", reflect.TypeOf((*MockVenueService)(nil).UpdateSpecialOpeningHours), ctx, input)
 }
 
 // MockBookingService is a mock of BookingService interface.

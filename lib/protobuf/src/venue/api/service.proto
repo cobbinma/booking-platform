@@ -9,6 +9,9 @@ import "src/venue/models/models.proto";
 service VenueAPI {
   rpc GetVenue(GetVenueRequest) returns (venue.models.Venue);
   rpc CreateVenue(CreateVenueRequest) returns (venue.models.Venue);
+  rpc UpdateOpeningHours(UpdateOpeningHoursRequest) returns (UpdateOpeningHoursResponse);
+  rpc UpdateSpecialOpeningHours(UpdateOpeningHoursRequest) returns (UpdateOpeningHoursResponse);
+  rpc GetOpeningHoursSpecification(GetOpeningHoursSpecificationRequest) returns (GetOpeningHoursSpecificationResponse);
 
   rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
   rpc AddTable(AddTableRequest) returns (venue.models.Table);
@@ -37,6 +40,15 @@ message GetTablesRequest {
 
 message GetTablesResponse {
   repeated venue.models.Table tables = 1;
+}
+
+message GetOpeningHoursSpecificationRequest {
+  string venueId = 1;
+  string date = 2;
+}
+
+message GetOpeningHoursSpecificationResponse {
+  venue.models.OpeningHoursSpecification specification = 1;
 }
 
 message AddTableRequest {
@@ -85,5 +97,14 @@ message RemoveAdminRequest {
 
 message RemoveAdminResponse {
   string email = 1;
+}
+
+message UpdateOpeningHoursRequest {
+  string venueId = 1;
+  repeated venue.models.OpeningHoursSpecification openingHours = 2;
+}
+
+message UpdateOpeningHoursResponse {
+  repeated venue.models.OpeningHoursSpecification openingHours = 1;
 }
 

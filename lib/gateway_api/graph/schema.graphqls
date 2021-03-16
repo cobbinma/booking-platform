@@ -97,6 +97,8 @@ type Venue {
   openingHours: [OpeningHoursSpecification!]!
   "special operating hours of the venue"
   specialOpeningHours: [OpeningHoursSpecification!]!
+  "operating hours of the venue for a specific date"
+  openingHoursSpecification(date: Time): OpeningHoursSpecification
   "tables at the venue"
   tables: [Table!]!
   "email addresses of venue administrators"
@@ -148,13 +150,41 @@ type OpeningHoursSpecification {
   "the day of the week for which these opening hours are valid"
   dayOfWeek: DayOfWeek!,
   "the opening time of the place or service on the given day(s) of the week"
-  opens: TimeOfDay!,
+  opens: TimeOfDay,
   "the closing time of the place or service on the given day(s) of the week"
-  closes: TimeOfDay!,
+  closes: TimeOfDay,
   "date the special opening hours starts at. only valid for special opening hours"
   validFrom: Time,
   "date the special opening hours ends at. only valid for special opening hours"
   validThrough: Time,
+}
+
+"""
+Day specific operating hours.
+"""
+input OpeningHoursSpecificationInput {
+  "the day of the week for which these opening hours are valid"
+  dayOfWeek: DayOfWeek!,
+  "the opening time of the place or service on the given day(s) of the week"
+  opens: TimeOfDay!,
+  "the closing time of the place or service on the given day(s) of the week"
+  closes: TimeOfDay!,
+}
+
+"""
+Day specific special operating hours.
+"""
+input SpecialOpeningHoursSpecificationInput {
+  "the day of the week for which these opening hours are valid"
+  dayOfWeek: DayOfWeek!,
+  "the opening time of the place or service on the given day(s) of the week"
+  opens: TimeOfDay,
+  "the closing time of the place or service on the given day(s) of the week"
+  closes: TimeOfDay,
+  "date the special opening hours starts at. only valid for special opening hours"
+  validFrom: Time!,
+  "date the special opening hours ends at. only valid for special opening hours"
+  validThrough: Time!,
 }
 
 """
@@ -262,6 +292,26 @@ input CancelBookingInput {
 }
 
 """
+Input to update a venue's operating hours.
+"""
+input UpdateOpeningHoursInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "operating hours of the venue"
+  openingHours: [OpeningHoursSpecificationInput!]!
+}
+
+"""
+Input to update a venue's special operating hours.
+"""
+input UpdateSpecialOpeningHoursInput {
+  "unique identifier of the venue"
+  venueId: ID!
+  "special operating hours of the venue"
+  specialOpeningHours: [SpecialOpeningHoursSpecificationInput!]!
+}
+
+"""
 Booking mutations.
 """
 type Mutation {
@@ -277,4 +327,8 @@ type Mutation {
   removeAdmin(input: RemoveAdminInput!): String!
   "cancel an individual booking"
   cancelBooking(input: CancelBookingInput!): Booking!
+  "update the venue's opening hours"
+  updateOpeningHours(input: UpdateOpeningHoursInput!): [OpeningHoursSpecification!]!
+  "update the venue's special opening hours"
+  updateSpecialOpeningHours(input: UpdateSpecialOpeningHoursInput!): [OpeningHoursSpecification!]!
 }

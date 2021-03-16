@@ -1,4 +1,4 @@
-query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo) {
+query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo, $date: Time) {
     getVenue(filter: {slug: $slug, id: $venueID}) {
         id
         name
@@ -6,8 +6,6 @@ query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: Page
             dayOfWeek
             opens
             closes
-            validFrom
-            validThrough
         }
         specialOpeningHours {
             dayOfWeek
@@ -15,6 +13,11 @@ query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: Page
             closes
             validFrom
             validThrough
+        }
+        openingHoursSpecification(date: $date) {
+            dayOfWeek
+            opens
+            closes
         }
         tables {
             id

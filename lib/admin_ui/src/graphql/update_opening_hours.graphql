@@ -1,0 +1,9 @@
+mutation UpdateOpeningHours($input: UpdateOpeningHoursInput!) {
+    updateOpeningHours(input: $input) {
+        dayOfWeek
+        opens
+        closes
+        validFrom
+        validThrough
+    }
+}

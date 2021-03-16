@@ -19,6 +19,7 @@ import {
   Booking,
   GetVenueQuery,
   GetVenueQueryVariables,
+  OpeningHoursSpecification,
   Table,
   useCancelBookingMutation,
   useCreateBookingMutation,
@@ -44,10 +45,11 @@ const Bookings: React.FC<{
   bookings: Array<Booking>;
   pages: number;
   venueId: string | null | undefined;
+  openHours: OpeningHoursSpecification | null | undefined;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ tables, bookings, pages, venueId, refetch }) => {
+}> = ({ tables, bookings, pages, venueId, openHours, refetch }) => {
   const overrides = {
     TableBodyRow: {
       style: ({ $theme, $rowIndex }: any) => ({
@@ -89,6 +91,7 @@ const Bookings: React.FC<{
             setCreateIsOpen={setCreateIsOpen}
             createIsOpen={createIsOpen}
             venueId={venueId}
+            openHours={openHours}
             refetch={refetch}
           />
         </FlexGridItem>
@@ -178,19 +181,40 @@ const CreateBooking: React.FC<{
   setCreateIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   createIsOpen: boolean;
   venueId: string;
+  openHours: OpeningHoursSpecification | null | undefined;
   refetch: (
     variables?: GetVenueQueryVariables
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
-}> = ({ setCreateIsOpen, createIsOpen, venueId, refetch }) => {
+}> = ({ setCreateIsOpen, createIsOpen, venueId, openHours, refetch }) => {
   const [email, setEmail] = useState<string>("");
   const [people, setPeople] = useState<number[]>([4]);
-  const [date, setDate] = React.useState([new Date(Date.now())]);
+  const [date, setDate] = React.useState<Date[] | null>(null);
   const [time, setTime] = React.useState<Date>(new Date(Date.now()));
-  const [duration, setDuration] = React.useState<string>("1 hour");
+  const [duration, setDuration] = React.useState<string | null>(null);
   const close = (): void => {
     setCreateIsOpen(false);
     setEmail("");
   };
+
+  const isTimeOfDayBeforeDate = (
+    timeOfDay: string,
+    date: Date,
+    addMinutes?: number
+  ): boolean => {
+    const splitTime = timeOfDay.split(":");
+    if (splitTime.length !== 2) return false;
+    const day = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      parseInt(splitTime[0]),
+      parseInt(splitTime[1])
+    );
+    if (addMinutes) date = new Date(date.getTime() + addMinutes * 60000);
+    return day >= date;
+  };
+
+  console.log(openHours);
 
   const [createBookingMutation, { loading, error }] = useCreateBookingMutation({
     variables: {
@@ -198,14 +222,17 @@ const CreateBooking: React.FC<{
         venueId: venueId,
         email: email,
         people: people[0],
-        startsAt: new Date(
-          date[0].getFullYear(),
-          date[0].getMonth(),
-          date[0].getDate(),
-          time.getHours(),
-          time.getMinutes()
-        ),
-        duration: durations.get(duration) || 60,
+        startsAt:
+          date && date[0]
+            ? new Date(
+                date[0].getFullYear(),
+                date[0].getMonth(),
+                date[0].getDate(),
+                time.getHours(),
+                time.getMinutes()
+              )
+            : undefined,
+        duration: durations.get(duration || "") || 60,
       },
     },
   });
@@ -236,35 +263,95 @@ const CreateBooking: React.FC<{
             max={20}
           />
         </FormControl>
-        <FormControl label="Date">
+        <FormControl
+          label="Date"
+          caption={() =>
+            (date && !openHours) ||
+            (openHours && !openHours.opens) ||
+            (openHours && !openHours.closes)
+              ? "venue is closed"
+              : ""
+          }
+        >
           <DatePicker
             value={date}
-            onChange={({ date }) =>
-              setDate(Array.isArray(date) ? date : [date])
+            onChange={({ date }) => {
+              const d = Array.isArray(date) ? date : [date];
+              setDate(d);
+              if (d && d[0]) {
+                console.log(d);
+                refetch({
+                  date: d[0].toISOString(),
+                }).catch((e) => console.log(e));
+              }
+            }}
+            error={
+              !!(
+                (date && !openHours) ||
+                (openHours && !openHours.opens) ||
+                (openHours && !openHours.closes)
+              )
             }
           />
         </FormControl>
-        <FormControl label="Start Time">
-          <TimePicker
-            value={time}
-            step={1800}
-            onChange={(date) => setTime(date)}
-          />
-        </FormControl>
-        <FormControl label="Duration">
-          <Combobox
-            value={duration}
-            onChange={(nextValue) => setDuration(nextValue)}
-            options={Array.from(durations.keys())}
-            mapOptionToString={(option) => option}
-          />
-        </FormControl>
+        {openHours && (
+          <div>
+            <FormControl
+              label="Start Time"
+              caption={() =>
+                isTimeOfDayBeforeDate(openHours.opens, time) ||
+                !isTimeOfDayBeforeDate(openHours.closes, time)
+                  ? "venue is closed"
+                  : ""
+              }
+            >
+              <TimePicker
+                value={time}
+                step={1800}
+                onChange={(date) => {
+                  setDuration(null);
+                  setTime(date);
+                }}
+                disabled={!openHours.opens}
+                error={
+                  isTimeOfDayBeforeDate(openHours.opens, time) ||
+                  !isTimeOfDayBeforeDate(openHours.closes, time)
+                }
+              />
+            </FormControl>
+            <FormControl label="Duration">
+              <Combobox
+                value={duration || ""}
+                onChange={(nextValue) => setDuration(nextValue)}
+                options={Array.from(durations.keys()).filter((k) => {
+                  const duration = durations.get(k);
+                  return (
+                    duration &&
+                    isTimeOfDayBeforeDate(openHours.closes, time, duration)
+                  );
+                })}
+                mapOptionToString={(option) => option}
+                disabled={
+                  isTimeOfDayBeforeDate(openHours.opens, time) ||
+                  !isTimeOfDayBeforeDate(openHours.closes, time) ||
+                  !openHours.closes
+                }
+              />
+            </FormControl>
+          </div>
+        )}
       </ModalBody>
       <ModalFooter>
         <ModalButton kind="tertiary" onClick={close}>
           Cancel
         </ModalButton>
-        {isEmailValid(email) && durations.get(duration) ? (
+        {isEmailValid(email) &&
+        durations.get(duration || "") &&
+        openHours &&
+        openHours.opens &&
+        openHours.closes &&
+        !isTimeOfDayBeforeDate(openHours.opens, time) &&
+        isTimeOfDayBeforeDate(openHours.closes, time) ? (
           <ModalButton
             onClick={() => {
               createBookingMutation()

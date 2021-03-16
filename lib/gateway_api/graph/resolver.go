@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 // This file will not be regenerated automatically.
@@ -29,6 +30,9 @@ func NewResolver(log *zap.SugaredLogger, venueService VenueService, bookingServi
 //go:generate mockgen -package=mock_resolver -destination=./mock/graph.go -source=resolver.go
 type VenueService interface {
 	GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error)
+	OpeningHoursSpecification(ctx context.Context, venueID string, date time.Time) (*models.OpeningHoursSpecification, error)
+	UpdateOpeningHours(ctx context.Context, input models.UpdateOpeningHoursInput) ([]*models.OpeningHoursSpecification, error)
+	UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error)
 	GetTables(ctx context.Context, venueID string) ([]*models.Table, error)
 	AddTable(ctx context.Context, input models.TableInput) (*models.Table, error)
 	RemoveTable(ctx context.Context, input models.RemoveTableInput) (*models.Table, error)

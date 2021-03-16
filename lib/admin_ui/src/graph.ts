@@ -99,6 +99,8 @@ export type Venue = {
   openingHours: Array<OpeningHoursSpecification>;
   /** special operating hours of the venue */
   specialOpeningHours: Array<OpeningHoursSpecification>;
+  /** operating hours of the venue for a specific date */
+  openingHoursSpecification?: Maybe<OpeningHoursSpecification>;
   /** tables at the venue */
   tables: Array<Table>;
   /** email addresses of venue administrators */
@@ -107,6 +109,12 @@ export type Venue = {
   slug: Scalars['ID'];
   /** paginated list of bookings for a venue */
   bookings?: Maybe<BookingsPage>;
+};
+
+
+/** Venue where a booking can take place. */
+export type VenueOpeningHoursSpecificationArgs = {
+  date?: Maybe<Scalars['Time']>;
 };
 
 
@@ -151,13 +159,37 @@ export type OpeningHoursSpecification = {
   /** the day of the week for which these opening hours are valid */
   dayOfWeek: Scalars['DayOfWeek'];
   /** the opening time of the place or service on the given day(s) of the week */
-  opens: Scalars['TimeOfDay'];
+  opens?: Maybe<Scalars['TimeOfDay']>;
   /** the closing time of the place or service on the given day(s) of the week */
-  closes: Scalars['TimeOfDay'];
+  closes?: Maybe<Scalars['TimeOfDay']>;
   /** date the special opening hours starts at. only valid for special opening hours */
   validFrom?: Maybe<Scalars['Time']>;
   /** date the special opening hours ends at. only valid for special opening hours */
   validThrough?: Maybe<Scalars['Time']>;
+};
+
+/** Day specific operating hours. */
+export type OpeningHoursSpecificationInput = {
+  /** the day of the week for which these opening hours are valid */
+  dayOfWeek: Scalars['DayOfWeek'];
+  /** the opening time of the place or service on the given day(s) of the week */
+  opens: Scalars['TimeOfDay'];
+  /** the closing time of the place or service on the given day(s) of the week */
+  closes: Scalars['TimeOfDay'];
+};
+
+/** Day specific special operating hours. */
+export type SpecialOpeningHoursSpecificationInput = {
+  /** the day of the week for which these opening hours are valid */
+  dayOfWeek: Scalars['DayOfWeek'];
+  /** the opening time of the place or service on the given day(s) of the week */
+  opens?: Maybe<Scalars['TimeOfDay']>;
+  /** the closing time of the place or service on the given day(s) of the week */
+  closes?: Maybe<Scalars['TimeOfDay']>;
+  /** date the special opening hours starts at. only valid for special opening hours */
+  validFrom: Scalars['Time'];
+  /** date the special opening hours ends at. only valid for special opening hours */
+  validThrough: Scalars['Time'];
 };
 
 /** Booking Enquiry Response. */
@@ -265,6 +297,22 @@ export type CancelBookingInput = {
   id: Scalars['ID'];
 };
 
+/** Input to update a venue's operating hours. */
+export type UpdateOpeningHoursInput = {
+  /** unique identifier of the venue */
+  venueId: Scalars['ID'];
+  /** operating hours of the venue */
+  openingHours: Array<OpeningHoursSpecificationInput>;
+};
+
+/** Input to update a venue's special operating hours. */
+export type UpdateSpecialOpeningHoursInput = {
+  /** unique identifier of the venue */
+  venueId: Scalars['ID'];
+  /** special operating hours of the venue */
+  specialOpeningHours: Array<SpecialOpeningHoursSpecificationInput>;
+};
+
 /** Booking mutations. */
 export type Mutation = {
   __typename?: 'Mutation';
@@ -280,6 +328,10 @@ export type Mutation = {
   removeAdmin: Scalars['String'];
   /** cancel an individual booking */
   cancelBooking: Booking;
+  /** update the venue's opening hours */
+  updateOpeningHours: Array<OpeningHoursSpecification>;
+  /** update the venue's special opening hours */
+  updateSpecialOpeningHours: Array<OpeningHoursSpecification>;
 };
 
 
@@ -316,6 +368,18 @@ export type MutationRemoveAdminArgs = {
 /** Booking mutations. */
 export type MutationCancelBookingArgs = {
   input: CancelBookingInput;
+};
+
+
+/** Booking mutations. */
+export type MutationUpdateOpeningHoursArgs = {
+  input: UpdateOpeningHoursInput;
+};
+
+
+/** Booking mutations. */
+export type MutationUpdateSpecialOpeningHoursArgs = {
+  input: UpdateSpecialOpeningHoursInput;
 };
 
 export type AddAdminMutationVariables = Exact<{
@@ -391,6 +455,7 @@ export type GetVenueQueryVariables = Exact<{
   venueID?: Maybe<Scalars['ID']>;
   filter?: Maybe<BookingsFilter>;
   pageInfo?: Maybe<PageInfo>;
+  date?: Maybe<Scalars['Time']>;
 }>;
 
 
@@ -401,10 +466,13 @@ export type GetVenueQuery = (
     & Pick<Venue, 'id' | 'name' | 'admins' | 'slug'>
     & { openingHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
-      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes'>
     )>, specialOpeningHours: Array<(
       { __typename?: 'OpeningHoursSpecification' }
       & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+    )>, openingHoursSpecification?: Maybe<(
+      { __typename?: 'OpeningHoursSpecification' }
+      & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes'>
     )>, tables: Array<(
       { __typename?: 'Table' }
       & Pick<Table, 'id' | 'name' | 'capacity'>
@@ -450,6 +518,32 @@ export type RemoveTableMutation = (
     { __typename?: 'Table' }
     & Pick<Table, 'id' | 'name' | 'capacity'>
   ) }
+);
+
+export type UpdateOpeningHoursMutationVariables = Exact<{
+  input: UpdateOpeningHoursInput;
+}>;
+
+
+export type UpdateOpeningHoursMutation = (
+  { __typename?: 'Mutation' }
+  & { updateOpeningHours: Array<(
+    { __typename?: 'OpeningHoursSpecification' }
+    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+  )> }
+);
+
+export type UpdateSpecialOpeningHoursMutationVariables = Exact<{
+  input: UpdateSpecialOpeningHoursInput;
+}>;
+
+
+export type UpdateSpecialOpeningHoursMutation = (
+  { __typename?: 'Mutation' }
+  & { updateSpecialOpeningHours: Array<(
+    { __typename?: 'OpeningHoursSpecification' }
+    & Pick<OpeningHoursSpecification, 'dayOfWeek' | 'opens' | 'closes' | 'validFrom' | 'validThrough'>
+  )> }
 );
 
 
@@ -637,7 +731,7 @@ export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
 export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
 export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
-    query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo) {
+    query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: PageInfo, $date: Time) {
   getVenue(filter: {slug: $slug, id: $venueID}) {
     id
     name
@@ -645,8 +739,6 @@ export const GetVenueDocument = gql`
       dayOfWeek
       opens
       closes
-      validFrom
-      validThrough
     }
     specialOpeningHours {
       dayOfWeek
@@ -654,6 +746,11 @@ export const GetVenueDocument = gql`
       closes
       validFrom
       validThrough
+    }
+    openingHoursSpecification(date: $date) {
+      dayOfWeek
+      opens
+      closes
     }
     tables {
       id
@@ -696,6 +793,7 @@ export const GetVenueDocument = gql`
  *      venueID: // value for 'venueID'
  *      filter: // value for 'filter'
  *      pageInfo: // value for 'pageInfo'
+ *      date: // value for 'date'
  *   },
  * });
  */
@@ -803,3 +901,75 @@ export function useRemoveTableMutation(baseOptions?: Apollo.MutationHookOptions<
 export type RemoveTableMutationHookResult = ReturnType<typeof useRemoveTableMutation>;
 export type RemoveTableMutationResult = Apollo.MutationResult<RemoveTableMutation>;
 export type RemoveTableMutationOptions = Apollo.BaseMutationOptions<RemoveTableMutation, RemoveTableMutationVariables>;
+export const UpdateOpeningHoursDocument = gql`
+    mutation UpdateOpeningHours($input: UpdateOpeningHoursInput!) {
+  updateOpeningHours(input: $input) {
+    dayOfWeek
+    opens
+    closes
+    validFrom
+    validThrough
+  }
+}
+    `;
+export type UpdateOpeningHoursMutationFn = Apollo.MutationFunction<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>;
+
+/**
+ * __useUpdateOpeningHoursMutation__
+ *
+ * To run a mutation, you first call `useUpdateOpeningHoursMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateOpeningHoursMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateOpeningHoursMutation, { data, loading, error }] = useUpdateOpeningHoursMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateOpeningHoursMutation(baseOptions?: Apollo.MutationHookOptions<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>) {
+        return Apollo.useMutation<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>(UpdateOpeningHoursDocument, baseOptions);
+      }
+export type UpdateOpeningHoursMutationHookResult = ReturnType<typeof useUpdateOpeningHoursMutation>;
+export type UpdateOpeningHoursMutationResult = Apollo.MutationResult<UpdateOpeningHoursMutation>;
+export type UpdateOpeningHoursMutationOptions = Apollo.BaseMutationOptions<UpdateOpeningHoursMutation, UpdateOpeningHoursMutationVariables>;
+export const UpdateSpecialOpeningHoursDocument = gql`
+    mutation UpdateSpecialOpeningHours($input: UpdateSpecialOpeningHoursInput!) {
+  updateSpecialOpeningHours(input: $input) {
+    dayOfWeek
+    opens
+    closes
+    validFrom
+    validThrough
+  }
+}
+    `;
+export type UpdateSpecialOpeningHoursMutationFn = Apollo.MutationFunction<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>;
+
+/**
+ * __useUpdateSpecialOpeningHoursMutation__
+ *
+ * To run a mutation, you first call `useUpdateSpecialOpeningHoursMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateSpecialOpeningHoursMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateSpecialOpeningHoursMutation, { data, loading, error }] = useUpdateSpecialOpeningHoursMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateSpecialOpeningHoursMutation(baseOptions?: Apollo.MutationHookOptions<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>) {
+        return Apollo.useMutation<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>(UpdateSpecialOpeningHoursDocument, baseOptions);
+      }
+export type UpdateSpecialOpeningHoursMutationHookResult = ReturnType<typeof useUpdateSpecialOpeningHoursMutation>;
+export type UpdateSpecialOpeningHoursMutationResult = Apollo.MutationResult<UpdateSpecialOpeningHoursMutation>;
+export type UpdateSpecialOpeningHoursMutationOptions = Apollo.BaseMutationOptions<UpdateSpecialOpeningHoursMutation, UpdateSpecialOpeningHoursMutationVariables>;

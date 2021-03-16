@@ -1,0 +1,9 @@
+(struct { UpdateOpeningHours []struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\"" } "json:\"updateOpeningHours\"" }) {
+  UpdateOpeningHours: ([]struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\"" }) (len=1) {
+    (struct { DayOfWeek int "json:\"dayOfWeek\""; Opens string "json:\"opens\""; Closes string "json:\"closes\"" }) {
+      DayOfWeek: (int) 1,
+      Opens: (string) (len=5) "10:00",
+      Closes: (string) (len=5) "22:00"
+    }
+  }
+}

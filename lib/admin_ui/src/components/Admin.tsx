@@ -102,11 +102,19 @@ const Admin: React.FC<{ venueID: string }> = ({ venueID }) => {
                 bookings={data?.getVenue?.bookings?.bookings || []}
                 pages={data?.getVenue?.bookings?.pages || 0}
                 venueId={data?.getVenue?.id}
+                openHours={data?.getVenue?.openingHoursSpecification}
                 refetch={refetch}
               />
             </Route>
             <Route path="/">
-              <Home name={data?.getVenue?.name} slug={data?.getVenue?.slug} />
+              <Home
+                name={data?.getVenue?.name}
+                slug={data?.getVenue?.slug}
+                openingHours={data?.getVenue?.openingHours || []}
+                specialOpeningHours={data?.getVenue?.specialOpeningHours || []}
+                refetch={refetch}
+                venueId={data?.getVenue?.id}
+              />
             </Route>
           </Switch>
         </FlexGridItem>

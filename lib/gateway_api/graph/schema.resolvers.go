@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
@@ -83,6 +84,41 @@ func (r *mutationResolver) CancelBooking(ctx context.Context, input models.Cance
 	return r.bookingService.CancelBooking(ctx, input)
 }
 
+func (r *mutationResolver) UpdateOpeningHours(ctx context.Context, input models.UpdateOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	r.log.Infof("updating opening hours : %v", input)
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		r.log.Errorf("user is not admin")
+		return nil, err
+	}
+
+	hours, err := r.venueService.UpdateOpeningHours(ctx, input)
+	if err != nil {
+		r.log.Errorf("could not update opening hours : %s", err)
+		return nil, fmt.Errorf("could not update opening hours : %w", err)
+	}
+
+	return hours, nil
+}
+
+func (r *mutationResolver) UpdateSpecialOpeningHours(ctx context.Context, input models.UpdateSpecialOpeningHoursInput) ([]*models.OpeningHoursSpecification, error) {
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		r.log.Errorf("user is not admin")
+		return nil, err
+	}
+
+	hours, err := r.venueService.UpdateSpecialOpeningHours(ctx, input)
+	if err != nil {
+		r.log.Errorf("could not update special opening hours : %s", err)
+		return nil, fmt.Errorf("could not update special opening hours : %w", err)
+	}
+
+	return hours, nil
+}
+
 func (r *queryResolver) GetVenue(ctx context.Context, filter models.VenueFilter) (*models.Venue, error) {
 	if filter.ID == nil && filter.Slug == nil {
 		return nil, fmt.Errorf("at least one field must not be nil on filter")
@@ -105,6 +141,14 @@ func (r *queryResolver) IsAdmin(ctx context.Context, input models.IsAdminInput) 
 	}
 
 	return r.venueService.IsAdmin(ctx, input, user.Email)
+}
+
+func (r *venueResolver) OpeningHoursSpecification(ctx context.Context, obj *models.Venue, date *time.Time) (*models.OpeningHoursSpecification, error) {
+	if obj == nil || date == nil {
+		return nil, nil
+	}
+
+	return r.venueService.OpeningHoursSpecification(ctx, obj.ID, *date)
 }
 
 func (r *venueResolver) Tables(ctx context.Context, obj *models.Venue) ([]*models.Table, error) {

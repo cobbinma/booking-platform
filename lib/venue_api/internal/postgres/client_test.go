@@ -4,6 +4,8 @@ package postgres_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
@@ -15,6 +17,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"net"
 	"net/url"
 	"runtime"
@@ -120,7 +124,10 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venue)
+				output, err := protoToString(venue)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
 			},
 		},
 		{
@@ -130,7 +137,10 @@ func suite(repository api.VenueAPIServer) []test {
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venues)
+				output, err := protoToString(venues)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
 			},
 		},
 		{
@@ -140,7 +150,155 @@ func suite(repository api.VenueAPIServer) []test {
 				venues, err := repository.GetVenue(ctx, &api.GetVenueRequest{Slug: Slug})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, venues)
+				output, err := protoToString(venues)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
+			},
+		},
+		{
+			name: "update venue opening hours",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: []*models.OpeningHoursSpecification{
+					{
+						DayOfWeek:    2,
+						Opens:        "11:00",
+						Closes:       "22:00",
+						ValidFrom:    "",
+						ValidThrough: "",
+					},
+					{
+						DayOfWeek:    3,
+						Opens:        "10:30",
+						Closes:       "23:00",
+						ValidFrom:    "",
+						ValidThrough: "",
+					},
+				}})
+				require.NoError(t, err)
+
+				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				output, err := protoToString(venue)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
+			},
+		},
+		{
+			name: "update venue special opening hours",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: []*models.OpeningHoursSpecification{
+					{
+						DayOfWeek:    2,
+						Opens:        "11:00",
+						Closes:       "22:00",
+						ValidFrom:    "3000-11-01T00:00:00Z",
+						ValidThrough: "3000-12-01T00:00:00Z",
+					},
+					{
+						DayOfWeek:    3,
+						Opens:        "11:00",
+						Closes:       "23:00",
+						ValidFrom:    "3000-11-01T00:00:00Z",
+						ValidThrough: "3000-12-01T00:00:00Z",
+					},
+				}})
+				require.NoError(t, err)
+
+				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				output, err := protoToString(venue)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
+			},
+		},
+		{
+			name: "get opening hours not found",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.GetOpeningHoursSpecification(ctx, &api.GetOpeningHoursSpecificationRequest{
+					VenueId: UUID,
+					Date:    "3000-11-14T00:00:00Z",
+				})
+				require.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
+			name: "get opening hours",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				hours, err := repository.GetOpeningHoursSpecification(ctx, &api.GetOpeningHoursSpecificationRequest{
+					VenueId: UUID,
+					Date:    "3000-11-11T00:00:00Z",
+				})
+				require.NoError(t, err)
+
+				output, err := protoToString(hours)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
+			},
+		},
+		{
+			name: "update venue opening hours",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: nil})
+				require.NoError(t, err)
+
+				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				assert.Equal(t, 0, len(venue.OpeningHours))
+			},
+		},
+		{
+			name: "update venue special opening hours with no entries",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{VenueId: UUID, OpeningHours: nil})
+				require.NoError(t, err)
+
+				venue, err := repository.GetVenue(ctx, &api.GetVenueRequest{Id: UUID})
+				require.NoError(t, err)
+
+				assert.Equal(t, 0, len(venue.SpecialOpeningHours))
+			},
+		},
+		{
+			name: "get opening hours on a sunday",
+			test: func(t *testing.T) {
+				ctx := context.Background()
+				_, err := repository.UpdateSpecialOpeningHours(ctx, &api.UpdateOpeningHoursRequest{
+					VenueId: UUID,
+					OpeningHours: []*models.OpeningHoursSpecification{
+						{
+							DayOfWeek:    7,
+							Opens:        "11:00",
+							Closes:       "22:00",
+							ValidFrom:    "3000-11-01T00:00:00Z",
+							ValidThrough: "3000-12-01T00:00:00Z",
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				hours, err := repository.GetOpeningHoursSpecification(ctx, &api.GetOpeningHoursSpecificationRequest{
+					VenueId: UUID,
+					Date:    "3000-11-16T00:00:00Z",
+				})
+				require.NoError(t, err)
+
+				output, err := protoToString(hours)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
 			},
 		},
 		{
@@ -154,7 +312,10 @@ func suite(repository api.VenueAPIServer) []test {
 				})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, table)
+				output, err := protoToString(table)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
 			},
 		},
 		{
@@ -165,7 +326,10 @@ func suite(repository api.VenueAPIServer) []test {
 					VenueId: UUID})
 				require.NoError(t, err)
 
-				cupaloy.SnapshotT(t, table)
+				output, err := protoToString(table)
+				require.NoError(t, err)
+
+				cupaloy.SnapshotT(t, output)
 			},
 		},
 		{
@@ -288,4 +452,23 @@ func suite(repository api.VenueAPIServer) []test {
 			},
 		},
 	}
+}
+
+func protoToString(message proto.Message) (string, error) {
+	marshaller := protojson.MarshalOptions{
+		EmitUnpopulated: true,
+		Indent:          "",
+		UseProtoNames:   true}
+	data, err := marshaller.Marshal(message)
+	if err != nil {
+		return "", fmt.Errorf("could not marshall proto message : %w", err)
+	}
+
+	var rm json.RawMessage = data
+	j, err := json.MarshalIndent(rm, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("could not marshal indent json : %w", err)
+	}
+
+	return string(j), nil
 }

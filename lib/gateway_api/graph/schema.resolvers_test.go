@@ -24,27 +24,13 @@ func Test_GetVenue(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
 
 	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
 		ID: &venueID,
 	}).Return(&models.Venue{
 		ID:                  "a3291740-e89f-4cc0-845c-75c4c39842c9",
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
 		Slug:                "hop-and-vine",
 	}, nil)
@@ -87,27 +73,13 @@ func Test_GetVenueTables(t *testing.T) {
 	slug := "test-venue"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
 
 	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
 		Slug: &slug,
 	}).Return(&models.Venue{
 		ID:                  venueID,
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
 	}, nil)
 
@@ -162,27 +134,13 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
 
 	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
 		ID: &venueID,
 	}).Return(&models.Venue{
 		ID:                  venueID,
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
 	}, nil)
 
@@ -230,27 +188,13 @@ func Test_GetVenueAdmins(t *testing.T) {
 	slug := "test-venue"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
 
 	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
 		Slug: &slug,
 	}).Return(&models.Venue{
 		ID:                  venueID,
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
 	}, nil)
 
@@ -295,17 +239,21 @@ func Test_GetVenueAdminsNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	ten := models.TimeOfDay("10:00")
+	eleven := models.TimeOfDay("11:00")
+	seven := models.TimeOfDay("19:00")
+	eight := models.TimeOfDay("20:00")
 	monday := &models.OpeningHoursSpecification{
 		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
+		Opens:        &ten,
+		Closes:       &seven,
 		ValidFrom:    nil,
 		ValidThrough: nil,
 	}
 	tuesday := &models.OpeningHoursSpecification{
 		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
+		Opens:        &eleven,
+		Closes:       &eight,
 		ValidFrom:    nil,
 		ValidThrough: nil,
 	}
@@ -360,17 +308,21 @@ func Test_GetVenueBookings(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
 	bookingSrv := mock_resolver.NewMockBookingService(ctrl)
+	ten := models.TimeOfDay("10:00")
+	eleven := models.TimeOfDay("11:00")
+	seven := models.TimeOfDay("19:00")
+	eight := models.TimeOfDay("20:00")
 	monday := &models.OpeningHoursSpecification{
 		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
+		Opens:        &ten,
+		Closes:       &seven,
 		ValidFrom:    nil,
 		ValidThrough: nil,
 	}
 	tuesday := &models.OpeningHoursSpecification{
 		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
+		Opens:        &eleven,
+		Closes:       &eight,
 		ValidFrom:    nil,
 		ValidThrough: nil,
 	}
@@ -458,20 +410,6 @@ func Test_GetVenueBookingsNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
 	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        "10:00",
-		Closes:       "19:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        "11:00",
-		Closes:       "20:00",
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
 
 	slug := "test-venue"
 	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
@@ -479,7 +417,7 @@ func Test_GetVenueBookingsNotAuthorised(t *testing.T) {
 	}).Return(&models.Venue{
 		ID:                  venueID,
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
 	}, nil)
 
@@ -584,6 +522,93 @@ func Test_AddTable(t *testing.T) {
 	e := echo.New()
 	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
 	client.New(e).MustPost(`mutation{addTable(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",name:"test table",capacity:5}) {id,name,capacity}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
+func Test_UpdateOpeningHours(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	ten := models.TimeOfDay("10:00")
+	tenAgain := models.TimeOfDay("22:00")
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().UpdateOpeningHours(gomock.Any(), models.UpdateOpeningHoursInput{
+		VenueID: venueID,
+		OpeningHours: []*models.OpeningHoursSpecificationInput{
+			{
+				DayOfWeek: 1,
+				Opens:     "10:00",
+				Closes:    "22:00",
+			},
+		},
+	}).Return([]*models.OpeningHoursSpecification{
+		{
+			DayOfWeek: 1,
+			Opens:     &ten,
+			Closes:    &tenAgain,
+		},
+	}, nil)
+
+	var resp struct {
+		UpdateOpeningHours []struct {
+			DayOfWeek int    `json:"dayOfWeek"`
+			Opens     string `json:"opens"`
+			Closes    string `json:"closes"`
+		} `json:"updateOpeningHours"`
+	}
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{updateOpeningHours(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",openingHours:[{dayOfWeek:1,opens:"10:00",closes:"22:00"}]}) {dayOfWeek,opens,closes}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+	ctrl.Finish()
+}
+
+func Test_UpdateSpecialOpeningHours(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	ctrl := gomock.NewController(t)
+	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueSrv.EXPECT().UpdateSpecialOpeningHours(gomock.Any(), models.UpdateSpecialOpeningHoursInput{
+		VenueID: venueID,
+		SpecialOpeningHours: []*models.SpecialOpeningHoursSpecificationInput{
+			{
+				DayOfWeek:    1,
+				Opens:        nil,
+				Closes:       nil,
+				ValidFrom:    date,
+				ValidThrough: date,
+			},
+		},
+	}).Return([]*models.OpeningHoursSpecification{
+		{
+			DayOfWeek:    1,
+			ValidFrom:    &date,
+			ValidThrough: &date,
+		},
+	}, nil)
+
+	var resp struct {
+		UpdateSpecialOpeningHours []struct {
+			DayOfWeek    int    `json:"dayOfWeek"`
+			Opens        string `json:"opens"`
+			Closes       string `json:"closes"`
+			ValidFrom    string `json:"validFrom"`
+			ValidThrough string `json:"validThrough"`
+		} `json:"updateSpecialOpeningHours"`
+	}
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	client.New(e).MustPost(`mutation{updateSpecialOpeningHours(input:{venueId:"a3291740-e89f-4cc0-845c-75c4c39842c9",specialOpeningHours:[{dayOfWeek:1,validFrom:"3000-01-01T00:00:00Z",validThrough:"3000-01-01T00:00:00Z"}]}) {dayOfWeek,opens,closes,validFrom,validThrough}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 	ctrl.Finish()
@@ -959,6 +984,26 @@ func Test_CancelBookingNotAuthorised(t *testing.T) {
 	cupaloy.SnapshotT(t, resp)
 
 	ctrl.Finish()
+}
+
+func defaultOpeningHours() []*models.OpeningHoursSpecification {
+	ten := models.TimeOfDay("10:00")
+	eleven := models.TimeOfDay("11:00")
+	seven := models.TimeOfDay("19:00")
+	eight := models.TimeOfDay("20:00")
+	return []*models.OpeningHoursSpecification{{
+		DayOfWeek:    models.Monday,
+		Opens:        &ten,
+		Closes:       &seven,
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}, {
+		DayOfWeek:    2,
+		Opens:        &eleven,
+		Closes:       &eight,
+		ValidFrom:    nil,
+		ValidThrough: nil,
+	}}
 }
 
 var _ models.UserService = (*mockUserService)(nil)
