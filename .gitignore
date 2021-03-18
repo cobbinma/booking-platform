@@ -6,3 +6,4 @@ target
 playground
 *.crt
 *.key
+profile.cov
