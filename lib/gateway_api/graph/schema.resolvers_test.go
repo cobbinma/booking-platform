@@ -20,6 +20,9 @@ import (
 	"time"
 )
 
+//go:generate mockgen -package=mock_resolver -destination=./mock/graph.go github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api VenueAPIClient
+//go:generate mockgen -package=mock_resolver -destination=./mock/graph.go github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api BookingAPIClient
+
 func Test_GetVenue(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)

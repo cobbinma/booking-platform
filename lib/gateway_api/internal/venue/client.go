@@ -17,29 +17,47 @@ import (
 	"time"
 )
 
-func NewVenueClient(url string, log *zap.SugaredLogger, token *oauth2.Token) (graph.VenueService, func(log *zap.SugaredLogger), error) {
-	c, err := credentials.NewClientTLSFromFile("localhost.crt", "localhost")
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to load credentials : %w", err)
+func NewVenueClient(url string, log *zap.SugaredLogger, token *oauth2.Token, options ...func(*venueClient)) (graph.VenueService, func(log *zap.SugaredLogger), error) {
+	vc := &venueClient{
+		client: nil,
+		log:    log,
+	}
+	cl := func(log *zap.SugaredLogger) {}
+
+	for i := range options {
+		options[i](vc)
 	}
 
-	opts := []grpc.DialOption{
-		grpc.WithPerRPCCredentials(oauth.NewOauthAccess(token)),
-		grpc.WithTransportCredentials(c),
-	}
-	conn, err := grpc.Dial(url, opts...)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not connect : %s", err)
-	}
+	if vc.client == nil {
+		c, err := credentials.NewClientTLSFromFile("localhost.crt", "localhost")
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to load credentials : %w", err)
+		}
 
-	return &venueClient{
-			client: api.NewVenueAPIClient(conn),
-			log:    log,
-		}, func(log *zap.SugaredLogger) {
+		opts := []grpc.DialOption{
+			grpc.WithPerRPCCredentials(oauth.NewOauthAccess(token)),
+			grpc.WithTransportCredentials(c),
+		}
+		conn, err := grpc.Dial(url, opts...)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not connect : %s", err)
+		}
+
+		cl = func(log *zap.SugaredLogger) {
 			if err := conn.Close(); err != nil {
 				log.Error("could not close connection : %s", err)
 			}
-		}, nil
+		}
+		vc.client = api.NewVenueAPIClient(conn)
+	}
+
+	return vc, cl, nil
+}
+
+func WithClient(client api.VenueAPIClient) func(*venueClient) {
+	return func(c *venueClient) {
+		c.client = client
+	}
 }
 
 type venueClient struct {
