@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
+	"github.com/patrickmn/go-cache"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,6 +18,7 @@ type Resolver struct {
 	log            *zap.SugaredLogger
 	venueService   VenueService
 	bookingService BookingService
+	admins         *adminCache
 }
 
 func NewResolver(log *zap.SugaredLogger, venueService VenueService, bookingService BookingService) *Resolver {
@@ -24,6 +26,7 @@ func NewResolver(log *zap.SugaredLogger, venueService VenueService, bookingServi
 		log:            log,
 		venueService:   venueService,
 		bookingService: bookingService,
+		admins:         newAdminCache(),
 	}
 }
 
@@ -55,14 +58,36 @@ func (r *Resolver) authIsAdmin(ctx context.Context, input models.IsAdminInput) e
 		return status.Errorf(codes.Internal, "could not get user profile : %s", err)
 	}
 
+	if isAdmin := r.admins.getAdmin(user.Email); isAdmin {
+		return nil
+	}
+
 	isAdmin, err := r.venueService.IsAdmin(ctx, input, user.Email)
 	if err != nil {
 		return status.Errorf(codes.Internal, "could not determine is user is admin : %s", err)
 	}
 
 	if isAdmin {
+		r.admins.setAdmin(user.Email)
 		return nil
 	}
 
 	return status.Errorf(codes.Unauthenticated, "user is not admin")
+}
+
+type adminCache struct {
+	admins *cache.Cache
+}
+
+func newAdminCache() *adminCache {
+	return &adminCache{admins: cache.New(5*time.Minute, 10*time.Minute)}
+}
+
+func (ac *adminCache) getAdmin(email string) bool {
+	_, found := ac.admins.Get(email)
+	return found
+}
+
+func (ac adminCache) setAdmin(email string) {
+	ac.admins.Set(email, true, cache.DefaultExpiration)
 }
