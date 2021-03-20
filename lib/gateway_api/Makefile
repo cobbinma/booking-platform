@@ -26,3 +26,7 @@ deps:
 	rm -rf .protobuf
 	mkdir -p .protobuf
 	cp -R ./../protobuf/* .protobuf
+
+.PHONY: coverage
+coverage:
+	go test -v -coverpkg=./... -coverprofile=profile.cov ./... && go tool cover -html=profile.cov

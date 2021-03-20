@@ -1,1 +1,31 @@
-(string) (len=177) "{\n  \"specification\": {\n    \"dayOfWeek\": 2,\n    \"opens\": \"11:00\",\n    \"closes\": \"22:00\",\n    \"validFrom\": \"3000-11-01T00:00:00Z\",\n    \"validThrough\": \"3000-12-01T00:00:00Z\"\n  }\n}"
+(*api.GetOpeningHoursSpecificationResponse)({
+  state: (impl.MessageState) {
+    NoUnkeyedLiterals: (pragma.NoUnkeyedLiterals) {
+    },
+    DoNotCompare: (pragma.DoNotCompare) {
+    },
+    DoNotCopy: (pragma.DoNotCopy) {
+    },
+    atomicMessageInfo: (*impl.MessageInfo)(<nil>)
+  },
+  sizeCache: (int32) 0,
+  unknownFields: ([]uint8) <nil>,
+  Specification: (*models.OpeningHoursSpecification)({
+    state: (impl.MessageState) {
+      NoUnkeyedLiterals: (pragma.NoUnkeyedLiterals) {
+      },
+      DoNotCompare: (pragma.DoNotCompare) {
+      },
+      DoNotCopy: (pragma.DoNotCopy) {
+      },
+      atomicMessageInfo: (*impl.MessageInfo)(<nil>)
+    },
+    sizeCache: (int32) 0,
+    unknownFields: ([]uint8) <nil>,
+    DayOfWeek: (uint32) 2,
+    Opens: (string) (len=5) "11:00",
+    Closes: (string) (len=5) "22:00",
+    ValidFrom: (string) (len=20) "3000-11-01T00:00:00Z",
+    ValidThrough: (string) (len=20) "3000-12-01T00:00:00Z"
+  })
+})

@@ -1,1 +1,31 @@
-(string) (len=133) "{\n  \"tables\": [\n    {\n      \"id\": \"b31a9f99-3f64-4ee9-af27-45b2acd36d86\",\n      \"name\": \"test table\",\n      \"capacity\": 4\n    }\n  ]\n}"
+(*api.GetTablesResponse)({
+  state: (impl.MessageState) {
+    NoUnkeyedLiterals: (pragma.NoUnkeyedLiterals) {
+    },
+    DoNotCompare: (pragma.DoNotCompare) {
+    },
+    DoNotCopy: (pragma.DoNotCopy) {
+    },
+    atomicMessageInfo: (*impl.MessageInfo)(<nil>)
+  },
+  sizeCache: (int32) 0,
+  unknownFields: ([]uint8) <nil>,
+  Tables: ([]*models.Table) (len=1) {
+    (*models.Table)({
+      state: (impl.MessageState) {
+        NoUnkeyedLiterals: (pragma.NoUnkeyedLiterals) {
+        },
+        DoNotCompare: (pragma.DoNotCompare) {
+        },
+        DoNotCopy: (pragma.DoNotCopy) {
+        },
+        atomicMessageInfo: (*impl.MessageInfo)(<nil>)
+      },
+      sizeCache: (int32) 0,
+      unknownFields: ([]uint8) <nil>,
+      Id: (string) (len=36) "b31a9f99-3f64-4ee9-af27-45b2acd36d86",
+      Name: (string) (len=10) "test table",
+      Capacity: (uint32) 4
+    })
+  }
+})

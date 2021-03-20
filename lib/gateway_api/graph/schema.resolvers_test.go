@@ -10,7 +10,13 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
 	mock_resolver "github.com/cobbinma/booking-platform/lib/gateway_api/graph/mock"
+	booking2 "github.com/cobbinma/booking-platform/lib/gateway_api/internal/booking"
+	venue2 "github.com/cobbinma/booking-platform/lib/gateway_api/internal/venue"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
+	api2 "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api"
+	booking "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/models"
+	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api"
+	venue "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/models"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -20,20 +26,27 @@ import (
 	"time"
 )
 
+//go:generate mockgen -package=mock_resolver -destination=./mock/venue.go github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/venue/api VenueAPIClient
+//go:generate mockgen -package=mock_resolver -destination=./mock/booking.go github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api BookingAPIClient
+
 func Test_GetVenue(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		ID: &venueID,
-	}).Return(&models.Venue{
-		ID:                  "a3291740-e89f-4cc0-845c-75c4c39842c9",
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   venueID,
+		Slug: "",
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
 		Slug:                "hop-and-vine",
 	}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -72,26 +85,35 @@ func Test_GetVenueTables(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	slug := "test-venue"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		Slug: &slug,
-	}).Return(&models.Venue{
-		ID:                  venueID,
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   "",
+		Slug: slug,
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
 
-	venueSrv.EXPECT().GetTables(gomock.Any(), venueID).Return([]*models.Table{
+	venueClient.EXPECT().GetTables(gomock.Any(), &api.GetTablesRequest{VenueId: venueID}).Return(&api.GetTablesResponse{Tables: []*venue.Table{
 		{
-			ID:       "175fd06d-9a60-4ea6-86ca-bb96ca861208",
+			Id:       "175fd06d-9a60-4ea6-86ca-bb96ca861208",
 			Name:     "table one",
 			Capacity: 4,
 		},
-	}, nil)
+	}}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -133,18 +155,23 @@ func Test_GetVenueTables(t *testing.T) {
 func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		ID: &venueID,
-	}).Return(&models.Venue{
-		ID:                  venueID,
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   venueID,
+		Slug: "",
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{VenueId: venueID, Email: "test@test.com"}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -183,24 +210,104 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_GetOpeningHoursSpecification(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	slug := "test-venue"
+	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+	ctrl := gomock.NewController(t)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
+
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   "",
+		Slug: slug,
+	}).Return(&venue.Venue{
+		Id:                  venueID,
+		Name:                "hop and vine",
+		OpeningHours:        defaultOpeningHours(),
+		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
+	}, nil)
+
+	venueClient.EXPECT().GetOpeningHoursSpecification(gomock.Any(), &api.GetOpeningHoursSpecificationRequest{
+		VenueId: venueID,
+		Date:    date.Format(time.RFC3339),
+	}).Return(&api.GetOpeningHoursSpecificationResponse{Specification: &venue.OpeningHoursSpecification{
+		DayOfWeek:    1,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    "",
+		ValidThrough: "",
+	}}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
+
+	var resp struct {
+		GetVenue struct {
+			ID           string `json:"id"`
+			Name         string `json:"name"`
+			OpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHours"`
+			SpecialOpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"specialOpeningHours"`
+			OpeningHoursSpecification struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHoursSpecification"`
+		} `json:"getVenue"`
+	}
+	c.MustPost(`{getVenue(filter:{slug:"test-venue"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},openingHoursSpecification(date:"3000-01-01T00:00:00Z"){dayOfWeek, opens, closes, validFrom, validThrough}}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
 func Test_GetVenueAdmins(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	slug := "test-venue"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		Slug: &slug,
-	}).Return(&models.Venue{
-		ID:                  venueID,
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   "",
+		Slug: slug,
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
 
-	venueSrv.EXPECT().GetAdmins(gomock.Any(), venueID).Return([]string{"test@test.com"}, nil)
+	venueClient.EXPECT().GetAdmins(gomock.Any(), &api.GetAdminsRequest{VenueId: venueID}).Return(&api.GetAdminsResponse{Admins: []string{"test@test.com"}}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -238,36 +345,27 @@ func Test_GetVenueAdmins(t *testing.T) {
 func Test_GetVenueAdminsNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	ten := models.TimeOfDay("10:00")
-	eleven := models.TimeOfDay("11:00")
-	seven := models.TimeOfDay("19:00")
-	eight := models.TimeOfDay("20:00")
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        &ten,
-		Closes:       &seven,
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        &eleven,
-		Closes:       &eight,
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		ID: &venueID,
-	}).Return(&models.Venue{
-		ID:                  venueID,
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   venueID,
+		Slug: "",
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -306,59 +404,54 @@ func Test_GetVenueBookings(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	slug := "test-venue"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	bookingSrv := mock_resolver.NewMockBookingService(ctrl)
-	ten := models.TimeOfDay("10:00")
-	eleven := models.TimeOfDay("11:00")
-	seven := models.TimeOfDay("19:00")
-	eight := models.TimeOfDay("20:00")
-	monday := &models.OpeningHoursSpecification{
-		DayOfWeek:    models.Monday,
-		Opens:        &ten,
-		Closes:       &seven,
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
-	tuesday := &models.OpeningHoursSpecification{
-		DayOfWeek:    2,
-		Opens:        &eleven,
-		Closes:       &eight,
-		ValidFrom:    nil,
-		ValidThrough: nil,
-	}
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
+	bookingClient := mock_resolver.NewMockBookingAPIClient(ctrl)
 
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		Slug: &slug,
-	}).Return(&models.Venue{
-		ID:                  venueID,
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   "",
+		Slug: slug,
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
-		OpeningHours:        []*models.OpeningHoursSpecification{monday, tuesday},
+		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
 
 	limit := 5
 	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
-	bookingSrv.EXPECT().Bookings(gomock.Any(), models.BookingsFilter{VenueID: &venueID, Date: date}, models.PageInfo{
-		Page:  0,
-		Limit: &limit,
-	}).Return(&models.BookingsPage{
-		Bookings: []*models.Booking{
+	bookingClient.EXPECT().GetBookings(gomock.Any(), &api2.GetBookingsRequest{
+		VenueId: venueID,
+		Date:    date.Format(time.RFC3339),
+		Page:    0,
+		Limit:   int32(limit),
+	}).Return(&api2.GetBookingsResponse{
+		Bookings: []*booking.Booking{
 			{
-				ID:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
-				VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+				Id:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+				VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 				Email:    "test@test.com",
 				People:   5,
-				StartsAt: date,
-				EndsAt:   date.Add(time.Minute * 60),
+				StartsAt: date.Format(time.RFC3339),
+				EndsAt:   date.Add(time.Minute * 60).Format(time.RFC3339),
 				Duration: 60,
-				TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+				TableId:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 			},
 		},
 		HasNextPage: false,
 		Pages:       1,
 	}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
+	bookingSrv, _, err := booking2.NewBookingClient("", nil, nil, booking2.WithClient(bookingClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, bookingSrv)}))
 	e := echo.New()
@@ -409,19 +502,27 @@ func Test_GetVenueBookings(t *testing.T) {
 func Test_GetVenueBookingsNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	slug := "test-venue"
-	venueSrv.EXPECT().GetVenue(gomock.Any(), models.VenueFilter{
-		Slug: &slug,
-	}).Return(&models.Venue{
-		ID:                  venueID,
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   "",
+		Slug: "test-venue",
+	}).Return(&venue.Venue{
+		Id:                  venueID,
 		Name:                "hop and vine",
 		OpeningHours:        defaultOpeningHours(),
 		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
 	}, nil)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -472,9 +573,16 @@ func Test_GetVenueBookingsNotAuthorised(t *testing.T) {
 func Test_AddTableNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -497,15 +605,19 @@ func Test_AddTableNotAuthorised(t *testing.T) {
 func Test_AddTable(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
-	venueSrv.EXPECT().AddTable(gomock.Any(), models.TableInput{
-		VenueID:  venueID,
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+	venueClient.EXPECT().AddTable(gomock.Any(), &api.AddTableRequest{
+		VenueId:  venueID,
 		Name:     "test table",
 		Capacity: 5,
-	}).Return(&models.Table{
-		ID:       "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
+	}).Return(&venue.Table{
+		Id:       "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
 		Name:     "test table",
 		Capacity: 5,
 	}, nil)
@@ -517,6 +629,9 @@ func Test_AddTable(t *testing.T) {
 			Capacity int    `json:"capacity"`
 		} `json:"addTable"`
 	}
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -530,27 +645,30 @@ func Test_AddTable(t *testing.T) {
 func Test_UpdateOpeningHours(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	ten := models.TimeOfDay("10:00")
-	tenAgain := models.TimeOfDay("22:00")
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
-	venueSrv.EXPECT().UpdateOpeningHours(gomock.Any(), models.UpdateOpeningHoursInput{
-		VenueID: venueID,
-		OpeningHours: []*models.OpeningHoursSpecificationInput{
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+
+	venueClient.EXPECT().UpdateOpeningHours(gomock.Any(), &api.UpdateOpeningHoursRequest{
+		VenueId: venueID,
+		OpeningHours: []*venue.OpeningHoursSpecification{
 			{
 				DayOfWeek: 1,
 				Opens:     "10:00",
 				Closes:    "22:00",
 			},
 		},
-	}).Return([]*models.OpeningHoursSpecification{
+	}).Return(&api.UpdateOpeningHoursResponse{OpeningHours: []*venue.OpeningHoursSpecification{
 		{
 			DayOfWeek: 1,
-			Opens:     &ten,
-			Closes:    &tenAgain,
+			Opens:     "10:00",
+			Closes:    "22:00",
 		},
-	}, nil)
+	}}, nil)
 
 	var resp struct {
 		UpdateOpeningHours []struct {
@@ -559,6 +677,9 @@ func Test_UpdateOpeningHours(t *testing.T) {
 			Closes    string `json:"closes"`
 		} `json:"updateOpeningHours"`
 	}
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -572,28 +693,32 @@ func Test_UpdateOpeningHours(t *testing.T) {
 func Test_UpdateSpecialOpeningHours(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
-	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
+	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
-	venueSrv.EXPECT().UpdateSpecialOpeningHours(gomock.Any(), models.UpdateSpecialOpeningHoursInput{
-		VenueID: venueID,
-		SpecialOpeningHours: []*models.SpecialOpeningHoursSpecificationInput{
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+	venueClient.EXPECT().UpdateSpecialOpeningHours(gomock.Any(), &api.UpdateOpeningHoursRequest{
+		VenueId: venueID,
+		OpeningHours: []*venue.OpeningHoursSpecification{
 			{
 				DayOfWeek:    1,
-				Opens:        nil,
-				Closes:       nil,
+				Opens:        "",
+				Closes:       "",
 				ValidFrom:    date,
 				ValidThrough: date,
 			},
 		},
-	}).Return([]*models.OpeningHoursSpecification{
+	}).Return(&api.UpdateOpeningHoursResponse{OpeningHours: []*venue.OpeningHoursSpecification{
 		{
 			DayOfWeek:    1,
-			ValidFrom:    &date,
-			ValidThrough: &date,
+			ValidFrom:    date,
+			ValidThrough: date,
 		},
-	}, nil)
+	}}, nil)
 
 	var resp struct {
 		UpdateSpecialOpeningHours []struct {
@@ -604,6 +729,9 @@ func Test_UpdateSpecialOpeningHours(t *testing.T) {
 			ValidThrough string `json:"validThrough"`
 		} `json:"updateSpecialOpeningHours"`
 	}
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -617,9 +745,16 @@ func Test_UpdateSpecialOpeningHours(t *testing.T) {
 func Test_RemoveTableNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -642,14 +777,18 @@ func Test_RemoveTableNotAuthorised(t *testing.T) {
 func Test_RemoveTable(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
-	venueSrv.EXPECT().RemoveTable(gomock.Any(), models.RemoveTableInput{
-		VenueID: venueID,
-		TableID: "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
-	}).Return(&models.Table{
-		ID:       "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+	venueClient.EXPECT().RemoveTable(gomock.Any(), &api.RemoveTableRequest{
+		VenueId: venueID,
+		TableId: "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
+	}).Return(&venue.Table{
+		Id:       "bfcc0d78-83e7-4830-96ab-96cdbd0357c7",
 		Name:     "test table",
 		Capacity: 5,
 	}, nil)
@@ -661,6 +800,9 @@ func Test_RemoveTable(t *testing.T) {
 			Capacity int    `json:"capacity"`
 		} `json:"removeTable"`
 	}
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -674,9 +816,16 @@ func Test_RemoveTable(t *testing.T) {
 func Test_AddAdminNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -695,17 +844,24 @@ func Test_AddAdminNotAuthorised(t *testing.T) {
 func Test_AddAdmin(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
-	venueSrv.EXPECT().AddAdmin(gomock.Any(), models.AdminInput{
-		VenueID: venueID,
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
 		Email:   "test@test.com",
-	}).Return("test@test.com", nil)
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+	venueClient.EXPECT().AddAdmin(gomock.Any(), &api.AddAdminRequest{
+		VenueId: venueID,
+		Email:   "test@test.com",
+	}).Return(&api.AddAdminResponse{VenueId: venueID, Email: "test@test.com"}, nil)
 
 	var resp struct {
 		AddAdmin string `json:"addAdmin"`
 	}
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -719,9 +875,16 @@ func Test_AddAdmin(t *testing.T) {
 func Test_RemoveAdminNotAuthorised(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -740,17 +903,24 @@ func Test_RemoveAdminNotAuthorised(t *testing.T) {
 func Test_RemoveAdmin(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	ctrl := gomock.NewController(t)
-	venueSrv := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueSrv.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
-	venueSrv.EXPECT().RemoveAdmin(gomock.Any(), models.RemoveAdminInput{
-		VenueID: venueID,
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
 		Email:   "test@test.com",
-	}).Return("test@test.com", nil)
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+	venueClient.EXPECT().RemoveAdmin(gomock.Any(), &api.RemoveAdminRequest{
+		VenueId: venueID,
+		Email:   "test@test.com",
+	}).Return(&api.RemoveAdminResponse{Email: "test@test.com"}, nil)
 
 	var resp struct {
 		RemoveAdmin string `json:"removeAdmin"`
 	}
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
 	e := echo.New()
@@ -763,27 +933,30 @@ func Test_RemoveAdmin(t *testing.T) {
 
 func Test_GetSlot(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	bookingService := mock_resolver.NewMockBookingService(ctrl)
+	bookingClient := mock_resolver.NewMockBookingAPIClient(ctrl)
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
 	require.NoError(t, err)
 
-	bookingService.EXPECT().GetSlot(gomock.Any(), models.SlotInput{
-		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+	bookingClient.EXPECT().GetSlot(gomock.Any(), &booking.SlotInput{
+		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 		Email:    "test@test.com",
 		People:   5,
-		StartsAt: startsAt,
+		StartsAt: startsAt.Format(time.RFC3339),
 		Duration: 60,
-	}).Return(&models.GetSlotResponse{
-		Match: &models.Slot{
-			VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+	}).Return(&api2.GetSlotResponse{
+		Match: &booking.Slot{
+			VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 			Email:    "test@test.com",
 			People:   5,
-			StartsAt: startsAt,
-			EndsAt:   startsAt.Add(time.Minute * 60),
+			StartsAt: startsAt.Format(time.RFC3339),
+			EndsAt:   startsAt.Add(time.Minute * 60).Format(time.RFC3339),
 			Duration: 60,
 		},
 		OtherAvailableSlots: nil,
 	}, nil)
+
+	bookingService, _, err := booking2.NewBookingClient("", nil, nil, booking2.WithClient(bookingClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), nil, bookingService)}))
 	e := echo.New()
@@ -811,26 +984,29 @@ func Test_GetSlot(t *testing.T) {
 
 func Test_CreateBooking(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	bookingService := mock_resolver.NewMockBookingService(ctrl)
+	bookingClient := mock_resolver.NewMockBookingAPIClient(ctrl)
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
 	require.NoError(t, err)
 
-	bookingService.EXPECT().CreateBooking(gomock.Any(), models.BookingInput{
-		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+	bookingClient.EXPECT().CreateBooking(gomock.Any(), &booking.SlotInput{
+		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 		Email:    "test@test.com",
 		People:   5,
-		StartsAt: startsAt,
+		StartsAt: startsAt.Format(time.RFC3339),
 		Duration: 60,
-	}).Return(&models.Booking{
-		ID:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
-		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+	}).Return(&booking.Booking{
+		Id:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 		Email:    "test@test.com",
 		People:   5,
-		StartsAt: startsAt,
-		EndsAt:   startsAt.Add(time.Minute * 60),
+		StartsAt: startsAt.Format(time.RFC3339),
+		EndsAt:   startsAt.Add(time.Minute * 60).Format(time.RFC3339),
 		Duration: 60,
-		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		TableId:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 	}, nil)
+
+	bookingService, _, err := booking2.NewBookingClient("", nil, nil, booking2.WithClient(bookingClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), nil, bookingService)}))
 	e := echo.New()
@@ -859,9 +1035,16 @@ func Test_CreateBooking(t *testing.T) {
 func Test_IsAdminTrue(t *testing.T) {
 	var venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
-	venueService := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
+
+	venueService, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, nil)}))
 	e := echo.New()
@@ -883,9 +1066,16 @@ func Test_IsAdminTrue(t *testing.T) {
 func Test_IsAdminFalse(t *testing.T) {
 	var venueID = "8a18e89b-339b-4e51-ab53-825aae59a070"
 	ctrl := gomock.NewController(t)
-	venueService := mock_resolver.NewMockVenueService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
 
-	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueService, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, nil)}))
 	e := echo.New()
@@ -910,24 +1100,32 @@ func Test_CancelBooking(t *testing.T) {
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
 	require.NoError(t, err)
 	ctrl := gomock.NewController(t)
-	venueService := mock_resolver.NewMockVenueService(ctrl)
-	bookingService := mock_resolver.NewMockBookingService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
+	bookingClient := mock_resolver.NewMockBookingAPIClient(ctrl)
 
-	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(true, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: true}, nil)
 
-	bookingService.EXPECT().CancelBooking(gomock.Any(), models.CancelBookingInput{
-		VenueID: &venueID,
-		ID:      bookingID,
-	}).Return(&models.Booking{
-		ID:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
-		VenueID:  "8a18e89b-339b-4e51-ab53-825aae59a070",
+	bookingClient.EXPECT().CancelBooking(gomock.Any(), &api2.CancelBookingRequest{
+		Id: bookingID,
+	}).Return(&booking.Booking{
+		Id:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 		Email:    "test@test.com",
 		People:   5,
-		StartsAt: startsAt,
-		EndsAt:   startsAt.Add(time.Minute * 60),
+		StartsAt: startsAt.Format(time.RFC3339),
+		EndsAt:   startsAt.Add(time.Minute * 60).Format(time.RFC3339),
 		Duration: 60,
-		TableID:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		TableId:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
 	}, nil)
+
+	venueService, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
+	bookingService, _, err := booking2.NewBookingClient("", nil, nil, booking2.WithClient(bookingClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, bookingService)}))
 	e := echo.New()
@@ -957,10 +1155,19 @@ func Test_CancelBookingNotAuthorised(t *testing.T) {
 	venueID := "8a18e89b-339b-4e51-ab53-825aae59a070"
 	bookingID := "47f4eaf4-7b5e-43dc-bc06-ebf8561c1fa9"
 	ctrl := gomock.NewController(t)
-	venueService := mock_resolver.NewMockVenueService(ctrl)
-	bookingService := mock_resolver.NewMockBookingService(ctrl)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
+	bookingClient := mock_resolver.NewMockBookingAPIClient(ctrl)
 
-	venueService.EXPECT().IsAdmin(gomock.Any(), models.IsAdminInput{VenueID: &venueID}, "test@test.com").Return(false, nil)
+	venueClient.EXPECT().IsAdmin(gomock.Any(), &api.IsAdminRequest{
+		VenueId: venueID,
+		Slug:    "",
+		Email:   "test@test.com",
+	}).Return(&api.IsAdminResponse{IsAdmin: false}, nil)
+
+	venueService, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
+	bookingService, _, err := booking2.NewBookingClient("", nil, nil, booking2.WithClient(bookingClient))
+	require.NoError(t, err)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueService, bookingService)}))
 	e := echo.New()
@@ -986,23 +1193,19 @@ func Test_CancelBookingNotAuthorised(t *testing.T) {
 	ctrl.Finish()
 }
 
-func defaultOpeningHours() []*models.OpeningHoursSpecification {
-	ten := models.TimeOfDay("10:00")
-	eleven := models.TimeOfDay("11:00")
-	seven := models.TimeOfDay("19:00")
-	eight := models.TimeOfDay("20:00")
-	return []*models.OpeningHoursSpecification{{
-		DayOfWeek:    models.Monday,
-		Opens:        &ten,
-		Closes:       &seven,
-		ValidFrom:    nil,
-		ValidThrough: nil,
+func defaultOpeningHours() []*venue.OpeningHoursSpecification {
+	return []*venue.OpeningHoursSpecification{{
+		DayOfWeek:    1,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    "",
+		ValidThrough: "",
 	}, {
 		DayOfWeek:    2,
-		Opens:        &eleven,
-		Closes:       &eight,
-		ValidFrom:    nil,
-		ValidThrough: nil,
+		Opens:        "11:00",
+		Closes:       "20:00",
+		ValidFrom:    "",
+		ValidThrough: "",
 	}}
 }
 
