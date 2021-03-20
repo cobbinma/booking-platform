@@ -210,6 +210,77 @@ func Test_GetVenueTablesNotAuthorised(t *testing.T) {
 	ctrl.Finish()
 }
 
+func Test_GetOpeningHoursSpecification(t *testing.T) {
+	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
+	slug := "test-venue"
+	date := time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+	ctrl := gomock.NewController(t)
+	venueClient := mock_resolver.NewMockVenueAPIClient(ctrl)
+
+	venueClient.EXPECT().GetVenue(gomock.Any(), &api.GetVenueRequest{
+		Id:   "",
+		Slug: slug,
+	}).Return(&venue.Venue{
+		Id:                  venueID,
+		Name:                "hop and vine",
+		OpeningHours:        defaultOpeningHours(),
+		SpecialOpeningHours: nil,
+		Slug:                "hop-and-vine",
+	}, nil)
+
+	venueClient.EXPECT().GetOpeningHoursSpecification(gomock.Any(), &api.GetOpeningHoursSpecificationRequest{
+		VenueId: venueID,
+		Date:    date.Format(time.RFC3339),
+	}).Return(&api.GetOpeningHoursSpecificationResponse{Specification: &venue.OpeningHoursSpecification{
+		DayOfWeek:    1,
+		Opens:        "10:00",
+		Closes:       "19:00",
+		ValidFrom:    "",
+		ValidThrough: "",
+	}}, nil)
+
+	venueSrv, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
+	require.NoError(t, err)
+
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(zap.NewNop().Sugar(), venueSrv, nil)}))
+	e := echo.New()
+	e.POST("/", echo.WrapHandler(h), middleware.User(mockUserService{}))
+	c := client.New(e)
+
+	var resp struct {
+		GetVenue struct {
+			ID           string `json:"id"`
+			Name         string `json:"name"`
+			OpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHours"`
+			SpecialOpeningHours []struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"specialOpeningHours"`
+			OpeningHoursSpecification struct {
+				DayOfWeek    int    `json:"dayOfWeek"`
+				Opens        string `json:"opens"`
+				Closes       string `json:"closes"`
+				ValidFrom    string `json:"validFrom"`
+				ValidThrough string `json:"validThrough"`
+			} `json:"openingHoursSpecification"`
+		} `json:"getVenue"`
+	}
+	c.MustPost(`{getVenue(filter:{slug:"test-venue"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},openingHoursSpecification(date:"3000-01-01T00:00:00Z"){dayOfWeek, opens, closes, validFrom, validThrough}}}`, &resp)
+
+	cupaloy.SnapshotT(t, resp)
+
+	ctrl.Finish()
+}
+
 func Test_GetVenueAdmins(t *testing.T) {
 	venueID := "a3291740-e89f-4cc0-845c-75c4c39842c9"
 	slug := "test-venue"
