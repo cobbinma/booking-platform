@@ -10,7 +10,7 @@ import {
 import { Button } from "baseui/button";
 import { H2 } from "baseui/typography";
 import SlotDisplay from "./SlotDisplay";
-import { Spinner } from "baseui/spinner";
+import { StyledSpinnerNext } from "baseui/spinner";
 
 interface SlotProps {
   enquiry: SlotInput;
@@ -32,7 +32,7 @@ const Slot: React.FC<SlotProps> = ({
   if (loading)
     return (
       <div>
-        <Spinner />
+        <StyledSpinnerNext />
       </div>
     );
 

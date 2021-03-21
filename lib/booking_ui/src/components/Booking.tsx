@@ -5,7 +5,8 @@ import Enquiry from "./Enquiry";
 import Slot from "./Slot";
 import Confirmation from "./Confirmation";
 import { Booking as BookingType, SlotInput, useGetVenueQuery } from "../graph";
-import { Button, StyledLoadingSpinner } from "baseui/button";
+import { Button } from "baseui/button";
+import { StyledSpinnerNext } from "baseui/spinner";
 
 export enum BookingStage {
   Enquiry = 1,
@@ -30,7 +31,7 @@ const Booking: React.FC<BookingProps> = ({ params, email }) => {
     },
   });
 
-  if (loading) return <StyledLoadingSpinner />;
+  if (loading) return <StyledSpinnerNext />;
 
   if (error) {
     console.log(error);

@@ -133,7 +133,7 @@ const Enquiry: React.FC<EnquiryProps> = ({
           error={!!(date && !venue_is_open(openingHours))}
         />
       </FormControl>
-      {venue_is_open(openingHours) && (
+      {date && venue_is_open(openingHours) && (
         <div>
           <FormControl
             label="Time"
