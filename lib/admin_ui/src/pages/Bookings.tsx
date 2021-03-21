@@ -285,6 +285,7 @@ const CreateBooking: React.FC<{
                 }).catch((e) => console.log(e));
               }
             }}
+            minDate={new Date()}
             error={
               !!(
                 (date && !openHours) ||

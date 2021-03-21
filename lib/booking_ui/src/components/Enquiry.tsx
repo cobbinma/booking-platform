@@ -130,6 +130,7 @@ const Enquiry: React.FC<EnquiryProps> = ({
               }).catch((e) => console.log(e));
             }
           }}
+          minDate={new Date()}
           error={!!(date && !venue_is_open(openingHours))}
         />
       </FormControl>
