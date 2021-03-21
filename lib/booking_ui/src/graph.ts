@@ -415,7 +415,8 @@ export type GetSlotQuery = (
 );
 
 export type GetVenueQueryVariables = Exact<{
-  slug: Scalars['ID'];
+  slug?: Maybe<Scalars['ID']>;
+  venueId?: Maybe<Scalars['ID']>;
   date?: Maybe<Scalars['Time']>;
 }>;
 
@@ -521,8 +522,8 @@ export type GetSlotQueryHookResult = ReturnType<typeof useGetSlotQuery>;
 export type GetSlotLazyQueryHookResult = ReturnType<typeof useGetSlotLazyQuery>;
 export type GetSlotQueryResult = Apollo.QueryResult<GetSlotQuery, GetSlotQueryVariables>;
 export const GetVenueDocument = gql`
-    query GetVenue($slug: ID!, $date: Time) {
-  getVenue(filter: {slug: $slug}) {
+    query GetVenue($slug: ID, $venueId: ID, $date: Time) {
+  getVenue(filter: {slug: $slug, id: $venueId}) {
     id
     name
     openingHoursSpecification(date: $date) {
@@ -547,11 +548,12 @@ export const GetVenueDocument = gql`
  * const { data, loading, error } = useGetVenueQuery({
  *   variables: {
  *      slug: // value for 'slug'
+ *      venueId: // value for 'venueId'
  *      date: // value for 'date'
  *   },
  * });
  */
-export function useGetVenueQuery(baseOptions: Apollo.QueryHookOptions<GetVenueQuery, GetVenueQueryVariables>) {
+export function useGetVenueQuery(baseOptions?: Apollo.QueryHookOptions<GetVenueQuery, GetVenueQueryVariables>) {
         return Apollo.useQuery<GetVenueQuery, GetVenueQueryVariables>(GetVenueDocument, baseOptions);
       }
 export function useGetVenueLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetVenueQuery, GetVenueQueryVariables>) {

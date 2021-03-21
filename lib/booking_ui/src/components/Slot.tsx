@@ -36,15 +36,9 @@ const Slot: React.FC<SlotProps> = ({
       </div>
     );
 
-  if (error) {
-    console.log(error);
-    setBooking(null);
-    setBookingStage(BookingStage.Confirmation);
-  }
-
   const match = data?.getSlot.match;
 
-  if (match == null) {
+  if (error || !match) {
     return (
       <div>
         <H2>sorry we could not find a slot</H2>

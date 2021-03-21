@@ -1,5 +1,5 @@
-query GetVenue($slug: ID!, $date: Time) {
-    getVenue(filter: {slug: $slug}) {
+query GetVenue($slug: ID, $venueId: ID, $date: Time) {
+    getVenue(filter: {slug: $slug, id: $venueId}) {
         id
         name
         openingHoursSpecification(date: $date) {

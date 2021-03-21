@@ -24,7 +24,7 @@ const Booking: React.FC<BookingProps> = ({ params, email }) => {
   const [booking, setBooking] = useState<BookingType | null>(null);
   const { slug, returnURL } = params;
 
-  const { data, loading, error } = useGetVenueQuery({
+  const { data, loading, error, refetch } = useGetVenueQuery({
     variables: {
       slug: slug,
     },
@@ -46,6 +46,8 @@ const Booking: React.FC<BookingProps> = ({ params, email }) => {
             setEnquiry={setEnquiry}
             venueId={data?.getVenue?.id || ""}
             email={email}
+            openingHours={data?.getVenue?.openingHoursSpecification}
+            refetch={refetch}
           />
         );
       case BookingStage.Slot:
