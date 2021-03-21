@@ -1,4 +1,5 @@
 (*models.User)({
   Name: (string) (len=9) "Test Test",
-  Email: (string) (len=13) "test@test.com"
+  Email: (string) (len=13) "test@test.com",
+  GivenName: (string) (len=4) "Test"
 })

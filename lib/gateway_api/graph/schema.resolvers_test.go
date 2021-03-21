@@ -434,14 +434,16 @@ func Test_GetVenueBookings(t *testing.T) {
 	}).Return(&api2.GetBookingsResponse{
 		Bookings: []*booking.Booking{
 			{
-				Id:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
-				VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
-				Email:    "test@test.com",
-				People:   5,
-				StartsAt: date.Format(time.RFC3339),
-				EndsAt:   date.Add(time.Minute * 60).Format(time.RFC3339),
-				Duration: 60,
-				TableId:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+				Id:        "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+				VenueId:   "8a18e89b-339b-4e51-ab53-825aae59a070",
+				Email:     "test@test.com",
+				People:    5,
+				StartsAt:  date.Format(time.RFC3339),
+				EndsAt:    date.Add(time.Minute * 60).Format(time.RFC3339),
+				Duration:  60,
+				TableId:   "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+				Name:      "Test Test",
+				GivenName: "Test",
 			},
 		},
 		HasNextPage: false,
@@ -478,21 +480,23 @@ func Test_GetVenueBookings(t *testing.T) {
 			} `json:"specialOpeningHours"`
 			Bookings struct {
 				Bookings []struct {
-					ID       string `json:"id"`
-					VenueID  string `json:"venueId"`
-					Email    string `json:"email"`
-					People   int    `json:"people"`
-					StartsAt string `json:"startsAt"`
-					EndsAt   string `json:"endsAt"`
-					Duration int    `json:"duration"`
-					TableID  string `json:"tableId"`
+					ID        string `json:"id"`
+					VenueID   string `json:"venueId"`
+					Email     string `json:"email"`
+					People    int    `json:"people"`
+					StartsAt  string `json:"startsAt"`
+					EndsAt    string `json:"endsAt"`
+					Duration  int    `json:"duration"`
+					TableID   string `json:"tableId"`
+					Name      string `json:"name"`
+					GivenName string `json:"givenName"`
 				} `json:"bookings"`
 				HasNextPage bool `json:"hasNextPage"`
 				Pages       int  `json:"pages"`
 			} `json:"bookings"`
 		} `json:"getVenue"`
 	}
-	c.MustPost(`{getVenue(filter:{slug:"test-venue"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},bookings(filter:{date:"3000-01-01T00:00:00Z"},pageInfo:{page:0,limit:5}){bookings{id,venueId,email,people,startsAt,endsAt,duration,tableId},hasNextPage,pages}}}`, &resp)
+	c.MustPost(`{getVenue(filter:{slug:"test-venue"}){id,name,openingHours{dayOfWeek,opens,closes,validFrom,validThrough},specialOpeningHours{dayOfWeek,opens, closes, validFrom,validThrough},bookings(filter:{date:"3000-01-01T00:00:00Z"},pageInfo:{page:0,limit:5}){bookings{id,venueId,email,people,startsAt,endsAt,duration,tableId,name,givenName},hasNextPage,pages}}}`, &resp)
 
 	cupaloy.SnapshotT(t, resp)
 
@@ -937,7 +941,7 @@ func Test_GetSlot(t *testing.T) {
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
 	require.NoError(t, err)
 
-	bookingClient.EXPECT().GetSlot(gomock.Any(), &booking.SlotInput{
+	bookingClient.EXPECT().GetSlot(gomock.Any(), &api2.SlotInput{
 		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
 		Email:    "test@test.com",
 		People:   5,
@@ -988,21 +992,25 @@ func Test_CreateBooking(t *testing.T) {
 	startsAt, err := time.Parse(time.RFC3339, "3000-06-20T12:41:45Z")
 	require.NoError(t, err)
 
-	bookingClient.EXPECT().CreateBooking(gomock.Any(), &booking.SlotInput{
-		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
-		Email:    "test@test.com",
-		People:   5,
-		StartsAt: startsAt.Format(time.RFC3339),
-		Duration: 60,
+	bookingClient.EXPECT().CreateBooking(gomock.Any(), &api2.BookingInput{
+		VenueId:   "8a18e89b-339b-4e51-ab53-825aae59a070",
+		Email:     "test@test.com",
+		People:    5,
+		StartsAt:  startsAt.Format(time.RFC3339),
+		Duration:  60,
+		Name:      "Test Test",
+		GivenName: "Test",
 	}).Return(&booking.Booking{
-		Id:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
-		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
-		Email:    "test@test.com",
-		People:   5,
-		StartsAt: startsAt.Format(time.RFC3339),
-		EndsAt:   startsAt.Add(time.Minute * 60).Format(time.RFC3339),
-		Duration: 60,
-		TableId:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		Id:        "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+		VenueId:   "8a18e89b-339b-4e51-ab53-825aae59a070",
+		Email:     "test@test.com",
+		People:    5,
+		StartsAt:  startsAt.Format(time.RFC3339),
+		EndsAt:    startsAt.Add(time.Minute * 60).Format(time.RFC3339),
+		Duration:  60,
+		TableId:   "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		Name:      "Test Test",
+		GivenName: "Test",
 	}, nil)
 
 	bookingService, _, err := booking2.NewBookingClient("", nil, nil, booking2.WithClient(bookingClient))
@@ -1112,14 +1120,16 @@ func Test_CancelBooking(t *testing.T) {
 	bookingClient.EXPECT().CancelBooking(gomock.Any(), &api2.CancelBookingRequest{
 		Id: bookingID,
 	}).Return(&booking.Booking{
-		Id:       "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
-		VenueId:  "8a18e89b-339b-4e51-ab53-825aae59a070",
-		Email:    "test@test.com",
-		People:   5,
-		StartsAt: startsAt.Format(time.RFC3339),
-		EndsAt:   startsAt.Add(time.Minute * 60).Format(time.RFC3339),
-		Duration: 60,
-		TableId:  "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		Id:        "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+		VenueId:   "8a18e89b-339b-4e51-ab53-825aae59a070",
+		Email:     "test@test.com",
+		People:    5,
+		StartsAt:  startsAt.Format(time.RFC3339),
+		EndsAt:    startsAt.Add(time.Minute * 60).Format(time.RFC3339),
+		Duration:  60,
+		TableId:   "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+		Name:      "Test Test",
+		GivenName: "Test",
 	}, nil)
 
 	venueService, _, err := venue2.NewVenueClient("", nil, nil, venue2.WithClient(venueClient))
@@ -1215,7 +1225,8 @@ type mockUserService struct{}
 
 func (m mockUserService) GetUser(ctx context.Context) (*models.User, error) {
 	return &models.User{
-		Name:  "Test Test",
-		Email: "test@test.com",
+		Name:      "Test Test",
+		Email:     "test@test.com",
+		GivenName: "Test",
 	}, nil
 }

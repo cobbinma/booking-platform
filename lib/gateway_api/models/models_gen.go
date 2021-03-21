@@ -22,6 +22,10 @@ type Booking struct {
 	VenueID string `json:"venueId"`
 	// email of the customer
 	Email string `json:"email"`
+	// fullname of the customer
+	Name string `json:"name"`
+	// given name of the customer. in the u.k., the first name of a person.
+	GivenName string `json:"givenName"`
 	// amount of people attending the booking
 	People int `json:"people"`
 	// start time of the booking (hh:mm)

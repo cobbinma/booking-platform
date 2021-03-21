@@ -6,7 +6,6 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api"
-	booking "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/models"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
@@ -80,14 +79,16 @@ func (b bookingClient) CancelBooking(ctx context.Context, input models.CancelBoo
 	}
 
 	return &models.Booking{
-		ID:       cancelled.Id,
-		VenueID:  cancelled.VenueId,
-		Email:    cancelled.Email,
-		People:   int(cancelled.People),
-		StartsAt: startsAt,
-		EndsAt:   endsAt,
-		Duration: int(cancelled.Duration),
-		TableID:  cancelled.TableId,
+		ID:        cancelled.Id,
+		VenueID:   cancelled.VenueId,
+		Email:     cancelled.Email,
+		People:    int(cancelled.People),
+		StartsAt:  startsAt,
+		EndsAt:    endsAt,
+		Duration:  int(cancelled.Duration),
+		TableID:   cancelled.TableId,
+		Name:      cancelled.Name,
+		GivenName: cancelled.GivenName,
 	}, err
 }
 
@@ -121,14 +122,16 @@ func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilte
 			return nil, fmt.Errorf("incorrect time format returned from booking client : %w", err)
 		}
 		bookings[i] = &models.Booking{
-			ID:       b.Id,
-			VenueID:  b.VenueId,
-			Email:    b.Email,
-			People:   int(b.People),
-			StartsAt: startsAt,
-			EndsAt:   endsAt,
-			Duration: int(b.Duration),
-			TableID:  b.TableId,
+			ID:        b.Id,
+			VenueID:   b.VenueId,
+			Email:     b.Email,
+			People:    int(b.People),
+			StartsAt:  startsAt,
+			EndsAt:    endsAt,
+			Duration:  int(b.Duration),
+			TableID:   b.TableId,
+			Name:      b.Name,
+			GivenName: b.GivenName,
 		}
 	}
 
@@ -140,7 +143,7 @@ func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilte
 }
 
 func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
-	resp, err := b.client.GetSlot(ctx, &booking.SlotInput{
+	resp, err := b.client.GetSlot(ctx, &api.SlotInput{
 		VenueId:  slot.VenueID,
 		Email:    slot.Email,
 		People:   (uint32)(slot.People),
@@ -179,13 +182,20 @@ func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*mod
 	}, nil
 }
 
-func (b bookingClient) CreateBooking(ctx context.Context, slot models.BookingInput) (*models.Booking, error) {
-	resp, err := b.client.CreateBooking(ctx, &booking.SlotInput{
-		VenueId:  slot.VenueID,
-		Email:    slot.Email,
-		People:   (uint32)(slot.People),
-		StartsAt: slot.StartsAt.Format(time.RFC3339),
-		Duration: (uint32)(slot.Duration),
+func (b bookingClient) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
+	user, err := models.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get  user from context : %w", err)
+	}
+
+	resp, err := b.client.CreateBooking(ctx, &api.BookingInput{
+		VenueId:   input.VenueID,
+		Email:     input.Email,
+		People:    (uint32)(input.People),
+		StartsAt:  input.StartsAt.Format(time.RFC3339),
+		Duration:  (uint32)(input.Duration),
+		Name:      user.Name,
+		GivenName: user.GivenName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not create booking in booking api : %w", err)
@@ -202,13 +212,15 @@ func (b bookingClient) CreateBooking(ctx context.Context, slot models.BookingInp
 	}
 
 	return &models.Booking{
-		ID:       resp.Id,
-		VenueID:  resp.VenueId,
-		Email:    resp.Email,
-		People:   (int)(resp.People),
-		StartsAt: startsAt,
-		EndsAt:   endsAt,
-		Duration: (int)(resp.Duration),
-		TableID:  resp.TableId,
+		ID:        resp.Id,
+		VenueID:   resp.VenueId,
+		Email:     resp.Email,
+		People:    (int)(resp.People),
+		StartsAt:  startsAt,
+		EndsAt:    endsAt,
+		Duration:  (int)(resp.Duration),
+		TableID:   resp.TableId,
+		Name:      user.Name,
+		GivenName: user.GivenName,
 	}, nil
 }
