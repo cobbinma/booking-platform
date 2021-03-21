@@ -9,7 +9,7 @@ import {
 import { AppState, Auth0Provider } from "@auth0/auth0-react";
 import Secure from "./components/Secure";
 export interface Params {
-  venueId: string;
+  slug: string;
   returnURL: string;
 }
 
@@ -31,7 +31,7 @@ const App = () => {
         >
           <Router>
             <Switch>
-              <Route path="/:venueId/:returnURL" children={<GetParams />} />
+              <Route path="/:slug/:returnURL" children={<GetParams />} />
             </Switch>
           </Router>
           {params && <Secure params={params} />}

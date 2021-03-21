@@ -10,7 +10,7 @@ import {
 import { Button } from "baseui/button";
 import { H2 } from "baseui/typography";
 import SlotDisplay from "./SlotDisplay";
-import { Spinner } from "baseui/spinner";
+import { StyledSpinnerNext } from "baseui/spinner";
 
 interface SlotProps {
   enquiry: SlotInput;
@@ -32,19 +32,13 @@ const Slot: React.FC<SlotProps> = ({
   if (loading)
     return (
       <div>
-        <Spinner />
+        <StyledSpinnerNext />
       </div>
     );
 
-  if (error) {
-    console.log(error);
-    setBooking(null);
-    setBookingStage(BookingStage.Confirmation);
-  }
-
   const match = data?.getSlot.match;
 
-  if (match == null) {
+  if (error || !match) {
     return (
       <div>
         <H2>sorry we could not find a slot</H2>
@@ -100,7 +94,6 @@ const CreateBookingButton: React.FC<{
       })
       .catch((e) => {
         console.log(e);
-        setBookingStage(BookingStage.Error);
       });
   };
   return (
