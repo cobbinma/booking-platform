@@ -1,20 +1,11 @@
-query GetVenue($slug: ID!) {
+query GetVenue($slug: ID!, $date: Time) {
     getVenue(filter: {slug: $slug}) {
         id
         name
-        openingHours {
+        openingHoursSpecification(date: $date) {
             dayOfWeek
             opens
             closes
-            validFrom
-            validThrough
-        }
-        specialOpeningHours {
-            dayOfWeek
-            opens
-            closes
-            validFrom
-            validThrough
         }
     }
 }

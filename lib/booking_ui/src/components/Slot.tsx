@@ -100,7 +100,6 @@ const CreateBookingButton: React.FC<{
       })
       .catch((e) => {
         console.log(e);
-        setBookingStage(BookingStage.Error);
       });
   };
   return (

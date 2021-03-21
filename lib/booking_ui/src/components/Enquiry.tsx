@@ -6,7 +6,8 @@ import { TimePicker } from "baseui/timepicker";
 import { Slider } from "baseui/slider";
 import { Combobox } from "baseui/combobox";
 import { Button } from "baseui/button";
-import { H2, Label1 } from "baseui/typography";
+import { H2 } from "baseui/typography";
+import { FormControl } from "baseui/form-control";
 
 let durations = new Map<string, number>([
   ["30 mins", 30],
@@ -59,27 +60,35 @@ const Enquiry: React.FC<EnquiryProps> = ({
   return (
     <div>
       <H2>book a table</H2>
-      <Label1>Date</Label1>
-      <DatePicker
-        value={date}
-        onChange={({ date }) => setDate(Array.isArray(date) ? date : [date])}
-      />
-      <Label1>Time</Label1>
-      <TimePicker value={time} step={1800} onChange={(date) => setTime(date)} />
-      <Label1>Guests</Label1>
-      <Slider
-        value={people}
-        onChange={({ value }) => value && setPeople(value)}
-        min={1}
-        max={20}
-      />
-      <Label1>Duration</Label1>
-      <Combobox
-        value={duration}
-        onChange={(nextValue) => setDuration(nextValue)}
-        options={Array.from(durations.keys())}
-        mapOptionToString={(option) => option}
-      />
+      <FormControl label="Date">
+        <DatePicker
+          value={date}
+          onChange={({ date }) => setDate(Array.isArray(date) ? date : [date])}
+        />
+      </FormControl>
+      <FormControl label="Time">
+        <TimePicker
+          value={time}
+          step={1800}
+          onChange={(date) => setTime(date)}
+        />
+      </FormControl>
+      <FormControl label="Guests">
+        <Slider
+          value={people}
+          onChange={({ value }) => value && setPeople(value)}
+          min={1}
+          max={20}
+        />
+      </FormControl>
+      <FormControl label="Duration">
+        <Combobox
+          value={duration}
+          onChange={(nextValue) => setDuration(nextValue)}
+          options={Array.from(durations.keys())}
+          mapOptionToString={(option) => option}
+        />
+      </FormControl>
       <br />
       <Button onClick={handleClick}>Next</Button>
     </div>
