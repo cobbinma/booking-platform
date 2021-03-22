@@ -223,8 +223,6 @@ const CreateBooking: React.FC<{
     return day >= date;
   };
 
-  console.log(openHours);
-
   const [createBookingMutation, { loading, error }] = useCreateBookingMutation({
     variables: {
       slot: {
@@ -304,7 +302,6 @@ const CreateBooking: React.FC<{
               const d = Array.isArray(date) ? date : [date];
               setDate(d);
               if (d && d[0]) {
-                console.log(d);
                 refetch({
                   date: d[0].toISOString(),
                 }).catch((e) => console.log(e));

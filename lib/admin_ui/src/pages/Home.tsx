@@ -501,7 +501,6 @@ const EditSpecialOpeningHours: React.FC<{
   return (
     <Button
       onClick={() => {
-        console.log(openingHours);
         updateSpecialOpeningHoursMutation()
           .then(() => {
             refetch()
