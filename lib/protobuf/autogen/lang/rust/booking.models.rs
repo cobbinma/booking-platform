@@ -16,19 +16,10 @@ pub struct Booking {
     pub duration: u32,
     #[prost(string, tag = "8")]
     pub table_id: ::prost::alloc::string::String,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct SlotInput {
-    #[prost(string, tag = "1")]
-    pub venue_id: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub email: ::prost::alloc::string::String,
-    #[prost(uint32, tag = "3")]
-    pub people: u32,
-    #[prost(string, tag = "4")]
-    pub starts_at: ::prost::alloc::string::String,
-    #[prost(uint32, tag = "5")]
-    pub duration: u32,
+    #[prost(string, tag = "9")]
+    pub family_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "10")]
+    pub given_name: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Slot {

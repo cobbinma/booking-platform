@@ -58,7 +58,7 @@ func (mr *MockBookingAPIClientMockRecorder) CancelBooking(arg0, arg1 interface{}
 }
 
 // CreateBooking mocks base method.
-func (m *MockBookingAPIClient) CreateBooking(arg0 context.Context, arg1 *models.SlotInput, arg2 ...grpc.CallOption) (*models.Booking, error) {
+func (m *MockBookingAPIClient) CreateBooking(arg0 context.Context, arg1 *api.BookingInput, arg2 ...grpc.CallOption) (*models.Booking, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -98,7 +98,7 @@ func (mr *MockBookingAPIClientMockRecorder) GetBookings(arg0, arg1 interface{}, 
 }
 
 // GetSlot mocks base method.
-func (m *MockBookingAPIClient) GetSlot(arg0 context.Context, arg1 *models.SlotInput, arg2 ...grpc.CallOption) (*api.GetSlotResponse, error) {
+func (m *MockBookingAPIClient) GetSlot(arg0 context.Context, arg1 *api.SlotInput, arg2 ...grpc.CallOption) (*api.GetSlotResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {

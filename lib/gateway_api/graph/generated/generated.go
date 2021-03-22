@@ -46,14 +46,16 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Booking struct {
-		Duration func(childComplexity int) int
-		Email    func(childComplexity int) int
-		EndsAt   func(childComplexity int) int
-		ID       func(childComplexity int) int
-		People   func(childComplexity int) int
-		StartsAt func(childComplexity int) int
-		TableID  func(childComplexity int) int
-		VenueID  func(childComplexity int) int
+		Duration   func(childComplexity int) int
+		Email      func(childComplexity int) int
+		EndsAt     func(childComplexity int) int
+		FamilyName func(childComplexity int) int
+		GivenName  func(childComplexity int) int
+		ID         func(childComplexity int) int
+		People     func(childComplexity int) int
+		StartsAt   func(childComplexity int) int
+		TableID    func(childComplexity int) int
+		VenueID    func(childComplexity int) int
 	}
 
 	BookingsPage struct {
@@ -178,6 +180,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Booking.EndsAt(childComplexity), true
+
+	case "Booking.familyName":
+		if e.complexity.Booking.FamilyName == nil {
+			break
+		}
+
+		return e.complexity.Booking.FamilyName(childComplexity), true
+
+	case "Booking.givenName":
+		if e.complexity.Booking.GivenName == nil {
+			break
+		}
+
+		return e.complexity.Booking.GivenName(childComplexity), true
 
 	case "Booking.id":
 		if e.complexity.Booking.ID == nil {
@@ -673,6 +689,10 @@ input BookingInput {
   venueId: ID!
   "email of the customer"
   email: String!,
+  "given name of the customer. in the u.k., the first name of a person"
+  givenName: String,
+  "family name of the customer. in the u.k., the last name of a person"
+  familyName: String,
   "amount of people attending the booking"
   people: Int!,
   "start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
@@ -691,6 +711,10 @@ type Booking {
   venueId: ID!
   "email of the customer"
   email: String!,
+  "given name of the customer. in the u.k., the first name of a person"
+  givenName: String,
+  "family name of the customer. in the u.k., the last name of a person"
+  familyName: String,
   "amount of people attending the booking"
   people: Int!,
   "start time of the booking (hh:mm)"
@@ -1317,6 +1341,70 @@ func (ec *executionContext) _Booking_email(ctx context.Context, field graphql.Co
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Booking_givenName(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Booking",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GivenName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Booking_familyName(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Booking",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FamilyName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_people(ctx context.Context, field graphql.CollectedField, obj *models.Booking) (ret graphql.Marshaler) {
@@ -4134,6 +4222,22 @@ func (ec *executionContext) unmarshalInputBookingInput(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
+		case "givenName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("givenName"))
+			it.GivenName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "familyName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("familyName"))
+			it.FamilyName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "people":
 			var err error
 
@@ -4626,6 +4730,10 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "givenName":
+			out.Values[i] = ec._Booking_givenName(ctx, field, obj)
+		case "familyName":
+			out.Values[i] = ec._Booking_familyName(ctx, field, obj)
 		case "people":
 			out.Values[i] = ec._Booking_people(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

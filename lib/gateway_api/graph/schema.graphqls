@@ -48,13 +48,17 @@ type Slot {
 }
 
 """
-Slot is a possible booking that has yet to be confirmed.
+Booking input is a possible booking that has yet to be confirmed.
 """
 input BookingInput {
   "unique identifier of the venue"
   venueId: ID!
   "email of the customer"
   email: String!,
+  "given name of the customer. in the u.k., the first name of a person"
+  givenName: String,
+  "family name of the customer. in the u.k., the last name of a person"
+  familyName: String,
   "amount of people attending the booking"
   people: Int!,
   "start time of the booking (YYYY-MM-DDThh:mm:ssZ)"
@@ -73,6 +77,10 @@ type Booking {
   venueId: ID!
   "email of the customer"
   email: String!,
+  "given name of the customer. in the u.k., the first name of a person"
+  givenName: String,
+  "family name of the customer. in the u.k., the last name of a person"
+  familyName: String,
   "amount of people attending the booking"
   people: Int!,
   "start time of the booking (hh:mm)"

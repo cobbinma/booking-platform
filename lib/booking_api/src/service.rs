@@ -3,10 +3,8 @@ use async_trait::async_trait;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Timelike, Utc};
 use num::integer::Integer;
 use protobuf::booking::api::booking_api_server::BookingApi;
-use protobuf::booking::api::{
-    CancelBookingRequest, GetBookingsRequest, GetBookingsResponse, GetSlotResponse,
-};
-use protobuf::booking::models::{Booking, Slot, SlotInput};
+use protobuf::booking::api::{CancelBookingRequest, GetBookingsRequest, GetBookingsResponse, GetSlotResponse, SlotInput, BookingInput};
+use protobuf::booking::models::{Booking, Slot};
 use protobuf::venue::models::Venue;
 use std::collections::HashSet;
 use std::ops::Add;
@@ -155,11 +153,11 @@ impl BookingApi for BookingService {
         }))
     }
 
-    async fn create_booking(&self, req: Request<SlotInput>) -> Result<Response<Booking>, Status> {
-        let slot = req.into_inner();
-        tracing::info!("create booking call for venue '{}', starting at '{}', duration '{}' minutes, for '{} people'", &slot.venue_id, &slot.starts_at, slot.duration, slot.people);
+    async fn create_booking(&self, req: Request<BookingInput>) -> Result<Response<Booking>, Status> {
+        let input = req.into_inner();
+        tracing::info!("create booking call for venue '{}', starting at '{}', duration '{}' minutes, for '{} people'", &input.venue_id, &input.starts_at, input.duration, input.people);
 
-        let slot_starts_at = DateTime::parse_from_rfc3339(&slot.starts_at).map_err(|e| {
+        let slot_starts_at = DateTime::parse_from_rfc3339(&input.starts_at).map_err(|e| {
             log::error!("could not parse date : {}", e);
             Status::internal("could not parse date")
         })?;
@@ -171,13 +169,13 @@ impl BookingApi for BookingService {
         );
 
         let ((opens, closes), mut tables_with_capacity) = tokio::try_join!(
-            self.get_opening_times(slot.venue_id.clone(), slot_date),
+            self.get_opening_times(input.venue_id.clone(), slot_date),
             self.venue_client
-                .get_tables_with_capacity(slot.venue_id.clone(), slot.people)
+                .get_tables_with_capacity(input.venue_id.clone(), input.people)
         )?;
 
         if slot_starts_at < opens
-            || slot_starts_at + Duration::minutes(slot.duration as i64) > closes
+            || slot_starts_at + Duration::minutes(input.duration as i64) > closes
         {
             return Err(Status::invalid_argument("venue is closed at that time"));
         }
@@ -188,10 +186,10 @@ impl BookingApi for BookingService {
             ));
         }
 
-        let bookings = self.get_bookings_by_date(&slot.venue_id.clone(), &slot_date)?;
+        let bookings = self.get_bookings_by_date(&input.venue_id.clone(), &slot_date)?;
 
         let free_table_id = get_free_table(
-            slot.duration as i64,
+            input.duration as i64,
             &mut tables_with_capacity,
             &bookings,
             &slot_starts_at.with_timezone(&Utc),
@@ -201,31 +199,35 @@ impl BookingApi for BookingService {
             let id = self.uuid.uuid();
             let new_booking = models::Booking {
                 id,
-                customer_email: slot.email.clone(),
-                venue_id: Uuid::parse_str(&slot.venue_id)
+                customer_email: input.email.clone(),
+                venue_id: Uuid::parse_str(&input.venue_id)
                     .map_err(|_| Status::invalid_argument("could not parse uuid"))?,
                 table_id: Uuid::parse_str(&table_id)
                     .map_err(|_| Status::internal("could not parse table uuid"))?,
-                people: slot.people as i32,
+                people: input.people as i32,
                 date: slot_date,
                 starts_at: slot_starts_at.with_timezone(&Utc),
                 ends_at: slot_starts_at
                     .with_timezone(&Utc)
-                    .add(Duration::minutes(slot.duration as i64)),
-                duration: slot.duration as i32,
+                    .add(Duration::minutes(input.duration as i64)),
+                duration: input.duration as i32,
+                given_name: Some(input.given_name.clone()).filter(|s| !s.is_empty()),
+                family_name: Some(input.family_name.clone()).filter(|s| !s.is_empty()),
             };
 
             self.repository.create_booking(&new_booking)?;
 
             Ok(Response::new(Booking {
                 id: id.to_string(),
-                venue_id: slot.venue_id.clone(),
-                email: slot.email.clone(),
-                people: slot.people,
-                starts_at: slot.starts_at,
-                ends_at: (slot_starts_at + Duration::minutes(slot.duration as i64)).to_rfc3339(),
-                duration: slot.duration,
+                venue_id: input.venue_id.clone(),
+                email: input.email.clone(),
+                people: input.people,
+                starts_at: input.starts_at,
+                ends_at: (slot_starts_at + Duration::minutes(input.duration as i64)).to_rfc3339(),
+                duration: input.duration,
                 table_id,
+                given_name: input.given_name,
+                family_name: input.family_name,
             }))
         } else {
             Err(Status::not_found("could not find a free slot"))
@@ -292,6 +294,8 @@ impl BookingApi for BookingService {
                     ends_at: b.ends_at.to_rfc3339(),
                     duration: b.duration as u32,
                     table_id: b.table_id.to_string(),
+                    given_name: b.given_name.clone().unwrap_or_default(),
+                    family_name: b.family_name.clone().unwrap_or_default(),
                 })
                 .collect(),
             has_next_page,
@@ -321,6 +325,8 @@ impl BookingApi for BookingService {
                 ends_at: b.ends_at.to_rfc3339(),
                 duration: b.duration as u32,
                 table_id: b.table_id.to_string(),
+                given_name: b.given_name.clone().unwrap_or_default(),
+                family_name: b.family_name.clone().unwrap_or_default(),
             })?;
 
         Ok(Response::new(removed))
@@ -479,6 +485,8 @@ mod tests {
                 starts_at,
                 ends_at: starts_at + Duration::minutes(60),
                 duration: 60,
+                given_name: None,
+                family_name: None
             }],
             &starts_at,
         );
@@ -503,6 +511,8 @@ mod tests {
                 starts_at: starts_at + Duration::minutes(30),
                 ends_at: starts_at + Duration::minutes(90),
                 duration: 60,
+                given_name: None,
+                family_name: None
             }],
             &starts_at,
         );
@@ -736,6 +746,8 @@ mod tests {
                 starts_at: starts,
                 ends_at: starts + Duration::minutes(duration),
                 duration: duration as i32,
+                given_name: Some("matthew".to_string()),
+                family_name: Some("cobbing".to_string())
             }))
             .times(1)
             .returning(|_| Ok(()));
@@ -754,12 +766,14 @@ mod tests {
         .expect("could not construct booking service");
 
         let result = service
-            .create_booking(Request::new(SlotInput {
+            .create_booking(Request::new(BookingInput {
                 venue_id: venue_id.clone(),
                 email: "test@test.com".to_string(),
                 people,
                 starts_at: starts.to_rfc3339(),
                 duration: duration as u32,
+                given_name: "matthew".to_string(),
+                family_name: "cobbing".to_string()
             }))
             .await
             .map(|r| r.into_inner())
@@ -775,7 +789,9 @@ mod tests {
                 starts_at: "1992-05-01T15:00:00+00:00".to_string(),
                 ends_at: "1992-05-01T16:00:00+00:00".to_string(),
                 duration: duration as u32,
-                table_id: "eb7a8544-1595-4b62-ab72-137dd03b538f".to_string()
+                table_id: "eb7a8544-1595-4b62-ab72-137dd03b538f".to_string(),
+                given_name: "matthew".to_string(),
+                family_name: "cobbing".to_string()
             }
         );
     }
@@ -824,6 +840,8 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
+                        given_name: Some("matthew".to_string()),
+                        family_name: Some("cobbing".to_string())
                     },
                     models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
@@ -835,6 +853,8 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
+                        given_name: Some("matthew".to_string()),
+                        family_name: Some("cobbing".to_string())
                     },
                     models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
@@ -846,6 +866,8 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
+                        given_name: Some("matthew".to_string()),
+                        family_name: Some("cobbing".to_string())
                     },
                 ])
             });
@@ -876,7 +898,9 @@ mod tests {
                         starts_at: "1992-05-01T15:00:00+00:00".to_string(),
                         ends_at: "1992-05-01T15:30:00+00:00".to_string(),
                         duration: 30,
-                        table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string()
+                        table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
+                        given_name: "matthew".to_string(),
+                        family_name: "cobbing".to_string()
                     },
                     protobuf::booking::models::Booking {
                         id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
@@ -886,7 +910,9 @@ mod tests {
                         starts_at: "1992-05-01T15:00:00+00:00".to_string(),
                         ends_at: "1992-05-01T15:30:00+00:00".to_string(),
                         duration: 30,
-                        table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string()
+                        table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
+                        given_name: "matthew".to_string(),
+                        family_name: "cobbing".to_string()
                     }
                 ],
                 has_next_page: true,
@@ -975,7 +1001,9 @@ mod tests {
                     date: starts.naive_utc().date(),
                     starts_at: starts,
                     ends_at: starts + Duration::minutes(60),
-                    duration: 60
+                    duration: 60,
+                    given_name: Some("matthew".to_string()),
+                    family_name: Some("cobbing".to_string())
                 })
             });
 
@@ -998,7 +1026,9 @@ mod tests {
                 starts_at: starts.to_rfc3339(),
                 ends_at: (starts + Duration::minutes(60)).to_rfc3339(),
                 duration: 60,
-                table_id
+                table_id,
+                given_name: "matthew".to_string(),
+                family_name: "cobbing".to_string()
             }
         )
     }

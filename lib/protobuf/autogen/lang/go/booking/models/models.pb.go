@@ -30,14 +30,16 @@ type Booking struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id       string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	VenueId  string `protobuf:"bytes,2,opt,name=venueId,proto3" json:"venueId,omitempty"`
-	Email    string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	People   uint32 `protobuf:"varint,4,opt,name=people,proto3" json:"people,omitempty"`
-	StartsAt string `protobuf:"bytes,5,opt,name=startsAt,proto3" json:"startsAt,omitempty"`
-	EndsAt   string `protobuf:"bytes,6,opt,name=endsAt,proto3" json:"endsAt,omitempty"`
-	Duration uint32 `protobuf:"varint,7,opt,name=duration,proto3" json:"duration,omitempty"`
-	TableId  string `protobuf:"bytes,8,opt,name=tableId,proto3" json:"tableId,omitempty"`
+	Id         string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	VenueId    string `protobuf:"bytes,2,opt,name=venueId,proto3" json:"venueId,omitempty"`
+	Email      string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	People     uint32 `protobuf:"varint,4,opt,name=people,proto3" json:"people,omitempty"`
+	StartsAt   string `protobuf:"bytes,5,opt,name=startsAt,proto3" json:"startsAt,omitempty"`
+	EndsAt     string `protobuf:"bytes,6,opt,name=endsAt,proto3" json:"endsAt,omitempty"`
+	Duration   uint32 `protobuf:"varint,7,opt,name=duration,proto3" json:"duration,omitempty"`
+	TableId    string `protobuf:"bytes,8,opt,name=tableId,proto3" json:"tableId,omitempty"`
+	FamilyName string `protobuf:"bytes,9,opt,name=familyName,proto3" json:"familyName,omitempty"`
+	GivenName  string `protobuf:"bytes,10,opt,name=givenName,proto3" json:"givenName,omitempty"`
 }
 
 func (x *Booking) Reset() {
@@ -128,83 +130,18 @@ func (x *Booking) GetTableId() string {
 	return ""
 }
 
-type SlotInput struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	VenueId  string `protobuf:"bytes,1,opt,name=venueId,proto3" json:"venueId,omitempty"`
-	Email    string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	People   uint32 `protobuf:"varint,3,opt,name=people,proto3" json:"people,omitempty"`
-	StartsAt string `protobuf:"bytes,4,opt,name=startsAt,proto3" json:"startsAt,omitempty"`
-	Duration uint32 `protobuf:"varint,5,opt,name=duration,proto3" json:"duration,omitempty"`
-}
-
-func (x *SlotInput) Reset() {
-	*x = SlotInput{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_src_booking_models_models_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SlotInput) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SlotInput) ProtoMessage() {}
-
-func (x *SlotInput) ProtoReflect() protoreflect.Message {
-	mi := &file_src_booking_models_models_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SlotInput.ProtoReflect.Descriptor instead.
-func (*SlotInput) Descriptor() ([]byte, []int) {
-	return file_src_booking_models_models_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *SlotInput) GetVenueId() string {
+func (x *Booking) GetFamilyName() string {
 	if x != nil {
-		return x.VenueId
+		return x.FamilyName
 	}
 	return ""
 }
 
-func (x *SlotInput) GetEmail() string {
+func (x *Booking) GetGivenName() string {
 	if x != nil {
-		return x.Email
+		return x.GivenName
 	}
 	return ""
-}
-
-func (x *SlotInput) GetPeople() uint32 {
-	if x != nil {
-		return x.People
-	}
-	return 0
-}
-
-func (x *SlotInput) GetStartsAt() string {
-	if x != nil {
-		return x.StartsAt
-	}
-	return ""
-}
-
-func (x *SlotInput) GetDuration() uint32 {
-	if x != nil {
-		return x.Duration
-	}
-	return 0
 }
 
 type Slot struct {
@@ -223,7 +160,7 @@ type Slot struct {
 func (x *Slot) Reset() {
 	*x = Slot{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_src_booking_models_models_proto_msgTypes[2]
+		mi := &file_src_booking_models_models_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -236,7 +173,7 @@ func (x *Slot) String() string {
 func (*Slot) ProtoMessage() {}
 
 func (x *Slot) ProtoReflect() protoreflect.Message {
-	mi := &file_src_booking_models_models_proto_msgTypes[2]
+	mi := &file_src_booking_models_models_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,7 +186,7 @@ func (x *Slot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Slot.ProtoReflect.Descriptor instead.
 func (*Slot) Descriptor() ([]byte, []int) {
-	return file_src_booking_models_models_proto_rawDescGZIP(), []int{2}
+	return file_src_booking_models_models_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Slot) GetVenueId() string {
@@ -300,7 +237,7 @@ var file_src_booking_models_models_proto_rawDesc = []byte{
 	0x0a, 0x1f, 0x73, 0x72, 0x63, 0x2f, 0x62, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x6d, 0x6f,
 	0x64, 0x65, 0x6c, 0x73, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x12, 0x0e, 0x62, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x73, 0x22, 0xcb, 0x01, 0x0a, 0x07, 0x42, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x12, 0x0e, 0x0a,
+	0x73, 0x22, 0x89, 0x02, 0x0a, 0x07, 0x42, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x12, 0x0e, 0x0a,
 	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x18, 0x0a,
 	0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
 	0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c,
@@ -312,16 +249,11 @@ var file_src_booking_models_models_proto_rawDesc = []byte{
 	0x09, 0x52, 0x06, 0x65, 0x6e, 0x64, 0x73, 0x41, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x64, 0x75, 0x72,
 	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x64, 0x75, 0x72,
 	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x64,
-	0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x64, 0x22,
-	0x8b, 0x01, 0x0a, 0x09, 0x53, 0x6c, 0x6f, 0x74, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x12, 0x18, 0x0a,
-	0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x12, 0x16, 0x0a,
-	0x06, 0x70, 0x65, 0x6f, 0x70, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x70,
-	0x65, 0x6f, 0x70, 0x6c, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x73, 0x74, 0x61, 0x72, 0x74, 0x73, 0x41,
-	0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x74, 0x61, 0x72, 0x74, 0x73, 0x41,
-	0x74, 0x12, 0x1a, 0x0a, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x0d, 0x52, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x9e, 0x01,
+	0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x64, 0x12,
+	0x1e, 0x0a, 0x0a, 0x66, 0x61, 0x6d, 0x69, 0x6c, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x09, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0a, 0x66, 0x61, 0x6d, 0x69, 0x6c, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x12,
+	0x1c, 0x0a, 0x09, 0x67, 0x69, 0x76, 0x65, 0x6e, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x0a, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x09, 0x67, 0x69, 0x76, 0x65, 0x6e, 0x4e, 0x61, 0x6d, 0x65, 0x22, 0x9e, 0x01,
 	0x0a, 0x04, 0x53, 0x6c, 0x6f, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49,
 	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x64,
 	0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
@@ -352,11 +284,10 @@ func file_src_booking_models_models_proto_rawDescGZIP() []byte {
 	return file_src_booking_models_models_proto_rawDescData
 }
 
-var file_src_booking_models_models_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_src_booking_models_models_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_src_booking_models_models_proto_goTypes = []interface{}{
-	(*Booking)(nil),   // 0: booking.models.Booking
-	(*SlotInput)(nil), // 1: booking.models.SlotInput
-	(*Slot)(nil),      // 2: booking.models.Slot
+	(*Booking)(nil), // 0: booking.models.Booking
+	(*Slot)(nil),    // 1: booking.models.Slot
 }
 var file_src_booking_models_models_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -385,18 +316,6 @@ func file_src_booking_models_models_proto_init() {
 			}
 		}
 		file_src_booking_models_models_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SlotInput); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_src_booking_models_models_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Slot); i {
 			case 0:
 				return &v.state
@@ -415,7 +334,7 @@ func file_src_booking_models_models_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_src_booking_models_models_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

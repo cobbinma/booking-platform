@@ -131,6 +131,13 @@ const Bookings: React.FC<{
         </FlexGridItem>
         <FlexGridItem>
           <TableBuilder data={bookings} overrides={overrides}>
+            <TableBuilderColumn header="Name">
+              {(row) => {
+                return `${row.givenName ? row.givenName : ""} ${
+                  row.familyName ? row.familyName : ""
+                }`;
+              }}
+            </TableBuilderColumn>
             <TableBuilderColumn header="Email">
               {(row) => row.email}
             </TableBuilderColumn>
@@ -187,9 +194,11 @@ const CreateBooking: React.FC<{
   ) => Promise<ApolloQueryResult<GetVenueQuery>>;
 }> = ({ setCreateIsOpen, createIsOpen, venueId, openHours, refetch }) => {
   const [email, setEmail] = useState<string>("");
+  const [givenName, setGivenName] = useState<string | null>(null);
+  const [familyName, setFamilyName] = useState<string | null>(null);
   const [people, setPeople] = useState<number[]>([4]);
   const [date, setDate] = React.useState<Date[] | null>(null);
-  const [time, setTime] = React.useState<Date>(new Date(Date.now()));
+  const [time, setTime] = React.useState<Date | null>(null);
   const [duration, setDuration] = React.useState<string | null>(null);
   const close = (): void => {
     setCreateIsOpen(false);
@@ -214,8 +223,6 @@ const CreateBooking: React.FC<{
     return day >= date;
   };
 
-  console.log(openHours);
-
   const [createBookingMutation, { loading, error }] = useCreateBookingMutation({
     variables: {
       slot: {
@@ -223,7 +230,7 @@ const CreateBooking: React.FC<{
         email: email,
         people: people[0],
         startsAt:
-          date && date[0]
+          date && date[0] && time
             ? new Date(
                 date[0].getFullYear(),
                 date[0].getMonth(),
@@ -233,6 +240,8 @@ const CreateBooking: React.FC<{
               )
             : undefined,
         duration: durations.get(duration || "") || 60,
+        givenName: givenName,
+        familyName: familyName,
       },
     },
   });
@@ -247,6 +256,20 @@ const CreateBooking: React.FC<{
       )}
       {error && <ModalHeader>could not create booking</ModalHeader>}
       <ModalBody>
+        <FormControl label="First Name">
+          <Input
+            value={givenName ? givenName : ""}
+            onChange={(event) => setGivenName(event.currentTarget.value)}
+            placeholder="First Name"
+          />
+        </FormControl>
+        <FormControl label="Last Name">
+          <Input
+            value={familyName ? familyName : ""}
+            onChange={(event) => setFamilyName(event.currentTarget.value)}
+            placeholder="Last Name"
+          />
+        </FormControl>
         <FormControl label="Email">
           <Input
             value={email}
@@ -279,7 +302,6 @@ const CreateBooking: React.FC<{
               const d = Array.isArray(date) ? date : [date];
               setDate(d);
               if (d && d[0]) {
-                console.log(d);
                 refetch({
                   date: d[0].toISOString(),
                 }).catch((e) => console.log(e));
@@ -300,8 +322,9 @@ const CreateBooking: React.FC<{
             <FormControl
               label="Start Time"
               caption={() =>
-                isTimeOfDayBeforeDate(openHours.opens, time) ||
-                !isTimeOfDayBeforeDate(openHours.closes, time)
+                time &&
+                (isTimeOfDayBeforeDate(openHours.opens, time) ||
+                  !isTimeOfDayBeforeDate(openHours.closes, time))
                   ? "venue is closed"
                   : ""
               }
@@ -315,8 +338,11 @@ const CreateBooking: React.FC<{
                 }}
                 disabled={!openHours.opens}
                 error={
-                  isTimeOfDayBeforeDate(openHours.opens, time) ||
-                  !isTimeOfDayBeforeDate(openHours.closes, time)
+                  !!(
+                    time &&
+                    (isTimeOfDayBeforeDate(openHours.opens, time) ||
+                      !isTimeOfDayBeforeDate(openHours.closes, time))
+                  )
                 }
               />
             </FormControl>
@@ -328,11 +354,13 @@ const CreateBooking: React.FC<{
                   const duration = durations.get(k);
                   return (
                     duration &&
+                    time &&
                     isTimeOfDayBeforeDate(openHours.closes, time, duration)
                   );
                 })}
                 mapOptionToString={(option) => option}
                 disabled={
+                  !time ||
                   isTimeOfDayBeforeDate(openHours.opens, time) ||
                   !isTimeOfDayBeforeDate(openHours.closes, time) ||
                   !openHours.closes
@@ -346,26 +374,30 @@ const CreateBooking: React.FC<{
         <ModalButton kind="tertiary" onClick={close}>
           Cancel
         </ModalButton>
-        {isEmailValid(email) &&
-        durations.get(duration || "") &&
-        openHours &&
-        openHours.opens &&
-        openHours.closes &&
-        !isTimeOfDayBeforeDate(openHours.opens, time) &&
-        isTimeOfDayBeforeDate(openHours.closes, time) ? (
-          <ModalButton
-            onClick={() => {
-              createBookingMutation()
-                .then(() => {
-                  refetch().catch((e) => console.log(e));
-                  close();
-                })
-                .catch((e) => console.log(e));
-            }}
-          >
-            Okay
-          </ModalButton>
-        ) : null}
+        <ModalButton
+          disabled={
+            !(
+              isEmailValid(email) &&
+              durations.get(duration || "") &&
+              openHours &&
+              openHours.opens &&
+              openHours.closes &&
+              time &&
+              !isTimeOfDayBeforeDate(openHours.opens, time) &&
+              isTimeOfDayBeforeDate(openHours.closes, time)
+            )
+          }
+          onClick={() => {
+            createBookingMutation()
+              .then(() => {
+                refetch().catch((e) => console.log(e));
+                close();
+              })
+              .catch((e) => console.log(e));
+          }}
+        >
+          Okay
+        </ModalButton>
       </ModalFooter>
     </Modal>
   );

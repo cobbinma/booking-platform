@@ -14,4 +14,6 @@ pub struct Booking {
     pub starts_at: DateTime<Utc>,
     pub ends_at: DateTime<Utc>,
     pub duration: i32,
+    pub given_name: Option<String>,
+    pub family_name: Option<String>,
 }

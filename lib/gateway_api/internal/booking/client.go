@@ -6,7 +6,6 @@ import (
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph"
 	"github.com/cobbinma/booking-platform/lib/gateway_api/models"
 	"github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/api"
-	booking "github.com/cobbinma/booking-platform/lib/protobuf/autogen/lang/go/booking/models"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
@@ -79,15 +78,25 @@ func (b bookingClient) CancelBooking(ctx context.Context, input models.CancelBoo
 		return nil, fmt.Errorf("could not parse end time : %w", err)
 	}
 
+	var givenName, familyName *string
+	if cancelled.GivenName != "" {
+		givenName = &cancelled.GivenName
+	}
+	if cancelled.FamilyName != "" {
+		familyName = &cancelled.FamilyName
+	}
+
 	return &models.Booking{
-		ID:       cancelled.Id,
-		VenueID:  cancelled.VenueId,
-		Email:    cancelled.Email,
-		People:   int(cancelled.People),
-		StartsAt: startsAt,
-		EndsAt:   endsAt,
-		Duration: int(cancelled.Duration),
-		TableID:  cancelled.TableId,
+		ID:         cancelled.Id,
+		VenueID:    cancelled.VenueId,
+		Email:      cancelled.Email,
+		People:     int(cancelled.People),
+		StartsAt:   startsAt,
+		EndsAt:     endsAt,
+		Duration:   int(cancelled.Duration),
+		TableID:    cancelled.TableId,
+		GivenName:  givenName,
+		FamilyName: familyName,
 	}, err
 }
 
@@ -120,15 +129,24 @@ func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilte
 		if err != nil {
 			return nil, fmt.Errorf("incorrect time format returned from booking client : %w", err)
 		}
+		var givenName, familyName *string
+		if b.GivenName != "" {
+			givenName = &b.GivenName
+		}
+		if b.FamilyName != "" {
+			familyName = &b.FamilyName
+		}
 		bookings[i] = &models.Booking{
-			ID:       b.Id,
-			VenueID:  b.VenueId,
-			Email:    b.Email,
-			People:   int(b.People),
-			StartsAt: startsAt,
-			EndsAt:   endsAt,
-			Duration: int(b.Duration),
-			TableID:  b.TableId,
+			ID:         b.Id,
+			VenueID:    b.VenueId,
+			Email:      b.Email,
+			People:     int(b.People),
+			StartsAt:   startsAt,
+			EndsAt:     endsAt,
+			Duration:   int(b.Duration),
+			TableID:    b.TableId,
+			GivenName:  givenName,
+			FamilyName: familyName,
 		}
 	}
 
@@ -140,7 +158,7 @@ func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilte
 }
 
 func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*models.GetSlotResponse, error) {
-	resp, err := b.client.GetSlot(ctx, &booking.SlotInput{
+	resp, err := b.client.GetSlot(ctx, &api.SlotInput{
 		VenueId:  slot.VenueID,
 		Email:    slot.Email,
 		People:   (uint32)(slot.People),
@@ -179,13 +197,23 @@ func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*mod
 	}, nil
 }
 
-func (b bookingClient) CreateBooking(ctx context.Context, slot models.BookingInput) (*models.Booking, error) {
-	resp, err := b.client.CreateBooking(ctx, &booking.SlotInput{
-		VenueId:  slot.VenueID,
-		Email:    slot.Email,
-		People:   (uint32)(slot.People),
-		StartsAt: slot.StartsAt.Format(time.RFC3339),
-		Duration: (uint32)(slot.Duration),
+func (b bookingClient) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
+	var givenName, familyName string
+	if input.GivenName != nil {
+		givenName = *input.GivenName
+	}
+	if input.FamilyName != nil {
+		familyName = *input.FamilyName
+	}
+
+	resp, err := b.client.CreateBooking(ctx, &api.BookingInput{
+		VenueId:    input.VenueID,
+		Email:      input.Email,
+		People:     (uint32)(input.People),
+		StartsAt:   input.StartsAt.Format(time.RFC3339),
+		Duration:   (uint32)(input.Duration),
+		GivenName:  givenName,
+		FamilyName: familyName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not create booking in booking api : %w", err)
@@ -201,14 +229,24 @@ func (b bookingClient) CreateBooking(ctx context.Context, slot models.BookingInp
 		return nil, fmt.Errorf("could not parse end time : %w", err)
 	}
 
+	var gn, fn *string
+	if resp.GivenName != "" {
+		gn = &resp.GivenName
+	}
+	if resp.FamilyName != "" {
+		fn = &resp.FamilyName
+	}
+
 	return &models.Booking{
-		ID:       resp.Id,
-		VenueID:  resp.VenueId,
-		Email:    resp.Email,
-		People:   (int)(resp.People),
-		StartsAt: startsAt,
-		EndsAt:   endsAt,
-		Duration: (int)(resp.Duration),
-		TableID:  resp.TableId,
+		ID:         resp.Id,
+		VenueID:    resp.VenueId,
+		Email:      resp.Email,
+		People:     (int)(resp.People),
+		StartsAt:   startsAt,
+		EndsAt:     endsAt,
+		Duration:   (int)(resp.Duration),
+		TableID:    resp.TableId,
+		GivenName:  gn,
+		FamilyName: fn,
 	}, nil
 }

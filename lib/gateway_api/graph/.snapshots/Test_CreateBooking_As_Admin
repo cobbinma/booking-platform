@@ -1,0 +1,14 @@
+(struct { CreateBooking struct { ID string "json:\"id\""; VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\""; GivenName string "json:\"givenName\""; FamilyName string "json:\"familyName\"" } "json:\"createBooking\"" }) {
+  CreateBooking: (struct { ID string "json:\"id\""; VenueID string "json:\"venueId\""; Email string "json:\"email\""; People int "json:\"people\""; StartsAt string "json:\"startsAt\""; EndsAt string "json:\"endsAt\""; Duration int "json:\"duration\""; TableID string "json:\"tableId\""; GivenName string "json:\"givenName\""; FamilyName string "json:\"familyName\"" }) {
+    ID: (string) (len=36) "cca3c988-9e11-4b81-9a98-c960fb4a3d97",
+    VenueID: (string) (len=36) "8a18e89b-339b-4e51-ab53-825aae59a070",
+    Email: (string) (len=13) "dave@test.com",
+    People: (int) 5,
+    StartsAt: (string) (len=20) "3000-06-20T12:41:45Z",
+    EndsAt: (string) (len=20) "3000-06-20T13:41:45Z",
+    Duration: (int) 60,
+    TableID: (string) (len=36) "6d3fe85d-a1cb-457c-bd53-48a40ee998e3",
+    GivenName: (string) (len=4) "Dave",
+    FamilyName: (string) (len=5) "Smith"
+  }
+}

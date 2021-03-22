@@ -24,6 +24,7 @@ type UserService interface {
 }
 
 type User struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Email      string `json:"email"`
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
 }

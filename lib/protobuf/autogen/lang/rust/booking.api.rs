@@ -30,6 +30,36 @@ pub struct CancelBookingRequest {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BookingInput {
+    #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub email: ::prost::alloc::string::String,
+    #[prost(uint32, tag = "3")]
+    pub people: u32,
+    #[prost(string, tag = "4")]
+    pub starts_at: ::prost::alloc::string::String,
+    #[prost(uint32, tag = "5")]
+    pub duration: u32,
+    #[prost(string, tag = "6")]
+    pub family_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "7")]
+    pub given_name: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SlotInput {
+    #[prost(string, tag = "1")]
+    pub venue_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub email: ::prost::alloc::string::String,
+    #[prost(uint32, tag = "3")]
+    pub people: u32,
+    #[prost(string, tag = "4")]
+    pub starts_at: ::prost::alloc::string::String,
+    #[prost(uint32, tag = "5")]
+    pub duration: u32,
+}
 #[doc = r" Generated client implementations."]
 pub mod booking_api_client {
     #![allow(unused_variables, dead_code, missing_docs)]
@@ -65,7 +95,7 @@ pub mod booking_api_client {
         }
         pub async fn get_slot(
             &mut self,
-            request: impl tonic::IntoRequest<super::super::models::SlotInput>,
+            request: impl tonic::IntoRequest<super::SlotInput>,
         ) -> Result<tonic::Response<super::GetSlotResponse>, tonic::Status> {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
@@ -79,7 +109,7 @@ pub mod booking_api_client {
         }
         pub async fn create_booking(
             &mut self,
-            request: impl tonic::IntoRequest<super::super::models::SlotInput>,
+            request: impl tonic::IntoRequest<super::BookingInput>,
         ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status> {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
@@ -144,11 +174,11 @@ pub mod booking_api_server {
     pub trait BookingApi: Send + Sync + 'static {
         async fn get_slot(
             &self,
-            request: tonic::Request<super::super::models::SlotInput>,
+            request: tonic::Request<super::SlotInput>,
         ) -> Result<tonic::Response<super::GetSlotResponse>, tonic::Status>;
         async fn create_booking(
             &self,
-            request: tonic::Request<super::super::models::SlotInput>,
+            request: tonic::Request<super::BookingInput>,
         ) -> Result<tonic::Response<super::super::models::Booking>, tonic::Status>;
         async fn get_bookings(
             &self,
@@ -194,12 +224,12 @@ pub mod booking_api_server {
                 "/booking.api.BookingAPI/GetSlot" => {
                     #[allow(non_camel_case_types)]
                     struct GetSlotSvc<T: BookingApi>(pub Arc<T>);
-                    impl<T: BookingApi> tonic::server::UnaryService<super::super::models::SlotInput> for GetSlotSvc<T> {
+                    impl<T: BookingApi> tonic::server::UnaryService<super::SlotInput> for GetSlotSvc<T> {
                         type Response = super::GetSlotResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::super::models::SlotInput>,
+                            request: tonic::Request<super::SlotInput>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut = async move { (*inner).get_slot(request).await };
@@ -225,14 +255,12 @@ pub mod booking_api_server {
                 "/booking.api.BookingAPI/CreateBooking" => {
                     #[allow(non_camel_case_types)]
                     struct CreateBookingSvc<T: BookingApi>(pub Arc<T>);
-                    impl<T: BookingApi> tonic::server::UnaryService<super::super::models::SlotInput>
-                        for CreateBookingSvc<T>
-                    {
+                    impl<T: BookingApi> tonic::server::UnaryService<super::BookingInput> for CreateBookingSvc<T> {
                         type Response = super::super::models::Booking;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::super::models::SlotInput>,
+                            request: tonic::Request<super::BookingInput>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut = async move { (*inner).create_booking(request).await };

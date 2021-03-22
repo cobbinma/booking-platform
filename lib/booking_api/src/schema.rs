@@ -9,5 +9,7 @@ table! {
         starts_at -> Timestamptz,
         ends_at -> Timestamptz,
         duration -> Int4,
+        given_name -> Nullable<Varchar>,
+        family_name -> Nullable<Varchar>,
     }
 }

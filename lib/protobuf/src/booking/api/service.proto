@@ -7,8 +7,8 @@ option go_package = "github.com/cobbinma/booking-platform/lib/protobuf/autogen/l
 import "src/booking/models/models.proto";
 
 service BookingAPI {
-  rpc GetSlot(booking.models.SlotInput) returns (GetSlotResponse);
-  rpc CreateBooking(booking.models.SlotInput) returns (booking.models.Booking);
+  rpc GetSlot(SlotInput) returns (GetSlotResponse);
+  rpc CreateBooking(BookingInput) returns (booking.models.Booking);
   rpc GetBookings(GetBookingsRequest) returns (GetBookingsResponse);
   rpc CancelBooking(CancelBookingRequest) returns (booking.models.Booking);
 }
@@ -33,5 +33,23 @@ message GetBookingsResponse {
 
 message CancelBookingRequest {
   string id = 1;
+}
+
+message BookingInput {
+  string venueId = 1;
+  string email = 2;
+  uint32 people = 3;
+  string startsAt = 4;
+  uint32 duration = 5;
+  string familyName = 6;
+  string givenName = 7;
+}
+
+message SlotInput {
+  string venueId = 1;
+  string email = 2;
+  uint32 people = 3;
+  string startsAt = 4;
+  uint32 duration = 5;
 }
 

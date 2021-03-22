@@ -1,0 +1,3 @@
+ALTER TABLE bookings
+ADD COLUMN given_name VARCHAR,
+ADD COLUMN family_name VARCHAR;
