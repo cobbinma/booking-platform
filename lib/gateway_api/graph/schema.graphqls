@@ -48,7 +48,7 @@ type Slot {
 }
 
 """
-Slot is a possible booking that has yet to be confirmed.
+Booking input is a possible booking that has yet to be confirmed.
 """
 input BookingInput {
   "unique identifier of the venue"

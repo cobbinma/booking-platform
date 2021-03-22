@@ -53,12 +53,16 @@ export type Slot = {
   duration: Scalars['Int'];
 };
 
-/** Slot is a possible booking that has yet to be confirmed. */
+/** Booking input is a possible booking that has yet to be confirmed. */
 export type BookingInput = {
   /** unique identifier of the venue */
   venueId: Scalars['ID'];
   /** email of the customer */
   email: Scalars['String'];
+  /** given name of the customer. in the u.k., the first name of a person */
+  givenName?: Maybe<Scalars['String']>;
+  /** family name of the customer. in the u.k., the last name of a person */
+  familyName?: Maybe<Scalars['String']>;
   /** amount of people attending the booking */
   people: Scalars['Int'];
   /** start time of the booking (YYYY-MM-DDThh:mm:ssZ) */
@@ -76,10 +80,10 @@ export type Booking = {
   venueId: Scalars['ID'];
   /** email of the customer */
   email: Scalars['String'];
-  /** fullname of the customer */
-  name: Scalars['String'];
-  /** given name of the customer. in the u.k., the first name of a person. */
-  givenName: Scalars['String'];
+  /** given name of the customer. in the u.k., the first name of a person */
+  givenName?: Maybe<Scalars['String']>;
+  /** family name of the customer. in the u.k., the last name of a person */
+  familyName?: Maybe<Scalars['String']>;
   /** amount of people attending the booking */
   people: Scalars['Int'];
   /** start time of the booking (hh:mm) */
@@ -431,7 +435,7 @@ export type CreateBookingMutation = (
   { __typename?: 'Mutation' }
   & { createBooking: (
     { __typename?: 'Booking' }
-    & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId'>
+    & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId' | 'givenName' | 'familyName'>
   ) }
 );
 
@@ -485,7 +489,7 @@ export type GetVenueQuery = (
       & Pick<BookingsPage, 'hasNextPage' | 'pages'>
       & { bookings: Array<(
         { __typename?: 'Booking' }
-        & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId' | 'name' | 'givenName'>
+        & Pick<Booking, 'id' | 'venueId' | 'email' | 'people' | 'startsAt' | 'endsAt' | 'duration' | 'tableId' | 'givenName' | 'familyName'>
       )> }
     )> }
   ) }
@@ -658,6 +662,8 @@ export const CreateBookingDocument = gql`
     endsAt
     duration
     tableId
+    givenName
+    familyName
   }
 }
     `;
@@ -773,8 +779,8 @@ export const GetVenueDocument = gql`
         endsAt
         duration
         tableId
-        name
         givenName
+        familyName
       }
       hasNextPage
       pages

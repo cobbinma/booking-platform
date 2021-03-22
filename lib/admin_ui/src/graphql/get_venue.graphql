@@ -36,8 +36,8 @@ query GetVenue($slug: ID, $venueID: ID, $filter: BookingsFilter, $pageInfo: Page
                 endsAt,
                 duration,
                 tableId,
-                name,
                 givenName,
+                familyName,
             },
             hasNextPage,
             pages
