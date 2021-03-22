@@ -1,3 +1,3 @@
 ALTER TABLE bookings
-DROP COLUMN name,
+DROP COLUMN family_name,
 DROP COLUMN given_name;

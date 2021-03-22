@@ -78,17 +78,25 @@ func (b bookingClient) CancelBooking(ctx context.Context, input models.CancelBoo
 		return nil, fmt.Errorf("could not parse end time : %w", err)
 	}
 
+	var givenName, familyName *string
+	if cancelled.GivenName != "" {
+		givenName = &cancelled.GivenName
+	}
+	if cancelled.FamilyName != "" {
+		familyName = &cancelled.FamilyName
+	}
+
 	return &models.Booking{
-		ID:        cancelled.Id,
-		VenueID:   cancelled.VenueId,
-		Email:     cancelled.Email,
-		People:    int(cancelled.People),
-		StartsAt:  startsAt,
-		EndsAt:    endsAt,
-		Duration:  int(cancelled.Duration),
-		TableID:   cancelled.TableId,
-		Name:      cancelled.Name,
-		GivenName: cancelled.GivenName,
+		ID:         cancelled.Id,
+		VenueID:    cancelled.VenueId,
+		Email:      cancelled.Email,
+		People:     int(cancelled.People),
+		StartsAt:   startsAt,
+		EndsAt:     endsAt,
+		Duration:   int(cancelled.Duration),
+		TableID:    cancelled.TableId,
+		GivenName:  givenName,
+		FamilyName: familyName,
 	}, err
 }
 
@@ -121,17 +129,24 @@ func (b bookingClient) Bookings(ctx context.Context, filter models.BookingsFilte
 		if err != nil {
 			return nil, fmt.Errorf("incorrect time format returned from booking client : %w", err)
 		}
+		var givenName, familyName *string
+		if b.GivenName != "" {
+			givenName = &b.GivenName
+		}
+		if b.FamilyName != "" {
+			familyName = &b.FamilyName
+		}
 		bookings[i] = &models.Booking{
-			ID:        b.Id,
-			VenueID:   b.VenueId,
-			Email:     b.Email,
-			People:    int(b.People),
-			StartsAt:  startsAt,
-			EndsAt:    endsAt,
-			Duration:  int(b.Duration),
-			TableID:   b.TableId,
-			Name:      b.Name,
-			GivenName: b.GivenName,
+			ID:         b.Id,
+			VenueID:    b.VenueId,
+			Email:      b.Email,
+			People:     int(b.People),
+			StartsAt:   startsAt,
+			EndsAt:     endsAt,
+			Duration:   int(b.Duration),
+			TableID:    b.TableId,
+			GivenName:  givenName,
+			FamilyName: familyName,
 		}
 	}
 
@@ -183,19 +198,22 @@ func (b bookingClient) GetSlot(ctx context.Context, slot models.SlotInput) (*mod
 }
 
 func (b bookingClient) CreateBooking(ctx context.Context, input models.BookingInput) (*models.Booking, error) {
-	user, err := models.GetUserFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("could not get  user from context : %w", err)
+	var givenName, familyName string
+	if input.GivenName != nil {
+		givenName = *input.GivenName
+	}
+	if input.FamilyName != nil {
+		familyName = *input.FamilyName
 	}
 
 	resp, err := b.client.CreateBooking(ctx, &api.BookingInput{
-		VenueId:   input.VenueID,
-		Email:     input.Email,
-		People:    (uint32)(input.People),
-		StartsAt:  input.StartsAt.Format(time.RFC3339),
-		Duration:  (uint32)(input.Duration),
-		Name:      user.Name,
-		GivenName: user.GivenName,
+		VenueId:    input.VenueID,
+		Email:      input.Email,
+		People:     (uint32)(input.People),
+		StartsAt:   input.StartsAt.Format(time.RFC3339),
+		Duration:   (uint32)(input.Duration),
+		GivenName:  givenName,
+		FamilyName: familyName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not create booking in booking api : %w", err)
@@ -211,16 +229,24 @@ func (b bookingClient) CreateBooking(ctx context.Context, input models.BookingIn
 		return nil, fmt.Errorf("could not parse end time : %w", err)
 	}
 
+	var gn, fn *string
+	if resp.GivenName != "" {
+		gn = &resp.GivenName
+	}
+	if resp.FamilyName != "" {
+		fn = &resp.FamilyName
+	}
+
 	return &models.Booking{
-		ID:        resp.Id,
-		VenueID:   resp.VenueId,
-		Email:     resp.Email,
-		People:    (int)(resp.People),
-		StartsAt:  startsAt,
-		EndsAt:    endsAt,
-		Duration:  (int)(resp.Duration),
-		TableID:   resp.TableId,
-		Name:      user.Name,
-		GivenName: user.GivenName,
+		ID:         resp.Id,
+		VenueID:    resp.VenueId,
+		Email:      resp.Email,
+		People:     (int)(resp.People),
+		StartsAt:   startsAt,
+		EndsAt:     endsAt,
+		Duration:   (int)(resp.Duration),
+		TableID:    resp.TableId,
+		GivenName:  gn,
+		FamilyName: fn,
 	}, nil
 }

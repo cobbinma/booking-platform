@@ -131,6 +131,9 @@ const Bookings: React.FC<{
         </FlexGridItem>
         <FlexGridItem>
           <TableBuilder data={bookings} overrides={overrides}>
+            <TableBuilderColumn header="Name">
+              {(row) => row.name}
+            </TableBuilderColumn>
             <TableBuilderColumn header="Email">
               {(row) => row.email}
             </TableBuilderColumn>

@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/cobbinma/booking-platform/lib/gateway_api/graph/generated"
@@ -20,11 +21,41 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input models.Booki
 		return nil, fmt.Errorf("could not get user profile : %w", err)
 	}
 
+	isAdmin := false
+	if err := r.authIsAdmin(ctx, models.IsAdminInput{
+		VenueID: &input.VenueID,
+	}); err != nil {
+		if status.Code(err) != codes.Unauthenticated {
+			r.log.Error("could not determine if user is admin", zap.Error(err))
+			return nil, fmt.Errorf("internal error")
+		}
+	} else {
+		isAdmin = true
+	}
+
 	if user.Email != input.Email {
-		if err := r.authIsAdmin(ctx, models.IsAdminInput{
-			VenueID: &input.VenueID,
-		}); err != nil {
-			return nil, fmt.Errorf("context email does not match given : %w", err)
+		if !isAdmin {
+			r.log.Info("user is not admin therefore cannot change email")
+			return nil, fmt.Errorf("unauthorised")
+		}
+	}
+
+	if input.GivenName != nil || input.FamilyName != nil {
+		if !isAdmin {
+			r.log.Info("user is not admin therefore cannot change name")
+			return nil, fmt.Errorf("unauthorised")
+		}
+	}
+
+	if input.GivenName == nil {
+		if !isAdmin {
+			input.GivenName = &user.GivenName
+		}
+	}
+
+	if input.FamilyName == nil {
+		if !isAdmin {
+			input.FamilyName = &user.FamilyName
 		}
 	}
 

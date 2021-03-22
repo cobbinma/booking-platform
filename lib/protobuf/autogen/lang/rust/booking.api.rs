@@ -43,7 +43,7 @@ pub struct BookingInput {
     #[prost(uint32, tag = "5")]
     pub duration: u32,
     #[prost(string, tag = "6")]
-    pub name: ::prost::alloc::string::String,
+    pub family_name: ::prost::alloc::string::String,
     #[prost(string, tag = "7")]
     pub given_name: ::prost::alloc::string::String,
 }

@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	token     = "test-token"
-	email     = "test@test.com"
-	name      = "Test Test"
-	givenName = "Test"
+	token      = "test-token"
+	email      = "test@test.com"
+	familyName = "Test"
+	givenName  = "Test"
 )
 
 func Test_userService_GetUser(t *testing.T) {
@@ -25,7 +25,7 @@ func Test_userService_GetUser(t *testing.T) {
 			t.Fatalf("bearer token = '%s', expected = '%s'", bearer, token)
 		}
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(fmt.Sprintf(`{"email":"%s","name":"%s","given_name":"%s"}`, email, name, givenName)))
+		_, _ = w.Write([]byte(fmt.Sprintf(`{"email":"%s","given_name":"%s","family_name":"%s"}`, email, givenName, familyName)))
 	}))
 	defer authServer.Close()
 	ctx := models.AddTokenToCtx(context.Background(), token)

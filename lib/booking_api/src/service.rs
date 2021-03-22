@@ -211,8 +211,8 @@ impl BookingApi for BookingService {
                     .with_timezone(&Utc)
                     .add(Duration::minutes(input.duration as i64)),
                 duration: input.duration as i32,
-                name: input.name.clone(),
-                given_name: input.given_name.clone()
+                given_name: Some(input.given_name.clone()).filter(|s| !s.is_empty()),
+                family_name: Some(input.family_name.clone()).filter(|s| !s.is_empty()),
             };
 
             self.repository.create_booking(&new_booking)?;
@@ -226,8 +226,8 @@ impl BookingApi for BookingService {
                 ends_at: (slot_starts_at + Duration::minutes(input.duration as i64)).to_rfc3339(),
                 duration: input.duration,
                 table_id,
-                name: input.name,
-                given_name: input.given_name
+                given_name: input.given_name,
+                family_name: input.family_name,
             }))
         } else {
             Err(Status::not_found("could not find a free slot"))
@@ -294,8 +294,8 @@ impl BookingApi for BookingService {
                     ends_at: b.ends_at.to_rfc3339(),
                     duration: b.duration as u32,
                     table_id: b.table_id.to_string(),
-                    name: b.name.clone(),
-                    given_name: b.given_name.clone(),
+                    given_name: b.given_name.clone().unwrap_or_default(),
+                    family_name: b.family_name.clone().unwrap_or_default(),
                 })
                 .collect(),
             has_next_page,
@@ -325,8 +325,8 @@ impl BookingApi for BookingService {
                 ends_at: b.ends_at.to_rfc3339(),
                 duration: b.duration as u32,
                 table_id: b.table_id.to_string(),
-                name: b.name.clone(),
-                given_name: b.given_name.clone()
+                given_name: b.given_name.clone().unwrap_or_default(),
+                family_name: b.family_name.clone().unwrap_or_default(),
             })?;
 
         Ok(Response::new(removed))
@@ -485,8 +485,8 @@ mod tests {
                 starts_at,
                 ends_at: starts_at + Duration::minutes(60),
                 duration: 60,
-                name: "".to_string(),
-                given_name: "".to_string()
+                given_name: None,
+                family_name: None
             }],
             &starts_at,
         );
@@ -511,8 +511,8 @@ mod tests {
                 starts_at: starts_at + Duration::minutes(30),
                 ends_at: starts_at + Duration::minutes(90),
                 duration: 60,
-                name: "".to_string(),
-                given_name: "".to_string()
+                given_name: None,
+                family_name: None
             }],
             &starts_at,
         );
@@ -746,8 +746,8 @@ mod tests {
                 starts_at: starts,
                 ends_at: starts + Duration::minutes(duration),
                 duration: duration as i32,
-                name: "matthew cobbing".to_string(),
-                given_name: "matthew".to_string()
+                given_name: Some("matthew".to_string()),
+                family_name: Some("cobbing".to_string())
             }))
             .times(1)
             .returning(|_| Ok(()));
@@ -772,8 +772,8 @@ mod tests {
                 people,
                 starts_at: starts.to_rfc3339(),
                 duration: duration as u32,
-                name: "matthew cobbing".to_string(),
-                given_name: "matthew".to_string()
+                given_name: "matthew".to_string(),
+                family_name: "cobbing".to_string()
             }))
             .await
             .map(|r| r.into_inner())
@@ -790,8 +790,8 @@ mod tests {
                 ends_at: "1992-05-01T16:00:00+00:00".to_string(),
                 duration: duration as u32,
                 table_id: "eb7a8544-1595-4b62-ab72-137dd03b538f".to_string(),
-                name: "matthew cobbing".to_string(),
-                given_name: "matthew".to_string()
+                given_name: "matthew".to_string(),
+                family_name: "cobbing".to_string()
             }
         );
     }
@@ -840,8 +840,8 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
-                        name: "matthew cobbing".to_string(),
-                        given_name: "matthew".to_string()
+                        given_name: Some("matthew".to_string()),
+                        family_name: Some("cobbing".to_string())
                     },
                     models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
@@ -853,8 +853,8 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
-                        name: "matthew cobbing".to_string(),
-                        given_name: "matthew".to_string()
+                        given_name: Some("matthew".to_string()),
+                        family_name: Some("cobbing".to_string())
                     },
                     models::Booking {
                         id: Uuid::parse_str(&uuid).unwrap(),
@@ -866,8 +866,8 @@ mod tests {
                         starts_at: starts,
                         ends_at: starts + Duration::minutes(30),
                         duration: 30,
-                        name: "matthew cobbing".to_string(),
-                        given_name: "matthew".to_string()
+                        given_name: Some("matthew".to_string()),
+                        family_name: Some("cobbing".to_string())
                     },
                 ])
             });
@@ -899,8 +899,8 @@ mod tests {
                         ends_at: "1992-05-01T15:30:00+00:00".to_string(),
                         duration: 30,
                         table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
-                        name: "matthew cobbing".to_string(),
-                        given_name: "matthew".to_string()
+                        given_name: "matthew".to_string(),
+                        family_name: "cobbing".to_string()
                     },
                     protobuf::booking::models::Booking {
                         id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
@@ -911,8 +911,8 @@ mod tests {
                         ends_at: "1992-05-01T15:30:00+00:00".to_string(),
                         duration: 30,
                         table_id: "5a77fdd3-9f2c-4096-8fc3-8eaae0d54e1d".to_string(),
-                        name: "matthew cobbing".to_string(),
-                        given_name: "matthew".to_string()
+                        given_name: "matthew".to_string(),
+                        family_name: "cobbing".to_string()
                     }
                 ],
                 has_next_page: true,
@@ -1002,8 +1002,8 @@ mod tests {
                     starts_at: starts,
                     ends_at: starts + Duration::minutes(60),
                     duration: 60,
-                    name: "matthew cobbing".to_string(),
-                    given_name: "matthew".to_string()
+                    given_name: Some("matthew".to_string()),
+                    family_name: Some("cobbing".to_string())
                 })
             });
 
@@ -1027,8 +1027,8 @@ mod tests {
                 ends_at: (starts + Duration::minutes(60)).to_rfc3339(),
                 duration: 60,
                 table_id,
-                name: "matthew cobbing".to_string(),
-                given_name: "matthew".to_string()
+                given_name: "matthew".to_string(),
+                family_name: "cobbing".to_string()
             }
         )
     }

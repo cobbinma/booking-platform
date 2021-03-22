@@ -17,7 +17,7 @@ pub struct Booking {
     #[prost(string, tag = "8")]
     pub table_id: ::prost::alloc::string::String,
     #[prost(string, tag = "9")]
-    pub name: ::prost::alloc::string::String,
+    pub family_name: ::prost::alloc::string::String,
     #[prost(string, tag = "10")]
     pub given_name: ::prost::alloc::string::String,
 }

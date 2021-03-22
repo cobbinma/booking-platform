@@ -13,7 +13,7 @@ message Booking {
   string endsAt = 6;
   uint32 duration = 7;
   string tableId = 8;
-  string name = 9;
+  string familyName = 9;
   string givenName = 10;
 }
 

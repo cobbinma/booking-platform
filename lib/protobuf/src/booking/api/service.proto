@@ -41,7 +41,7 @@ message BookingInput {
   uint32 people = 3;
   string startsAt = 4;
   uint32 duration = 5;
-  string name = 6;
+  string familyName = 6;
   string givenName = 7;
 }
 
