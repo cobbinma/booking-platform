@@ -409,6 +409,7 @@ const AddSpecialOpeningHours: React.FC<{
                 setCloses(null);
                 setOpen(e.target.checked);
               }}
+              disabled={!day}
             />
           </FormControl>
           <FormControl label="Opens">
@@ -437,6 +438,7 @@ const AddSpecialOpeningHours: React.FC<{
               onChange={({ date }) => {
                 setValidFrom(Array.isArray(date) ? date : [date]);
               }}
+              disabled={!day}
             />
           </FormControl>
           <FormControl label="Valid Through">
@@ -445,6 +447,7 @@ const AddSpecialOpeningHours: React.FC<{
               onChange={({ date }) => {
                 setValidThrough(Array.isArray(date) ? date : [date]);
               }}
+              disabled={!day}
             />
           </FormControl>
         </ModalBody>
@@ -498,11 +501,9 @@ const EditSpecialOpeningHours: React.FC<{
   return (
     <Button
       onClick={() => {
-        console.log("HELLO");
         console.log(openingHours);
         updateSpecialOpeningHoursMutation()
           .then(() => {
-            console.log("HERE 2");
             refetch()
               .then(() => {
                 if (close) close();
